@@ -45,6 +45,15 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
     }
   }, [comparison, filter]);
 
+  // Helper function to chunk array into groups of 4
+  const chunkArray = <T,>(array: T[], size: number): T[][] => {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -52,8 +61,8 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
           <tr className="border-b dark:border-gray-700">
             <th className="text-left py-3 px-4 font-semibold dark:text-white">Package</th>
             <th className="text-left py-3 px-4 font-semibold dark:text-white">Type</th>
-            <th className="text-left py-3 px-4 font-semibold dark:text-white">Version</th>
-            <th className="text-left py-3 px-4 font-semibold dark:text-white">License</th>
+            <th className="text-left py-3 px-4 font-semibold dark:text-white w-32 max-w-xs">Version</th>
+            <th className="text-left py-3 px-4 font-semibold dark:text-white w-32 max-w-xs">License</th>
             <th className="text-left py-3 px-4 font-semibold dark:text-white">Found In</th>
             <th className="text-left py-3 px-4 font-semibold dark:text-white"></th>
           </tr>
@@ -78,9 +87,9 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
                     {pkg.packageType || 'unknown'}
                   </span>
                 </td>
-                <td className="py-3 px-4 dark:text-gray-300 font-mono text-sm">{pkg.version}</td>
-                <td className="py-3 px-4">
-                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded text-xs">
+                <td className="py-3 px-4 dark:text-gray-300 font-mono text-sm w-16 max-w-32 break-all">{pkg.version}</td>
+                <td className="py-3 px-4 ">
+                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded text-xs w-32 max-w-64">
                     {pkg.license || 'Unknown'}
                   </span>
                 </td>

@@ -1,5 +1,5 @@
 import { IPurl } from '@/models/IPurl';
-import { ISbom, ISbomPackage } from '@/models/ISbom';
+import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
 
 export const parsePurl = (purlString?: string): IPurl | null => {
   if (!purlString) return null;
@@ -26,7 +26,7 @@ export const parsePurl = (purlString?: string): IPurl | null => {
       const pairs = qualifiersStr.substring(1).split('&');
       pairs.forEach(pair => {
         const [key, value] = pair.split('=');
-        qualifiers[key] = value;
+        qualifiers[decodeURIComponent(key)] = decodeURIComponent(value);
       });
     }
 
@@ -34,7 +34,7 @@ export const parsePurl = (purlString?: string): IPurl | null => {
       scheme: 'pkg',
       type,
       namespace,
-      name,
+      name: decodeURIComponent(name),
       version,
       qualifiers: Object.keys(qualifiers).length > 0 ? qualifiers : undefined,
       subpath: subpath?.substring(1),
@@ -44,14 +44,160 @@ export const parsePurl = (purlString?: string): IPurl | null => {
   }
 };
 
-export const parseSpdxSbom = (data: unknown): ISbom | null => {
-  // Implementation for parsing SPDX format
-  // This is a placeholder - implement based on SPDX spec
-  return null;
+interface SpdxPackage {
+  name: string;
+  SPDXID: string;
+  versionInfo?: string;
+  supplier?: string;
+  licenseConcluded?: string;
+  licenseDeclared?: string;
+  externalRefs?: Array<{
+    referenceCategory: string;
+    referenceType: string;
+    referenceLocator: string;
+  }>;
+  checksums?: Array<{
+    algorithm: string;
+    checksumValue: string;
+  }>;
+  attributionTexts?: string[];
+  primaryPackagePurpose?: string;
+}
+
+interface SpdxDocument {
+  spdxVersion: string;
+  name: string;
+  creationInfo: {
+    creators: string[];
+    created: string;
+  };
+  packages: SpdxPackage[];
+}
+
+const extractPackageType = (
+  attributionTexts?: string[],
+  purpose?: string
+): ISbomPackage['packageType'] => {
+  if (!attributionTexts) return undefined;
+
+  const typeText = attributionTexts.find(text => text.startsWith('PkgType:'));
+  if (typeText) {
+    const type = typeText.replace('PkgType:', '').trim().toLowerCase();
+    if (type === 'alpine' || type === 'apk') return 'os';
+    if (type === 'npm') return 'npm';
+    if (type === 'python' || type === 'pypi') return 'python';
+    if (type === 'maven') return 'maven';
+    if (type === 'gobinary') return 'binary';
+  }
+
+  if (purpose === 'OPERATING-SYSTEM') return 'os';
+  if (purpose === 'APPLICATION') return 'binary';
+  if (purpose === 'LIBRARY') return 'library';
+
+  return 'library';
 };
 
-export const parseCycloneDxSbom = (data: unknown): ISbom | null => {
-  // Implementation for parsing CycloneDX format
-  // This is a placeholder - implement based on CycloneDX spec
+export const parseSpdxSbom = (
+  data: SpdxDocument,
+  containerName: string,
+  toolName: string
+): ISbom | null => {
+  try {
+    // Extract tool info from creators
+    const toolCreator = data.creationInfo.creators.find(c => c.startsWith('Tool:'));
+    let toolVersion = '0.0.0';
+    let vendor = 'Unknown';
+
+    if (toolCreator) {
+      const parts = toolCreator.replace('Tool:', '').trim().split('-');
+      if (parts.length > 1) {
+        toolVersion = parts[1];
+      }
+    }
+
+    // Determine vendor based on tool name
+    if (toolName.toLowerCase() === 'trivy') {
+      vendor = 'Aqua Security';
+    } else if (toolName.toLowerCase() === 'syft') {
+      vendor = 'Anchore';
+    } else if (toolName.toLowerCase().includes('docker')) {
+      vendor = 'Docker Inc.';
+    }
+
+    const toolInfo: IToolInfo = {
+      name: toolName.charAt(0).toUpperCase() + toolName.slice(1),
+      version: toolVersion,
+      vendor: vendor,
+      format: 'SPDX',
+    };
+
+    // Filter out container image and operating system packages
+    const packages: ISbomPackage[] = data.packages
+      .filter(pkg => {
+        const isContainer = pkg.primaryPackagePurpose === 'CONTAINER';
+        const isOS = pkg.primaryPackagePurpose === 'OPERATING-SYSTEM';
+        const isApplication = pkg.primaryPackagePurpose === 'APPLICATION';
+        return !isContainer && !isOS && (pkg.versionInfo || isApplication);
+      })
+      .map(pkg => {
+        // Extract pURL from external refs
+        const purlRef = pkg.externalRefs?.find(
+          ref => ref.referenceType === 'purl' && ref.referenceCategory === 'PACKAGE-MANAGER'
+        );
+
+        // Extract CPE from external refs
+        const cpeRef = pkg.externalRefs?.find(ref => ref.referenceType === 'cpe23Type');
+
+        // Extract hash from checksums
+        const hash = pkg.checksums?.[0]
+          ? `${pkg.checksums[0].algorithm.toLowerCase()}:${pkg.checksums[0].checksumValue}`
+          : undefined;
+
+        // Extract supplier
+        let supplier = pkg.supplier;
+        if (supplier === 'NOASSERTION' || !supplier) {
+          supplier = undefined;
+        }
+
+        // Extract license
+        let license = pkg.licenseDeclared || pkg.licenseConcluded;
+        if (license === 'NONE' || license === 'NOASSERTION') {
+          license = undefined;
+        }
+
+        return {
+          name: pkg.name,
+          version: pkg.versionInfo || 'unknown',
+          supplier,
+          license,
+          packageType: extractPackageType(pkg.attributionTexts, pkg.primaryPackagePurpose),
+          hash,
+          purl: purlRef?.referenceLocator,
+          cpe: cpeRef?.referenceLocator,
+        };
+      });
+
+    return {
+      format: 'SPDX',
+      tool: toolInfo.name,
+      toolInfo,
+      imageId: containerName,
+      packages,
+      timestamp: data.creationInfo.created,
+    };
+  } catch (error) {
+    console.error('Error parsing SPDX SBOM:', error);
+    return null;
+  }
+};
+
+export const parseCycloneDxSbom = (
+  data: unknown,
+  containerName: string,
+  toolName: string
+): ISbom | null => {
+  // Placeholder for CycloneDX parsing
+  // Will be implemented when CycloneDX files are provided
+  console.warn('CycloneDX parsing not yet implemented');
   return null;
 };

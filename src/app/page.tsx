@@ -16,11 +16,18 @@ import { MultiToolSummary } from './compare/components/ComparisonSummary';
 import { PackageDetailsTable } from './compare/components/PackageDetailsTable';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
-import { MOCK_SBOMS, EXAMPLE_IMAGES } from '@/lib/mockData';
+import { ISbom } from '@/models/ISbom';
+import { loadSbomsFromPublic } from '@/lib/sbomLoader';
 import { TOOL_COLORS } from '@/lib/utils';
 
 type ViewMode = 'summary' | 'table' | 'chart';
 type PackageFilter = 'all' | 'common' | 'unique';
+
+interface ImageInfo {
+  id: string;
+  name: string;
+  description: string;
+}
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
@@ -30,6 +37,9 @@ export default function Home() {
   const [comparison, setComparison] = useState<IMultiToolComparison | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
   const [packageFilter, setPackageFilter] = useState<PackageFilter>('all');
+  const [images, setImages] = useState<ImageInfo[]>([]);
+  const [sboms, setSboms] = useState<Record<string, ISbom[]>>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -42,7 +52,20 @@ export default function Home() {
     }
   }, [isDark]);
 
-  const filteredImages = EXAMPLE_IMAGES.filter(
+  // Load SBOMs on mount
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      const { images: loadedImages, sboms: loadedSboms } = await loadSbomsFromPublic();
+      setImages(loadedImages);
+      setSboms(loadedSboms);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  const filteredImages = images.filter(
     img =>
       img.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       img.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,9 +73,9 @@ export default function Home() {
 
   const handleImageSelect = (imageId: string) => {
     setSelectedImage(imageId);
-    const sboms = MOCK_SBOMS[imageId];
-    if (sboms && sboms.length >= 2) {
-      const result = compareMultipleTools(sboms);
+    const imageSboms = sboms[imageId];
+    if (imageSboms && imageSboms.length >= 2) {
+      const result = compareMultipleTools(imageSboms);
       setComparison(result);
     }
   };
@@ -130,8 +153,18 @@ export default function Home() {
           </div>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading SBOM files...</p>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
-        {!selectedImage && (
+        {!selectedImage && !loading && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,30 +188,46 @@ export default function Home() {
         )}
 
         {/* Image Selection */}
-        {!selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-          >
-            {filteredImages.map((image, idx) => (
-              <motion.button
-                key={image.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => handleImageSelect(image.id)}
-                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:scale-105 text-left"
+        {!selectedImage && !loading && (
+          <>
+            {filteredImages.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600 dark:text-gray-400">
+                  No container images found. Please add SBOM files to the public/sbom directory.
+                </p>
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <Package className="text-indigo-600 dark:text-indigo-400" size={24} />
-                  <h3 className="font-bold dark:text-white">{image.name}</h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{image.description}</p>
-              </motion.button>
-            ))}
-          </motion.div>
+                {filteredImages.map((image, idx) => (
+                  <motion.button
+                    key={image.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    onClick={() => handleImageSelect(image.id)}
+                    className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <Package className="text-indigo-600 dark:text-indigo-400" size={24} />
+                      <h3 className="font-bold dark:text-white">{image.name}</h3>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {image.description}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                      {sboms[image.id]?.length || 0} tools available
+                    </p>
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </>
         )}
 
         {/* Tool Information Section */}
