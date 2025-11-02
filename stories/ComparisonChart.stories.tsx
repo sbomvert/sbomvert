@@ -1,0 +1,44 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { MultiToolSummary } from '@/app/compare/components/ComparisonSummary';
+import { IMultiToolComparison } from '@/models/IComparisonResult';
+
+const mockComparison: IMultiToolComparison = {
+  imageId: 'nginx:1.21',
+  tools: [
+    { name: 'Syft', version: '0.100.0', vendor: 'Anchore', format: 'SPDX' },
+    { name: 'Trivy', version: '0.48.0', vendor: 'Aqua Security', format: 'CycloneDX' },
+    { name: 'Docker Scout', version: '1.2.0', vendor: 'Docker Inc.', format: 'SPDX' },
+  ],
+  allPackages: new Map(),
+  statistics: {
+    toolCounts: {
+      Syft: 5,
+      Trivy: 5,
+      'Docker Scout': 4,
+    },
+    commonToAll: 3,
+    uniquePerTool: {
+      Syft: 1,
+      Trivy: 1,
+      'Docker Scout': 0,
+    },
+  },
+};
+
+const meta: Meta<typeof MultiToolSummary> = {
+  title: 'Comparison/MultiToolSummary',
+  component: MultiToolSummary,
+  parameters: {
+    layout: 'padded',
+  },
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof MultiToolSummary>;
+
+export const Default: Story = {
+  args: {
+    comparison: mockComparison,
+  },
+};

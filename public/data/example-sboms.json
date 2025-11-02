@@ -1,0 +1,10 @@
+{
+  "images": [
+    {
+      "id": "nginx:1.21",
+      "name": "nginx:1.21",
+      "description": "Popular web server",
+      "sboms": []
+    }
+  ]
+}
