@@ -9,7 +9,17 @@ const mockComparison: IMultiToolComparison = {
     { name: 'Trivy', version: '0.48.0', vendor: 'Aqua Security', format: 'CycloneDX' },
     { name: 'Docker Scout', version: '1.2.0', vendor: 'Docker Inc.', format: 'SPDX' },
   ],
-  allPackages: new Map(),
+  allPackages: new Map([
+    ['readline@8.2-1.3', {
+      key: 'readline@8.2-1.3',
+      package: {
+        name: 'readline',
+        version: '8.2-1.3',
+        purl: 'pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg'
+      },
+      foundInTools: ['Amazon', 'Docker']
+    }]
+  ]),
   statistics: {
     toolCounts: {
       Syft: 5,
