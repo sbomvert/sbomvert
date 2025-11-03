@@ -13,14 +13,13 @@ interface ImageInfo {
 
 // Convert container folder name to display name
 const formatContainerName = (folderName: string): string => {
-  // Replace 'twodots' with ':' and 'dash' with '-'
   return folderName.replace(/twodots/g, ':').replace(/dash/g, '-');
 };
 
 // Extract container description based on name
 const getContainerDescription = (containerName: string): string => {
   const lowerName = containerName.toLowerCase();
-  
+
   if (lowerName.includes('nginx')) return 'Popular web server';
   if (lowerName.includes('node')) return 'Node.js runtime';
   if (lowerName.includes('postgres')) return 'PostgreSQL database';
@@ -28,7 +27,7 @@ const getContainerDescription = (containerName: string): string => {
   if (lowerName.includes('python')) return 'Python runtime';
   if (lowerName.includes('alpine')) return 'Alpine Linux base';
   if (lowerName.includes('ubuntu')) return 'Ubuntu base image';
-  
+
   return 'Container image';
 };
 
@@ -37,16 +36,16 @@ export const loadSbomsFromPublic = async (): Promise<{
   sboms: ContainerSboms;
 }> => {
   try {
-    // Fetch the directory structure
+    // Fetch the directory structure from API
     const response = await fetch('/api/sbom-files');
-    
+
     if (!response.ok) {
       console.error('Failed to fetch SBOM files list');
       return { images: [], sboms: {} };
     }
 
     const { containers } = await response.json();
-    
+
     const images: ImageInfo[] = [];
     const sboms: ContainerSboms = {};
 
@@ -59,16 +58,15 @@ export const loadSbomsFromPublic = async (): Promise<{
         try {
           const filePath = `/sbom/${container.name}/${file.name}`;
           const sbomResponse = await fetch(filePath);
-          
+
           if (!sbomResponse.ok) {
             console.warn(`Failed to load SBOM: ${filePath}`);
             continue;
           }
 
           const sbomData = await sbomResponse.json();
-          
+
           // Determine tool name and format from filename
-          // Format: toolname.format.json (e.g., trivy.spdx.json)
           const nameParts = file.name.split('.');
           const toolName = nameParts[0];
           const format = nameParts[1]?.toUpperCase();
@@ -78,8 +76,7 @@ export const loadSbomsFromPublic = async (): Promise<{
           if (format === 'SPDX') {
             parsedSbom = parseSpdxSbom(sbomData, containerName, toolName);
           } else if (format === 'CYCLONEDX') {
-            // parsedSbom = parseCycloneDxSbom(sbomData, containerName, toolName);
-            console.warn(`CycloneDX format not yet supported: ${filePath}`);
+            parsedSbom = parseCycloneDxSbom(sbomData, containerName, toolName);
           }
 
           if (parsedSbom) {
