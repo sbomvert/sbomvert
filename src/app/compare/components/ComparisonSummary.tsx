@@ -75,6 +75,20 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             {comparison.statistics.commonToAll}
           </div>
         </div>
+        <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="text-red-600 dark:text-red-400" size={20} />
+            <span className="text-sm font-medium text-red-900 dark:text-red-100">
+              Packages with Conflicts
+            </span>
+          </div>
+          <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+            {comparison.statistics.packagesWithConflicts}
+          </div>
+          <div className="text-xs text-red-700 dark:text-red-300 mt-1">
+            {((comparison.statistics.packagesWithConflicts / comparison.allPackages.size) * 100).toFixed(1)}% of total
+          </div>
+        </div>
 
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -82,7 +96,7 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
               Tools Compared
             </span>
-        </div>
+          </div>
           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
             {comparison.tools.length}
           </div>

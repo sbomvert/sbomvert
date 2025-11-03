@@ -1,28 +1,92 @@
 import { ISbom } from '@/models/ISbom';
-import { IMultiToolComparison } from '@/models/IComparisonResult';
+import { IMultiToolComparison, IPackageComparison, IPackageMetadata } from '@/models/IComparisonResult';
+
+const extractMetadata = (pkg: ISbom['packages'][0]): IPackageMetadata => ({
+  supplier: pkg.supplier,
+  license: pkg.license,
+  hash: pkg.hash,
+  purl: pkg.purl,
+  cpe: pkg.cpe,
+});
+
+const getUniqueValues = (values: (string | undefined)[]): string[] => {
+  const unique = new Set(values.filter(v => v !== undefined && v !== ''));
+  return Array.from(unique);
+};
 
 export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
-  const allPackages = new Map<
-    string,
-    { package: ISbom['packages'][0]; foundInTools: string[] }
-  >();
+  const packageMap = new Map<string, {
+    name: string;
+    version: string;
+    packageType?: string;
+    foundInTools: string[];
+    metadataByTool: Map<string, IPackageMetadata>;
+  }>();
 
+  // First pass: collect all packages and their metadata per tool
   sboms.forEach(sbom => {
     sbom.packages.forEach(pkg => {
       const key = `${pkg.name}@${pkg.version}`;
-      const existing = allPackages.get(key);
-
+      const existing = packageMap.get(key);
+      
       if (existing) {
         existing.foundInTools.push(sbom.tool);
+        existing.metadataByTool.set(sbom.tool, extractMetadata(pkg));
       } else {
-        allPackages.set(key, {
-          package: pkg,
+        const metadataByTool = new Map<string, IPackageMetadata>();
+        metadataByTool.set(sbom.tool, extractMetadata(pkg));
+        
+        packageMap.set(key, {
+          name: pkg.name,
+          version: pkg.version,
+          packageType: pkg.packageType,
           foundInTools: [sbom.tool],
+          metadataByTool,
         });
       }
     });
   });
 
+  // Second pass: analyze metadata and create final package comparisons
+  const allPackages = new Map<string, IPackageComparison>();
+  let packagesWithConflicts = 0;
+
+  packageMap.forEach((pkgData, key) => {
+    const allMetadata = Array.from(pkgData.metadataByTool.values());
+    
+    const uniqueSuppliers = getUniqueValues(allMetadata.map(m => m.supplier));
+    const uniqueLicenses = getUniqueValues(allMetadata.map(m => m.license));
+    const uniquePurls = getUniqueValues(allMetadata.map(m => m.purl));
+    const uniqueCpes = getUniqueValues(allMetadata.map(m => m.cpe));
+    const uniqueHashes = getUniqueValues(allMetadata.map(m => m.hash));
+    
+    const hasMetadataConflicts = 
+      uniqueSuppliers.length > 1 ||
+      uniqueLicenses.length > 1 ||
+      uniquePurls.length > 1 ||
+      uniqueCpes.length > 1 ||
+      uniqueHashes.length > 1;
+    
+    if (hasMetadataConflicts) {
+      packagesWithConflicts++;
+    }
+    
+    allPackages.set(key, {
+      name: pkgData.name,
+      version: pkgData.version,
+      packageType: pkgData.packageType,
+      foundInTools: pkgData.foundInTools,
+      metadataByTool: pkgData.metadataByTool,
+      hasMetadataConflicts,
+      uniqueSuppliers,
+      uniqueLicenses,
+      uniquePurls,
+      uniqueCpes,
+      uniqueHashes,
+    });
+  });
+
+  // Calculate statistics
   const toolCounts: Record<string, number> = {};
   const uniquePerTool: Record<string, number> = {};
 
@@ -48,6 +112,7 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
       toolCounts,
       commonToAll,
       uniquePerTool,
+      packagesWithConflicts,
     },
   };
 };

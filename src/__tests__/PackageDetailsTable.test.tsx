@@ -9,8 +9,56 @@ const makeComparison = (): IMultiToolComparison => {
     { name: 'Trivy', version: '1', vendor: 'B', format: 'SPDX' },
   ];
   const map = new Map<string, any>();
-  map.set('a@1.0.0', { package: { name: 'a', version: '1.0.0', packageType: 'library' }, foundInTools: ['Syft', 'Trivy'] });
-  map.set('b@1.0.0', { package: { name: 'b', version: '1.0.0', packageType: 'npm', license: 'MIT' }, foundInTools: ['Syft'] });
+  map.set('a@1.0.0', {
+    name: 'a',
+    version: '1.0.0',
+    packageType: 'library',
+    foundInTools: ['Syft', 'Trivy'],
+    uniqueSuppliers: ['Supplier A'],
+    uniqueLicenses: ['MIT'],
+    uniqueHashes: ['hash123'],
+    uniquePurls: ['pkg:generic/a@1.0.0'],
+    uniqueCpes: ['cpe:/a:a:a:1.0.0'],
+    hasMetadataConflicts: false,
+    metadataByTool: new Map([
+      ['Syft', { 
+        supplier: 'Supplier A', 
+        license: 'MIT', 
+        hash: 'hash123', 
+        purl: 'pkg:generic/a@1.0.0',
+        cpe: 'cpe:/a:a:a:1.0.0'
+      }],
+      ['Trivy', { 
+        supplier: 'Supplier A', 
+        license: 'MIT', 
+        hash: 'hash123', 
+        purl: 'pkg:generic/a@1.0.0',
+        cpe: 'cpe:/a:a:a:1.0.0'
+      }]
+    ])
+  });
+  map.set('b@1.0.0', {
+    name: 'b',
+    version: '1.0.0',
+    packageType: 'npm',
+    license: 'MIT',
+    foundInTools: ['Syft'],
+    uniqueSuppliers: ['Supplier B'],
+    uniqueLicenses: ['MIT'],
+    uniqueHashes: ['hash456'],
+    uniquePurls: ['pkg:npm/b@1.0.0'],
+    uniqueCpes: ['cpe:/a:b:b:1.0.0'],
+    hasMetadataConflicts: false,
+    metadataByTool: new Map([
+      ['Syft', { 
+        supplier: 'Supplier B', 
+        license: 'MIT', 
+        hash: 'hash456', 
+        purl: 'pkg:npm/b@1.0.0',
+        cpe: 'cpe:/a:b:b:1.0.0'
+      }]
+    ])
+  });
   return {
     imageId: 'img',
     tools,
@@ -21,6 +69,7 @@ const makeComparison = (): IMultiToolComparison => {
 
 jest.mock('framer-motion', () => ({
   motion: { div: (p: any) => <div {...p} /> },
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 test('filters and expands details', () => {
