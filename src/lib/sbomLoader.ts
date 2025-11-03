@@ -13,7 +13,7 @@ interface ImageInfo {
 
 // Convert container folder name to display name
 const formatContainerName = (folderName: string): string => {
-  return folderName.replace(/twodots/g, ':').replace(/dash/g, '-');
+  return folderName.replace(/-?twodots/g, ':').replace(/-?dash/g, '-');
 };
 
 // Extract container description based on name

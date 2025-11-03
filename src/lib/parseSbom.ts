@@ -78,18 +78,20 @@ const extractPackageType = (
   attributionTexts?: string[],
   purpose?: string
 ): ISbomPackage['packageType'] => {
-  if (!attributionTexts) return undefined;
-
-  const typeText = attributionTexts.find(text => text.startsWith('PkgType:'));
-  if (typeText) {
-    const type = typeText.replace('PkgType:', '').trim().toLowerCase();
-    if (type === 'alpine' || type === 'apk') return 'os';
-    if (type === 'npm') return 'npm';
-    if (type === 'python' || type === 'pypi') return 'python';
-    if (type === 'maven') return 'maven';
-    if (type === 'gobinary') return 'binary';
+  // Try to infer from attribution texts if provided
+  if (attributionTexts) {
+    const typeText = attributionTexts.find(text => text.startsWith('PkgType:'));
+    if (typeText) {
+      const type = typeText.replace('PkgType:', '').trim().toLowerCase();
+      if (type === 'alpine' || type === 'apk') return 'os';
+      if (type === 'npm') return 'npm';
+      if (type === 'python' || type === 'pypi') return 'python';
+      if (type === 'maven') return 'maven';
+      if (type === 'gobinary') return 'binary';
+    }
   }
 
+  // Fallback to SPDX primaryPackagePurpose
   if (purpose === 'OPERATING-SYSTEM') return 'os';
   if (purpose === 'APPLICATION') return 'binary';
   if (purpose === 'LIBRARY') return 'library';
@@ -108,15 +110,17 @@ export const parseSpdxSbom = (
     
 
     let toolVersion = 'unknown';
+    let toolBaseName = tname ?? 'Unknown';
 
     if (tname) {
       const parts = tname.split('-');
       if (parts.length > 1) {
         toolVersion = parts.at(-1) ?? 'unknown';
+        toolBaseName = parts.slice(0, -1).join('-');
       }
     }
 
-    const toolName  = tname? tname : "Unknown"
+    const toolName  = toolBaseName
     const vendor  = tvendor? tvendor : "Unknown"
 
 

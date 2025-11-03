@@ -1,0 +1,577 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChartView snapshot 1`] = `
+<body>
+  <div>
+    <div
+      animate="[object Object]"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6"
+      initial="[object Object]"
+    >
+      <h2
+        class="text-2xl font-bold mb-4 dark:text-white"
+      >
+        Multi-Tool Comparison Summary
+      </h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+      >
+        <div
+          class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-purple-600 dark:text-purple-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16.5 9.4 7.55 4.24"
+              />
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+              />
+              <polyline
+                points="3.29 7 12 12 20.71 7"
+              />
+              <line
+                x1="12"
+                x2="12"
+                y1="22"
+                y2="12"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-purple-900 dark:text-purple-100"
+            >
+              Total Unique Packages
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-purple-600 dark:text-purple-400"
+          >
+            2
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-green-600 dark:text-green-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
+              />
+              <polyline
+                points="22 4 12 14.01 9 11.01"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-green-900 dark:text-green-100"
+            >
+              Common to All
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-green-600 dark:text-green-400"
+          >
+            1
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-blue-600 dark:text-blue-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+              <path
+                d="M12 16v-4"
+              />
+              <path
+                d="M12 8h.01"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-blue-900 dark:text-blue-100"
+            >
+              Tools Compared
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-blue-600 dark:text-blue-400"
+          >
+            2
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-amber-600 dark:text-amber-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+              />
+              <path
+                d="M12 9v4"
+              />
+              <path
+                d="M12 17h.01"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-amber-900 dark:text-amber-100"
+            >
+              Coverage Variance
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-amber-600 dark:text-amber-400"
+          >
+            1
+          </div>
+        </div>
+      </div>
+      <div
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      >
+        <div>
+          <h3
+            class="text-lg font-semibold mb-3 dark:text-white"
+          >
+            Package Distribution
+          </h3>
+          <div>
+            <div
+              data="[object Object],[object Object]"
+              data-chart="BarChart"
+            >
+              <div
+                data-chart="CartesianGrid"
+                stroke="#374151"
+                stroke-dasharray="3 3"
+              />
+              <div
+                data-chart="XAxis"
+                datakey="tool"
+                stroke="#9ca3af"
+              />
+              <div
+                data-chart="YAxis"
+                stroke="#9ca3af"
+              />
+              <div
+                contentstyle="[object Object]"
+                data-chart="Tooltip"
+              />
+              <div
+                data-chart="Legend"
+              />
+              <div
+                data-chart="Bar"
+                datakey="total"
+                fill="#4f46e5"
+                name="Total Packages"
+              />
+              <div
+                data-chart="Bar"
+                datakey="unique"
+                fill="#f59e0b"
+                name="Unique Packages"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3
+            class="text-lg font-semibold mb-3 dark:text-white"
+          >
+            Tool Analysis
+          </h3>
+          <div>
+            <div
+              data="[object Object],[object Object]"
+              data-chart="RadarChart"
+            >
+              <div
+                data-chart="PolarGrid"
+                stroke="#374151"
+              />
+              <div
+                data-chart="PolarAngleAxis"
+                datakey="tool"
+                stroke="#9ca3af"
+              />
+              <div
+                data-chart="PolarRadiusAxis"
+                stroke="#9ca3af"
+              />
+              <div
+                data-chart="Radar"
+                datakey="coverage"
+                fill="#10b981"
+                fill-opacity="0.6"
+                name="Coverage %"
+                stroke="#10b981"
+              />
+              <div
+                data-chart="Radar"
+                datakey="uniqueness"
+                fill="#f59e0b"
+                fill-opacity="0.6"
+                name="Uniqueness %"
+                stroke="#f59e0b"
+              />
+              <div
+                data-chart="Legend"
+              />
+              <div
+                contentstyle="[object Object]"
+                data-chart="Tooltip"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`SummaryView snapshot 1`] = `
+<body>
+  <div>
+    <div
+      animate="[object Object]"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6"
+      initial="[object Object]"
+    >
+      <h2
+        class="text-2xl font-bold mb-4 dark:text-white"
+      >
+        Multi-Tool Comparison Summary
+      </h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+      >
+        <div
+          class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-purple-600 dark:text-purple-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16.5 9.4 7.55 4.24"
+              />
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+              />
+              <polyline
+                points="3.29 7 12 12 20.71 7"
+              />
+              <line
+                x1="12"
+                x2="12"
+                y1="22"
+                y2="12"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-purple-900 dark:text-purple-100"
+            >
+              Total Unique Packages
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-purple-600 dark:text-purple-400"
+          >
+            2
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-green-600 dark:text-green-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
+              />
+              <polyline
+                points="22 4 12 14.01 9 11.01"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-green-900 dark:text-green-100"
+            >
+              Common to All
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-green-600 dark:text-green-400"
+          >
+            1
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-blue-600 dark:text-blue-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+              <path
+                d="M12 16v-4"
+              />
+              <path
+                d="M12 8h.01"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-blue-900 dark:text-blue-100"
+            >
+              Tools Compared
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-blue-600 dark:text-blue-400"
+          >
+            2
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center gap-2 mb-2"
+          >
+            <svg
+              class="text-amber-600 dark:text-amber-400"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+              />
+              <path
+                d="M12 9v4"
+              />
+              <path
+                d="M12 17h.01"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium text-amber-900 dark:text-amber-100"
+            >
+              Coverage Variance
+            </span>
+          </div>
+          <div
+            class="text-3xl font-bold text-amber-600 dark:text-amber-400"
+          >
+            1
+          </div>
+        </div>
+      </div>
+      <div
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      >
+        <div>
+          <h3
+            class="text-lg font-semibold mb-3 dark:text-white"
+          >
+            Package Distribution
+          </h3>
+          <div>
+            <div
+              data="[object Object],[object Object]"
+              data-chart="BarChart"
+            >
+              <div
+                data-chart="CartesianGrid"
+                stroke="#374151"
+                stroke-dasharray="3 3"
+              />
+              <div
+                data-chart="XAxis"
+                datakey="tool"
+                stroke="#9ca3af"
+              />
+              <div
+                data-chart="YAxis"
+                stroke="#9ca3af"
+              />
+              <div
+                contentstyle="[object Object]"
+                data-chart="Tooltip"
+              />
+              <div
+                data-chart="Legend"
+              />
+              <div
+                data-chart="Bar"
+                datakey="total"
+                fill="#4f46e5"
+                name="Total Packages"
+              />
+              <div
+                data-chart="Bar"
+                datakey="unique"
+                fill="#f59e0b"
+                name="Unique Packages"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3
+            class="text-lg font-semibold mb-3 dark:text-white"
+          >
+            Tool Analysis
+          </h3>
+          <div>
+            <div
+              data="[object Object],[object Object]"
+              data-chart="RadarChart"
+            >
+              <div
+                data-chart="PolarGrid"
+                stroke="#374151"
+              />
+              <div
+                data-chart="PolarAngleAxis"
+                datakey="tool"
+                stroke="#9ca3af"
+              />
+              <div
+                data-chart="PolarRadiusAxis"
+                stroke="#9ca3af"
+              />
+              <div
+                data-chart="Radar"
+                datakey="coverage"
+                fill="#10b981"
+                fill-opacity="0.6"
+                name="Coverage %"
+                stroke="#10b981"
+              />
+              <div
+                data-chart="Radar"
+                datakey="uniqueness"
+                fill="#f59e0b"
+                fill-opacity="0.6"
+                name="Uniqueness %"
+                stroke="#f59e0b"
+              />
+              <div
+                data-chart="Legend"
+              />
+              <div
+                contentstyle="[object Object]"
+                data-chart="Tooltip"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
