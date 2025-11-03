@@ -74,7 +74,7 @@ export const loadSbomsFromPublic = async (): Promise<{
           let parsedSbom: ISbom | null = null;
 
           if (format === 'SPDX') {
-            parsedSbom = parseSpdxSbom(sbomData, containerName, toolName);
+            parsedSbom = parseSpdxSbom(sbomData, containerName);
           } else if (format === 'CYCLONEDX') {
             parsedSbom = parseCycloneDxSbom(sbomData, containerName, toolName);
           }

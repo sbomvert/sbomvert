@@ -100,29 +100,25 @@ const extractPackageType = (
 export const parseSpdxSbom = (
   data: SpdxDocument,
   containerName: string,
-  toolName: string
 ): ISbom | null => {
   try {
     // Extract tool info from creators
-    const toolCreator = data.creationInfo.creators.find(c => c.startsWith('Tool:'));
-    let toolVersion = '0.0.0';
-    let vendor = 'Unknown';
+    const tname = data.creationInfo.creators.find(c => c.startsWith('Tool:'))?.replace('Tool:', '').trim();
+    const tvendor =data.creationInfo.creators.find(c => c.startsWith('Organization:'))?.replace('Organization:', '').trim(); 
+    
 
-    if (toolCreator) {
-      const parts = toolCreator.replace('Tool:', '').trim().split('-');
+    let toolVersion = 'unknown';
+
+    if (tname) {
+      const parts = tname.split('-');
       if (parts.length > 1) {
-        toolVersion = parts[1];
+        toolVersion = parts.at(-1) ?? 'unknown';
       }
     }
 
-    // Determine vendor based on tool name
-    if (toolName.toLowerCase() === 'trivy') {
-      vendor = 'Aqua Security';
-    } else if (toolName.toLowerCase() === 'syft') {
-      vendor = 'Anchore';
-    } else if (toolName.toLowerCase().includes('docker')) {
-      vendor = 'Docker Inc.';
-    }
+    const toolName  = tname? tname : "Unknown"
+    const vendor  = tvendor? tvendor : "Unknown"
+
 
     const toolInfo: IToolInfo = {
       name: toolName.charAt(0).toUpperCase() + toolName.slice(1),
