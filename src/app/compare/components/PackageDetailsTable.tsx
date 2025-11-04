@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Database, Code, Box, Package, FileText, AlertTriangle } from 'lucide-react';
+import { Database, Code, Box, Package, FileText, AlertTriangle } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { PackageMetadataDetails } from './PackageMetadataDetails';
 import { TOOL_COLORS, getPackageTypeColor } from '@/lib/utils';
@@ -149,7 +149,6 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
                         <AlertTriangle 
                           size={16} 
                           className="text-amber-500 flex-shrink-0" 
-                          title="This package has metadata conflicts across tools"
                         />
                       )}
                     </div>

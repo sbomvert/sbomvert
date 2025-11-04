@@ -21,7 +21,7 @@ export const ToolInfoCard: React.FC<ToolInfoCardProps> = ({ toolInfo, color }) =
           <Package size={24} style={{ color }} />
         </div>
         <div className="text-left overflow-hidden">
-          <h3 className="text-xl font-bold dark:text-white">{toolInfo.name.length <= 20 ? toolInfo.name : toolInfo.name.slice(0, 22) + "..."}</h3>
+          <h3 className="text-xl font-bold dark:text-white h-6">{toolInfo.name.length <= 22 ? toolInfo.name : toolInfo.name.slice(0, 22) + "..."}</h3>
           <p className="text-sm text-gray-600 dark:text-gray-40">{toolInfo.version}</p>
         </div>
       </div>
