@@ -76,9 +76,29 @@ interface SpdxDocument {
 
 const extractPackageType = (
   attributionTexts?: string[],
-  purpose?: string
+  purpose?: string,
+  purl?: string
 ): ISbomPackage['packageType'] => {
   // Try to infer from attribution texts if provided
+
+  if (purl) {
+    const thepurl = parsePurl(purl)
+    switch (thepurl?.type) {
+      case "deb":
+      case "dpkg":
+        return "os"
+      case "pypi":
+        return "python"
+      case "nuget":
+        return ".net"
+      case "generic":
+        return "generic"
+      default:
+        console.log(thepurl?.type)
+        return "generic"
+
+    }
+  }
   if (attributionTexts) {
     const typeText = attributionTexts.find(text => text.startsWith('PkgType:'));
     if (typeText) {
@@ -170,7 +190,7 @@ export const parseSpdxSbom = (
           version: pkg.versionInfo || 'unknown',
           supplier,
           license,
-          packageType: extractPackageType(pkg.attributionTexts, pkg.primaryPackagePurpose),
+          packageType: extractPackageType(pkg.attributionTexts, pkg.primaryPackagePurpose,purlRef?.referenceLocator),
           hash,
           purl: purlRef?.referenceLocator,
           cpe: cpeRef?.referenceLocator,
