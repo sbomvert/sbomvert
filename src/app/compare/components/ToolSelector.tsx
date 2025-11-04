@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { IToolInfo } from '@/models/ISbom';
-import { Check } from 'lucide-react';
+//import { Check } from 'lucide-react';
 import { ToolInfoCard } from './ToolInfoCard';
 
 interface ToolSelectorProps {
@@ -25,7 +25,7 @@ export const ToolSelector: React.FC<ToolSelectorProps> = ({
           Click to toggle tools ({selectedTools.size}/{tools.length} selected)
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
         {tools.map((tool, idx) => {
           const isSelected = selectedTools.has(tool.name);
           return (
@@ -34,16 +34,16 @@ export const ToolSelector: React.FC<ToolSelectorProps> = ({
               onClick={() => onToolToggle(tool.name)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`relative block w-full ${isSelected ? '' : 'opacity-50'}`}
+              className={`relative block w-full  ${isSelected ? '' : 'opacity-50'}`}
             >
-              {isSelected && (
+              {/*isSelected && (
                 <div
                   className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-white"
                   style={{ backgroundColor: colors[idx] }}
                 >
                   <Check size={16} />
                 </div>
-              )}
+              )*/}
               <ToolInfoCard toolInfo={tool} color={colors[idx]} />
             </motion.button>
           );
