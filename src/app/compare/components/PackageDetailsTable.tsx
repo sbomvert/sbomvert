@@ -145,7 +145,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
                       <div className="font-medium dark:text-white truncate" title={pkg.name}>
                         {pkg.name}
                       </div>
-                      {pkg.hasMetadataConflicts && (
+                      {(pkg.hasMetadataConflicts || pkg.foundInTools.length != comparison.tools.length) && (
                         <AlertTriangle 
                           size={16} 
                           className="text-amber-500 flex-shrink-0" 
