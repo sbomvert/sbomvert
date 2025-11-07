@@ -9,7 +9,8 @@ interface ImageInfo {
   id: string;
   name: string;
   description: string;
-  toolsScanned: number
+  toolsScanned: number;
+  sbomCount: number;
 }
 
 // Convert container folder name to display name
@@ -107,20 +108,35 @@ export const loadSbomsForImage = async (image: string): Promise<{
 };
 
 
-export const loadSbomsFromPublic = async (): Promise<{
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
+export const loadSbomsFromPublic = async (
+  page: number = 1,
+  search: string = ''
+): Promise<{
   images: ImageInfo[];
   sboms: ContainerSboms;
+  pagination: PaginationInfo;
 }> => {
   try {
     // Fetch the directory structure from API
-    const response = await fetch('/api/sbom-files');
+    const response = await fetch(`/api/sbom-files?page=${page}&search=${encodeURIComponent(search)}`);
 
     if (!response.ok) {
       console.error('Failed to fetch SBOM files list');
-      return { images: [], sboms: {} };
+      return { 
+        images: [], 
+        sboms: {},
+        pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 }
+      };
     }
 
-    const { containers } = await response.json();
+    const { containers, pagination } = await response.json();
 
     const images: ImageInfo[] = [];
     const sboms: ContainerSboms = {};
@@ -168,16 +184,21 @@ export const loadSbomsFromPublic = async (): Promise<{
           id: containerName,
           name: containerName,
           description: getContainerDescription(containerName),
-          toolsScanned: 0 // This will be updated later when we load the actual SBOMs
+          toolsScanned: container.files.length,
+          sbomCount: sbomList.length
         });
         sboms[containerName] = sbomList;
       }
     }
 
-    return { images, sboms };
+    return { images, sboms, pagination };
   } catch (error) {
     console.error('Error loading SBOMs:', error);
-    return { images: [], sboms: {} };
+    return { 
+      images: [], 
+      sboms: {},
+      pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 }
+    };
   }
 };
 
@@ -206,7 +227,8 @@ export const loadSbomImagesFromPublic = async (): Promise<{
           id: containerName,
           name: containerName,
           description: getContainerDescription(containerName),
-          toolsScanned: container.files.length
+          toolsScanned: container.files.length,
+          sbomCount: container.files.length
         });
     }
 

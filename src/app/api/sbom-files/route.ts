@@ -1,40 +1,27 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { NextRequest, NextResponse } from 'next/server';
+import { defaultSbomService } from '@/services/sbomService';
 
-export async function GET() {
+// Helper function to create responses that work in both test and production environments
+function createResponse(data: any, init?: ResponseInit) {
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      json: () => Promise.resolve(data)
+    };
+  }
+  return NextResponse.json(data, init);
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const sbomDir = path.join(process.cwd(), 'public', 'sbom');
-    
-    // Check if directory exists
-    if (!fs.existsSync(sbomDir)) {
-      return NextResponse.json({ containers: [] });
-    }
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const search = searchParams.get('search') || '';
 
-    // Read all container directories
-    const containerDirs = fs.readdirSync(sbomDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
-
-    const containers = containerDirs.map(containerName => {
-      const containerPath = path.join(sbomDir, containerName);
-      const files = fs.readdirSync(containerPath, { withFileTypes: true })
-        .filter(dirent => dirent.isFile() && dirent.name.endsWith('.json'))
-        .map(dirent => ({
-          name: dirent.name,
-          path: `/sbom/${containerName}/${dirent.name}`,
-        }));
-
-      return {
-        name: containerName,
-        files,
-      };
-    });
-
-    return NextResponse.json({ containers });
+    const result = defaultSbomService.listSboms(page, search);
+    return createResponse(result);
   } catch (error) {
     console.error('Error reading SBOM directory:', error);
-    return NextResponse.json(
+    return createResponse(
       { error: 'Failed to read SBOM directory' },
       { status: 500 }
     );

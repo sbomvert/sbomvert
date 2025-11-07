@@ -16,7 +16,7 @@ import { LoadingSpinner } from './compare/components/LoadingSpinner';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
-import { loadSbomImagesFromPublic, loadSbomsForImage } from '@/lib/sbomLoader';
+import { loadSbomsFromPublic, loadSbomsForImage } from '@/lib/sbomLoader';
 import { TOOL_COLORS } from '@/lib/utils';
 
 type ViewMode = 'summary' | 'table' | 'chart';
@@ -26,12 +26,18 @@ export default function Home() {
   const [isDark, setIsDark] = useState(false);
   const [comparisonType, setComparisonType] = useState<ComparisonType>('SBOM');
   const [searchTerm, setSearchTerm] = useState('');
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [sboms, setSboms] = useState<Record<string, ISbom[]>>({});
   const [selectedTools, setSelectedTools] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Dark mode effect
   useEffect(() => {
@@ -45,34 +51,40 @@ export default function Home() {
     }
   }, [isDark]);
 
-  // Load SBOMs on mount
+  // Load data when page or search changes
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const { images: loadedImages } = await loadSbomImagesFromPublic();
-      setImages(
-        loadedImages.map(img => ({
-          ...img,
-    
-        }))
-      );
-      //setSboms(loadedSboms);
+      const { images: loadedImages, pagination } = await loadSbomsFromPublic(currentPage, searchTerm);
+      setImages(loadedImages);
+      setTotalPages(pagination.totalPages);
       setLoading(false);
     };
 
     loadData();
-  }, []);
+  }, [currentPage, searchTerm]);
 
   // Filter images based on search term
-  const filteredImages = useMemo(
-    () =>
-      images.filter(
-        img =>
-          img.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          img.description.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [images, searchTerm]
-  );
+  const filteredImages = useMemo(() => {
+    return images.filter(
+      img =>
+        img.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        img.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [images, searchTerm]);
+
+  // Load images when page or search changes
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      const { images: loadedImages, pagination } = await loadSbomsFromPublic(currentPage, searchTerm);
+      setImages(loadedImages);
+      setTotalPages(pagination.totalPages);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [currentPage, searchTerm]);
 
   // Get current image SBOMs
   const currentSboms = useMemo(() => {
@@ -110,6 +122,7 @@ export default function Home() {
     setSearchTerm('');
     setViewMode('summary');
     setSelectedTools(new Set());
+    setCurrentPage(1);
   };
 
   const handleToolToggle = (toolName: string) => {
@@ -147,8 +160,14 @@ export default function Home() {
 
         {!selectedImage && !loading && (
           <>
-            <SearchBar value={searchTerm} onChange={setSearchTerm} />
-            <ImageSelector images={filteredImages} onImageSelect={handleImageSelect} />
+            <SearchBar value={searchTerm} onChange={handleSearch} />
+            <ImageSelector
+              images={filteredImages}
+              onImageSelect={handleImageSelect}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </>
         )}
 
