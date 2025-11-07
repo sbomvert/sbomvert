@@ -15,7 +15,9 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
         statistics: comparison.statistics,
         packages: Array.from(comparison.allPackages.entries()).map(([key, value]) => ({
           key,
-          package: value.package,
+          name: value.name,
+          version: value.version,
+          packageType: value.packageType,
           foundInTools: value.foundInTools,
         })),
       };

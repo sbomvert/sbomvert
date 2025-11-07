@@ -30,7 +30,7 @@ const sample = {
 
 describe('parseSpdxSbom', () => {
   it('parses tool info and packages', () => {
-    const res = parseSpdxSbom(sample as any, 'nginx:latest');
+    const res = parseSpdxSbom(sample as any, 'nginx:latest', 'Syft');
     expect(res).not.toBeNull();
     expect(res?.toolInfo.name).toBe('Syft');
     expect(res?.toolInfo.version).toBe('1.2.3');
@@ -48,7 +48,7 @@ describe('parseSpdxSbom', () => {
 
   it('handles missing creators gracefully', () => {
     const bad = { ...sample, creationInfo: { creators: [], created: 'x' } };
-    const res = parseSpdxSbom(bad as any, 'id');
+    const res = parseSpdxSbom(bad as any, 'id', 'Unknown');
     expect(res?.toolInfo.name).toBe('Unknown');
     expect(res?.toolInfo.version).toBe('unknown');
     expect(res?.toolInfo.vendor).toBe('Unknown');

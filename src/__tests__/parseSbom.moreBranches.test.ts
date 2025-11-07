@@ -1,4 +1,5 @@
-import { parsePurl, parseSpdxSbom } from '@/lib/parseSbom';
+import { parsePurl, parseSpdxSbom } from '../lib/parseSbom';
+import { expect, test } from '@jest/globals';
 
 test('parsePurl supports subpath with #', () => {
   const res = parsePurl('pkg:npm/@scope/name@1.0.0?env=prod#/dist');
@@ -21,7 +22,7 @@ test('extractPackageType via attributionTexts PkgType:maven', () => {
       },
     ],
   };
-  const res = parseSpdxSbom(doc, 'img');
+  const res = parseSpdxSbom(doc, 'img', 'SomeToolName');
   expect(res?.packages[0].packageType).toBe('maven');
 });
 

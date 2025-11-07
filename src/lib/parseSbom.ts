@@ -86,13 +86,17 @@ const extractPackageType = (
     switch (thepurl?.type) {
       case "deb":
       case "dpkg":
+      case "apk":
         return "os"
-      case "pypi":
+      case "px§ypi":
         return "python"
       case "nuget":
         return ".net"
+      case "gem":
+        return "library"
       case "generic":
         return "generic"
+
       default:
         console.log(thepurl?.type)
         return "generic"
@@ -122,6 +126,7 @@ const extractPackageType = (
 export const parseSpdxSbom = (
   data: SpdxDocument,
   containerName: string,
+  tnameid: string
 ): ISbom | null => {
   try {
     // Extract tool info from creators
@@ -143,9 +148,8 @@ export const parseSpdxSbom = (
     const toolName  = toolBaseName
     const vendor  = tvendor? tvendor : "Unknown"
 
-
     const toolInfo: IToolInfo = {
-      name: toolName.charAt(0).toUpperCase() + toolName.slice(1),
+      name: toolName.charAt(0).toUpperCase() + toolName.slice(1) + (tnameid.includes('all') ? ' all' : ''),
       version: toolVersion,
       vendor: vendor,
       format: 'SPDX',

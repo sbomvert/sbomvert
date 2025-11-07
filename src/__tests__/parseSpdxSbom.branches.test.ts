@@ -1,4 +1,5 @@
-import { parseSpdxSbom } from '@/lib/parseSbom';
+import { parseSpdxSbom } from '../lib/parseSbom';
+import { describe, expect, it } from '@jest/globals';
 
 describe('parseSpdxSbom branch coverage', () => {
   it('normalizes license/supplier and maps APPLICATION to binary', () => {
@@ -16,7 +17,7 @@ describe('parseSpdxSbom branch coverage', () => {
         },
       ],
     };
-    const res = parseSpdxSbom(doc, 'img');
+    const res = parseSpdxSbom(doc, 'img', 'Trivy');
     expect(res?.toolInfo.name).toBe('Trivy');
     expect(res?.toolInfo.version).toBe('0.49.1');
     expect(res?.packages[0].supplier).toBeUndefined();
