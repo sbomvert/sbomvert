@@ -16,7 +16,7 @@ import { LoadingSpinner } from './compare/components/LoadingSpinner';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
-import { loadSbomsFromPublic } from '@/lib/sbomLoader';
+import { loadSbomImagesFromPublic, loadSbomsForImage } from '@/lib/sbomLoader';
 import { TOOL_COLORS } from '@/lib/utils';
 
 type ViewMode = 'summary' | 'table' | 'chart';
@@ -49,14 +49,14 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const { images: loadedImages, sboms: loadedSboms } = await loadSbomsFromPublic();
+      const { images: loadedImages } = await loadSbomImagesFromPublic();
       setImages(
         loadedImages.map(img => ({
           ...img,
-          toolCount: loadedSboms[img.id]?.length || 0,
+    
         }))
       );
-      setSboms(loadedSboms);
+      //setSboms(loadedSboms);
       setLoading(false);
     };
 
@@ -97,7 +97,10 @@ export default function Home() {
     return compareMultipleTools(filteredSboms);
   }, [currentSboms, selectedTools]);
 
-  const handleImageSelect = (imageId: string) => {
+  const handleImageSelect = async (imageId: string) => {
+    const thesboms = await loadSbomsForImage(imageId)
+    console.log(thesboms)
+    setSboms(thesboms.sboms)
     setSelectedImage(imageId);
     setViewMode('summary');
   };
