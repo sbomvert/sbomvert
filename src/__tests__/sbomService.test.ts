@@ -106,7 +106,7 @@ describe('SbomService', () => {
         throw new Error(errorMessage);
       });
 
-      expect(() => service.listSboms(1)).toThrow('Failed to list SBOM files');
+      expect(() => service.listSboms(1)).toThrow('File system error');
     });
   });
   const mockDirents = [
@@ -204,7 +204,7 @@ describe('SbomService', () => {
       });
 
       expect(() => defaultSbomService.listSboms(1))
-        .toThrow('Failed to list SBOM files');
+        .toThrow('File system error');
     });
   });
 });

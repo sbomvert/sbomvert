@@ -1,5 +1,8 @@
 import '@testing-library/jest-dom';
 
+// Set test environment
+process.env.NODE_ENV = 'test';
+
 // Mock next/server components
 jest.mock('next/server', () => ({
   NextResponse: {

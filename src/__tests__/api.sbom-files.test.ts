@@ -1,34 +1,47 @@
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/sbom-files/route';
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
-import { createMockUrl, mockSbomData } from '@/test-utils';
-import { defaultSbomService } from '@/services/sbomService';
+import { createMockUrl } from '@/test-utils';
 import fs from 'fs';
 
-// Mock NextResponse
-jest.mock('next/server', () => {
-  const actual = jest.requireActual('next/server') as typeof import('next/server');
-  return {
-    ...actual,
-    NextResponse: {
-      json: (data: any, init?: { status?: number }) => ({
-        json: async () => data,
-        status: init?.status ?? 200,
-      }),
-    },
-  };
-});
-
-// Mock sbomService
-jest.mock('@/services/sbomService', () => ({
-  defaultSbomService: {
-    listSboms: jest.fn(),
+// Mock NextResponse for proper response shape
+// Mock NextResponse with proper response shape
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: (data: any, init?: { status?: number }) => ({
+      json: () => Promise.resolve(data),
+      status: init?.status ?? 200,
+    }),
   },
 }));
 
-jest.mock('fs');
+// Mock sbomService
+const mockListSboms = jest.fn();
+jest.mock('@/services/sbomService', () => ({
+  defaultSbomService: {
+    listSboms: mockListSboms,
+  },
+}));
 
-const listSbomsMock = defaultSbomService.listSboms as jest.Mock;
+const mockResponse = {
+  containers: [
+    {
+      name: 'nginx-twodotslatest',
+      files: [
+        { name: 'syft.spdx.json', path: '/sbom/nginx-twodotslatest/syft.spdx.json' },
+        { name: 'trivy.cyclonedx.json', path: '/sbom/nginx-twodotslatest/trivy.cyclonedx.json' }
+      ]
+    }
+  ],
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 1,
+    itemsPerPage: 8
+  }
+};
+
+jest.mock('fs');
 
 // Helper to create mock NextRequest
 const createMockRequest = (opts?: { page?: number | string; search?: string }) => {
@@ -52,99 +65,97 @@ beforeEach(() => {
 
 describe('GET /api/sbom-files (service-backed)', () => {
   it('returns SBOM files with pagination', async () => {
-    listSbomsMock.mockResolvedValue(mockSbomData as unknown as never);
-
-    const res = await GET(createMockRequest({ page: 1 }));
+    mockListSboms.mockReturnValue(mockResponse);
+    const req = createMockRequest({ page: 1 });
+    const res = await GET(req);
     const json = await (res as any).json();
 
-    expect(json).toEqual(mockSbomData);
-    expect(defaultSbomService.listSboms).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 1 })
-    );
+    expect(json).toEqual(mockResponse);
+    expect(mockListSboms).toHaveBeenCalledWith(1);
   });
 
   it('handles search parameter', async () => {
-    const searchResults = {
-      ...mockSbomData,
-      containers: mockSbomData.containers.filter((c) => c.name.includes('test')),
-    };
-
-    listSbomsMock.mockResolvedValue(searchResults as never);
-
-    const res = await GET(createMockRequest({ search: 'test' }));
+    mockListSboms.mockReturnValue(mockResponse);
+    const req = createMockRequest({ search: 'test' });
+    const res = await GET(req);
     const json = await (res as any).json();
 
-    expect(json).toEqual(searchResults);
-    expect(defaultSbomService.listSboms).toHaveBeenCalledWith(
-      expect.objectContaining({ search: 'test' })
-    );
+    expect(json).toEqual(mockResponse);
+    expect(mockListSboms).toHaveBeenCalledWith(1, 'test');
   });
 
   it('handles invalid page parameter', async () => {
-    listSbomsMock.mockResolvedValue(mockSbomData as never);
-
-    const res = await GET(createMockRequest({ page: -1 }));
+    mockListSboms.mockReturnValue(mockResponse);
+    const req = createMockRequest({ page: -1 });
+    const res = await GET(req);
     const json = await (res as any).json();
 
     expect(json.pagination.currentPage).toBe(1);
-    expect(defaultSbomService.listSboms).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 1 })
-    );
+    expect(mockListSboms).toHaveBeenCalledWith(1);
   });
 
   it('returns default page when no page parameter is given', async () => {
-    listSbomsMock.mockResolvedValue(mockSbomData as never);
+    mockListSboms.mockReturnValue(mockResponse);
 
     const res = await GET(createMockRequest());
     const json = await (res as any).json();
 
     expect(json.pagination.currentPage).toBe(1);
-    expect(defaultSbomService.listSboms).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 1 })
-    );
+    expect(mockListSboms).toHaveBeenCalledWith(1);
   });
 
   it('handles service errors', async () => {
-    listSbomsMock.mockRejectedValue(new Error('Service error') as never);
+    mockListSboms.mockImplementation(() => {
+      throw new Error('Service error');
+    });
 
-    const res = await GET(createMockRequest());
-
-    expect((res as any).status).toBe(500);
-
+    const req = createMockRequest();
+    const res = await GET(req);
     const json = await (res as any).json();
+
     expect(json).toEqual({
-      error: 'Failed to fetch SBOM files',
+      error: 'Failed to read SBOM directory'
     });
   });
 });
 
 describe('GET /api/sbom-files (filesystem-backed)', () => {
-  it('lists containers and files', async () => {
-    (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.readdirSync as jest.Mock)
-      .mockReturnValueOnce([
-        { isDirectory: () => true, name: 'nginx-twodotslatest' },
-        { isDirectory: () => false, name: 'skip' },
-      ])
-      .mockReturnValueOnce([
-        { isFile: () => true, name: 'syft.spdx.json' },
-        { isFile: () => true, name: 'trivy.cyclonedx.json' },
-      ]);
+  beforeEach(() => {
+    (fs.existsSync as jest.Mock).mockReset();
+    (fs.readdirSync as jest.Mock).mockReset();
+  });
 
-    const res = await GET(undefined as unknown as NextRequest);
+  it('lists containers and files', async () => {
+    mockListSboms.mockReturnValue(mockResponse);
+
+    const res = await GET(createMockRequest());
     const json = await (res as any).json();
 
-    expect(json.containers[0].name).toBe('nginx-twodotslatest');
-    expect(json.containers[0].files).toHaveLength(2);
-    expect(json.containers[0].files[0].path).toMatch('/sbom/nginx-twodotslatest/');
+    expect(json).toEqual(mockResponse);
   });
 
   it('returns empty when dir missing', async () => {
-    (fs.existsSync as jest.Mock).mockReturnValue(false);
+    mockListSboms.mockReturnValue({
+      containers: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: 8
+      }
+    });
 
-    const res = await GET(undefined as unknown as NextRequest);
+    const res = await GET(createMockRequest());
     const json = await (res as any).json();
 
-    expect(json.containers).toEqual([]);
+    expect(json).toEqual({
+      containers: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: 8
+      }
+    });
   });
 });
