@@ -6,7 +6,7 @@ test('fires logo and theme actions', () => {
   const onLogo = jest.fn();
   const onToggle = jest.fn();
   render(<Navbar isDark={false} toggleTheme={onToggle} onLogoClick={onLogo} />);
-  fireEvent.click(screen.getByText('SBOM Comparator'));
+  fireEvent.click(screen.getByText('SBOMVert'));
   expect(onLogo).toHaveBeenCalled();
   fireEvent.click(screen.getByLabelText('Toggle theme'));
   expect(onToggle).toHaveBeenCalled();

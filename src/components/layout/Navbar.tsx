@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package } from 'lucide-react';
+import { Languages } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 interface NavbarProps {
@@ -21,8 +21,8 @@ export const Navbar: React.FC<NavbarProps> = ({ isDark, toggleTheme, onLogoClick
             onClick={onLogoClick}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <Package className="text-indigo-600 dark:text-indigo-400" size={32} />
-            <h1 className="text-xl font-bold dark:text-white">SBOM Comparator</h1>
+            <Languages className="text-indigo-600 dark:text-indigo-400" size={32} />
+            <h1 className="text-xl font-bold dark:text-white">SBOMVert</h1>
           </button>
           <ThemeToggle isDark={isDark} toggle={toggleTheme} />
         </div>
