@@ -16,7 +16,7 @@ import { LoadingSpinner } from './compare/components/LoadingSpinner';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
-import { loadSbomsFromPublic, loadSbomsForImage } from '@/lib/sbomLoader';
+import { loadSbomImagesFromPublic, loadSbomsForImage } from '@/lib/sbomLoader';
 import { TOOL_COLORS } from '@/lib/utils';
 
 type ViewMode = 'summary' | 'table' | 'chart';
@@ -55,7 +55,7 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const { images: loadedImages, pagination } = await loadSbomsFromPublic(currentPage, searchTerm);
+      const { images: loadedImages, pagination } = await loadSbomImagesFromPublic(currentPage, searchTerm);
       setImages(loadedImages);
       setTotalPages(pagination.totalPages);
       setLoading(false);
@@ -77,7 +77,7 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const { images: loadedImages, pagination } = await loadSbomsFromPublic(currentPage, searchTerm);
+      const { images: loadedImages, pagination } = await loadSbomImagesFromPublic(currentPage, searchTerm);
       setImages(loadedImages);
       setTotalPages(pagination.totalPages);
       setLoading(false);

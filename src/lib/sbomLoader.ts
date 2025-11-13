@@ -13,101 +13,6 @@ interface ImageInfo {
   sbomCount: number;
 }
 
-// Convert container folder name to display name
-const formatContainerName = (folderName: string): string => {
-  return folderName.replace(/-?twodots/g, ':').replace(/-?dash/g, '-').replace(/-?slash/g, '/');
-};
-
-const reverseFormatContainerName = (formattedName: string): string => {
-  return formattedName
-    .replace(/:/g, 'twodots')
-    .replace(/-/g, 'dash')
-    .replace(/\//g, 'slash'); 
-};
-
-
-// Extract container description based on name
-const getContainerDescription = (containerName: string): string => {
-  const lowerName = containerName.toLowerCase();
-
-  if (lowerName.includes('nginx')) return 'Popular web server';
-  if (lowerName.includes('node')) return 'Node.js runtime';
-  if (lowerName.includes('postgres')) return 'PostgreSQL database';
-  if (lowerName.includes('redis')) return 'Redis cache';
-  if (lowerName.includes('python')) return 'Python runtime';
-  if (lowerName.includes('alpine')) return 'Alpine Linux base';
-  if (lowerName.includes('ubuntu')) return 'Ubuntu base image';
-
-  return 'Container image';
-};
-
-
-
-export const loadSbomsForImage = async (image: string): Promise<{
-  sboms: ContainerSboms;
-}> => {
-  try {
-   const reformatName = reverseFormatContainerName(image)
-
-    const sboms: ContainerSboms = {};
-    // Fetch the directory structure from API
-    const response = await fetch(`/api/sbom/image?name=${reformatName}`);
-    console.log(response)
-    if (!response.ok) {
-      console.error('Failed to fetch SBOM files list');
-      return { sboms: {} };
-    }
-    const { files } = await response.json();
-    console.log(files)
-    // Load SBOMs for each container
-      const sbomList: ISbom[] = [];
-
-      for (const file of files) {
-        try {
-          const filePath = `/sbom/${reformatName}/${file.name}`;
-          const sbomResponse = await fetch(filePath);
-
-          if (!sbomResponse.ok) {
-            console.warn(`Failed to load SBOM: ${filePath}`);
-            continue;
-          }
-
-          const sbomData = await sbomResponse.json();
-
-          // Determine tool name and format from filename
-          const nameParts = file.name.split('.');
-          const toolName = nameParts[0];
-          const format = nameParts[1]?.toUpperCase();
-
-          let parsedSbom: ISbom | null = null;
-
-          if (format === 'SPDX') {
-            parsedSbom = parseSpdxSbom(sbomData, image,file.name);
-          } else if (format === 'CYCLONEDX') {
-            parsedSbom = parseCycloneDxSbom(sbomData, image, toolName);
-          }
-
-          if (parsedSbom) {
-            sbomList.push(parsedSbom);
-          }
-        } catch (error) {
-          console.error(`Error loading SBOM ${file.name}:`, error);
-        }
-      }
-
-      if (sbomList.length > 0) {
-   
-        sboms[image] = sbomList;
-      }
-
-    return { sboms };
-  } catch (error) {
-    console.error('Error loading SBOMs:', error);
-    return { sboms: {} };
-  }
-};
-
-
 interface PaginationInfo {
   currentPage: number;
   totalPages: number;
@@ -115,126 +20,120 @@ interface PaginationInfo {
   itemsPerPage: number;
 }
 
-export const loadSbomsFromPublic = async (
+// --- Name format helpers ---
+const formatContainerName = (folderName: string): string => {
+  return folderName
+    .replace(/-?twodots/g, ':')
+    .replace(/-?dash/g, '-')
+    .replace(/-?slash/g, '/');
+};
+
+const reverseFormatContainerName = (formattedName: string): string => {
+  return formattedName
+    .replace(/:/g, 'twodots')
+    .replace(/-/g, 'dash')
+    .replace(/\//g, 'slash');
+};
+
+// --- Description helper ---
+const getContainerDescription = (containerName: string): string => {
+  const lower = containerName.toLowerCase();
+  if (lower.includes('nginx')) return 'Popular web server';
+  if (lower.includes('node')) return 'Node.js runtime';
+  if (lower.includes('postgres')) return 'PostgreSQL database';
+  if (lower.includes('redis')) return 'Redis cache';
+  if (lower.includes('python')) return 'Python runtime';
+  if (lower.includes('alpine')) return 'Alpine Linux base';
+  if (lower.includes('ubuntu')) return 'Ubuntu base image';
+  return 'Container image';
+};
+
+// --- NEW: Load only image list (no SBOMs yet) ---
+export const loadSbomImagesFromPublic = async (
   page: number = 1,
   search: string = ''
 ): Promise<{
   images: ImageInfo[];
-  sboms: ContainerSboms;
   pagination: PaginationInfo;
 }> => {
   try {
-    // Fetch the directory structure from API
-    const response = await fetch(`/api/sbom-files?page=${page}&search=${encodeURIComponent(search)}`);
+    const response = await fetch(
+      `/api/sbom-files?page=${page}&search=${encodeURIComponent(search)}`
+    );
 
     if (!response.ok) {
-      console.error('Failed to fetch SBOM files list');
-      return { 
-        images: [], 
-        sboms: {},
-        pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 }
+      console.error('Failed to fetch SBOM image list');
+      return {
+        images: [],
+        pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 },
       };
     }
 
     const { containers, pagination } = await response.json();
 
-    const images: ImageInfo[] = [];
-    const sboms: ContainerSboms = {};
-
-    // Load SBOMs for each container
-    for (const container of containers) {
+    const images: ImageInfo[] = containers.map((container: any) => {
       const containerName = formatContainerName(container.name);
-      const sbomList: ISbom[] = [];
+      return {
+        id: containerName,
+        name: containerName,
+        description: getContainerDescription(containerName),
+        toolsScanned: container.files.length,
+        sbomCount: container.files.length,
+      };
+    });
 
-      for (const file of container.files) {
-        try {
-          const filePath = `/sbom/${container.name}/${file.name}`;
-          const sbomResponse = await fetch(filePath);
-
-          if (!sbomResponse.ok) {
-            console.warn(`Failed to load SBOM: ${filePath}`);
-            continue;
-          }
-
-          const sbomData = await sbomResponse.json();
-
-          // Determine tool name and format from filename
-          const nameParts = file.name.split('.');
-          const toolName = nameParts[0];
-          const format = nameParts[1]?.toUpperCase();
-
-          let parsedSbom: ISbom | null = null;
-
-          if (format === 'SPDX') {
-            parsedSbom = parseSpdxSbom(sbomData, containerName, toolName || 'Unknown');
-          } else if (format === 'CYCLONEDX') {
-            parsedSbom = parseCycloneDxSbom(sbomData, containerName, toolName);
-          }
-
-          if (parsedSbom) {
-            sbomList.push(parsedSbom);
-          }
-        } catch (error) {
-          console.error(`Error loading SBOM ${file.name}:`, error);
-        }
-      }
-
-      if (sbomList.length > 0) {
-        images.push({
-          id: containerName,
-          name: containerName,
-          description: getContainerDescription(containerName),
-          toolsScanned: container.files.length,
-          sbomCount: sbomList.length
-        });
-        sboms[containerName] = sbomList;
-      }
-    }
-
-    return { images, sboms, pagination };
+    return { images, pagination };
   } catch (error) {
-    console.error('Error loading SBOMs:', error);
-    return { 
-      images: [], 
-      sboms: {},
-      pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 }
+    console.error('Error loading image list:', error);
+    return {
+      images: [],
+      pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 },
     };
   }
 };
 
-export const loadSbomImagesFromPublic = async (): Promise<{
-  images: ImageInfo[];
+// --- Existing: Load SBOMs for a single image when clicked ---
+export const loadSbomsForImage = async (image: string): Promise<{
+  sboms: ContainerSboms;
 }> => {
   try {
-    // Fetch the directory structure from API
-    const response = await fetch('/api/sbom-files');
+    const reformatName = reverseFormatContainerName(image);
+    const sboms: ContainerSboms = {};
 
+    const response = await fetch(`/api/sbom/image?name=${reformatName}`);
     if (!response.ok) {
       console.error('Failed to fetch SBOM files list');
-      return { images: [] };
+      return { sboms: {} };
     }
 
-    const { containers } = await response.json();
+    const { files } = await response.json();
+    const sbomList: ISbom[] = [];
 
-    const images: ImageInfo[] = [];
+    for (const file of files) {
+      try {
+        const filePath = `/sbom/${reformatName}/${file.name}`;
+        const sbomResponse = await fetch(filePath);
+        if (!sbomResponse.ok) continue;
 
-    // Load SBOMs for each container
-    for (const container of containers) {
-      const containerName = formatContainerName(container.name);
- 
+        const sbomData = await sbomResponse.json();
+        const nameParts = file.name.split('.');
+        const toolName = nameParts[0];
+        const format = nameParts[1]?.toUpperCase();
 
-        images.push({
-          id: containerName,
-          name: containerName,
-          description: getContainerDescription(containerName),
-          toolsScanned: container.files.length,
-          sbomCount: container.files.length
-        });
+        let parsedSbom: ISbom | null = null;
+        if (format === 'SPDX') parsedSbom = parseSpdxSbom(sbomData, image, toolName);
+        else if (format === 'CYCLONEDX') parsedSbom = parseCycloneDxSbom(sbomData, image, toolName);
+
+        if (parsedSbom) sbomList.push(parsedSbom);
+      } catch (error) {
+        console.error(`Error loading SBOM ${file.name}:`, error);
+      }
     }
 
-    return { images };
+    if (sbomList.length > 0) sboms[image] = sbomList;
+    return { sboms };
   } catch (error) {
     console.error('Error loading SBOMs:', error);
-    return { images: [] };
+    return { sboms: {} };
   }
 };

@@ -27,6 +27,8 @@ export async function GET(request: Request) {
           path: `/sbom/${container}/${dirent.name}`,
         }));
 
+       console.log(files)
+       
  
 
     return NextResponse.json({ files });
