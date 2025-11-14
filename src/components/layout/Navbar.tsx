@@ -1,14 +1,16 @@
+"use client";
+
 import React from 'react';
-import { Languages } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useRouter } from 'next/navigation';
+import { useTheme } from '@/hooks/useTheme';
 
-interface NavbarProps {
-  isDark: boolean;
-  toggleTheme: () => void;
-  onLogoClick: () => void;
-}
+export const Navbar: React.FC = () => {
+  const router = useRouter();
+  const { isDark, toggleTheme } = useTheme();
 
-export const Navbar: React.FC<NavbarProps> = ({ isDark, toggleTheme, onLogoClick }) => {
+  const onLogoClick = () => router.push("/");
+
   return (
     <nav
       className={`shadow-sm border-b transition-colors duration-300 ${
@@ -21,9 +23,13 @@ export const Navbar: React.FC<NavbarProps> = ({ isDark, toggleTheme, onLogoClick
             onClick={onLogoClick}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <Languages className="text-indigo-600 dark:text-indigo-400" size={32} />
-            <h1 className="text-xl font-bold dark:text-white">SBOMVert</h1>
+            <img src="/logo.svg" alt="logo" className="w-8 h-8" />
+
+            <h1 className="text-xl font-bold text-foreground dark:text-white">
+              SBOMVert
+            </h1>
           </button>
+
           <ThemeToggle isDark={isDark} toggle={toggleTheme} />
         </div>
       </div>
