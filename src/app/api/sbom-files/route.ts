@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { defaultSbomService } from '@/services/sbomService';
+import { LocalSbomService } from '@/services/localSbomService';
 
 // Helper function to create responses that work in both test and production environments
+
+const sbomService = new LocalSbomService('./public/sbom', 20);
+
 function createResponse(data: any, init?: ResponseInit) {
   if (process.env.NODE_ENV === 'test') {
     return {
@@ -17,7 +20,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const search = searchParams.get('search') || '';
 
-    const result = defaultSbomService.listSboms(page, search);
+    const result = await sbomService.listSboms(page, search);
     return createResponse(result);
   } catch (error) {
     console.error('Error reading SBOM directory:', error);

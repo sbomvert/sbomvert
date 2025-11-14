@@ -1,8 +1,8 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
-import { SbomService } from '@/services/sbomService';
+import { SbomService } from '@/services/localSbomService';
 import fs from 'fs';
 import path from 'path';
-import { defaultSbomService } from '@/services/sbomService';
+import { defaultSbomService } from '@/services/localSbomService';
 // Mock fs module
 jest.mock('fs', () => ({
   existsSync: jest.fn(),

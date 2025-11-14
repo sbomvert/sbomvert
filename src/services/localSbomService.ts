@@ -1,29 +1,16 @@
 import fs from 'fs';
 import path from 'path';
+import type {
+  ISbomService,
+  SbomFile,
+  Container,
+  SbomListResponse,
+} from './sbomService.types';
 
-export interface SbomFile {
-  name: string;
-  path: string;
-}
-
-export interface Container {
-  name: string;
-  files: SbomFile[];
-}
-
-export interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  itemsPerPage: number;
-}
-
-export interface SbomListResponse {
-  containers: Container[];
-  pagination: PaginationInfo;
-}
-
-export class SbomService {
+/**
+ * Local file system implementation of SBOM service
+ */
+export class LocalSbomService implements ISbomService {
   private readonly sbomDir: string;
   private readonly itemsPerPage: number;
 
@@ -42,7 +29,7 @@ export class SbomService {
       .map(dirent => dirent.name);
 
     if (search) {
-      return dirs.filter(name => 
+      return dirs.filter(name =>
         name.toLowerCase().includes(search.toLowerCase())
       );
     }
@@ -51,15 +38,27 @@ export class SbomService {
 
   private getContainerFiles(containerName: string): SbomFile[] {
     const containerPath = path.join(this.sbomDir, containerName);
-    return fs.readdirSync(containerPath, { withFileTypes: true })
-      .filter(dirent => dirent.isFile() && dirent.name.endsWith('.json'))
-      .map(dirent => ({
-        name: dirent.name,
-        path: `/sbom/${containerName}/${dirent.name}`,
-      }));
+    
+    try {
+      return fs.readdirSync(containerPath, { withFileTypes: true })
+        .filter(dirent => dirent.isFile() && dirent.name.endsWith('.json'))
+        .map(dirent => {
+          const filePath = path.join(containerPath, dirent.name);
+          const stats = fs.statSync(filePath);
+          return {
+            name: dirent.name,
+            path: `/sbom/${containerName}/${dirent.name}`,
+            size: stats.size,
+            lastModified: stats.mtime,
+          };
+        });
+    } catch (error) {
+      console.error(`Error reading container ${containerName}:`, error);
+      return [];
+    }
   }
 
-  listSboms(page: number = 1, search?: string): SbomListResponse {
+  async listSboms(page: number = 1, search?: string): Promise<SbomListResponse> {
     if (!this.checkDirectoryExists()) {
       return {
         containers: [],
@@ -74,13 +73,13 @@ export class SbomService {
 
     const containerDirs = this.getContainerDirs(search);
     const totalItems = containerDirs.length;
-    const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+    const totalPages = Math.ceil(totalItems / this.itemsPerPage) || 1;
     const currentPage = Math.max(1, Math.min(page, totalPages));
     const startIndex = (currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-
     const paginatedDirs = containerDirs.slice(startIndex, endIndex);
-    const containers = paginatedDirs.map(name => ({
+
+    const containers: Container[] = paginatedDirs.map(name => ({
       name,
       files: this.getContainerFiles(name)
     }));
@@ -96,8 +95,3 @@ export class SbomService {
     };
   }
 }
-
-// Create default instance with standard configuration
-export const defaultSbomService = new SbomService(
-  path.join(process.cwd(), 'public', 'sbom')
-);
