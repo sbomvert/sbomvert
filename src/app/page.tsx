@@ -3,14 +3,18 @@
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
+import { useState } from 'react';
+import { ContactModal } from './compare/components/ContactModal';
 
 export default function HomePage() {
   const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
       {/* Navbar */}
       <Navbar />
+      <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
       {/* Hero Section */}
       <main className="flex-grow flex flex-col items-center justify-center text-center px-6 py-16">
@@ -41,7 +45,7 @@ export default function HomePage() {
         >
           {/* Neutral button */}
           <button
-            onClick={() => alert('Talk to an expert — coming soon!')}
+                        onClick={() => setModalOpen(true)}
             className="px-6 py-3 text-lg font-medium rounded-xl 
                        bg-input text-foreground 
                        border border-border
