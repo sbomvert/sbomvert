@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Package, CheckCircle, Info, AlertTriangle } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -18,7 +17,6 @@ import {
 } from 'recharts';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 
-import Heatmap from './HeatMap';
 interface MultiToolSummaryProps {
   comparison: IMultiToolComparison;
 }
@@ -31,7 +29,7 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
     color: ['#4f46e5', '#10b981', '#f59e0b'][idx],
   }));
 
-  const radarData = comparison.tools.map((tool, idx) => {
+  const radarData = comparison.tools.map((tool) => {
     const total = comparison.statistics.toolCounts[tool.name];
     const unique = comparison.statistics.uniquePerTool[tool.name];
     const common = total - unique;

@@ -24,12 +24,11 @@ interface PaginationInfo {
 const formatContainerName = (folderName: string): string => {
   return folderName
     .replace(/-?twodots/g, ':')
-    .replace(/-?dash/g, '-')
     .replace(/-?slash/g, '/');
 };
 
 const reverseFormatContainerName = (formattedName: string): string => {
-  return formattedName.replace(/:/g, 'twodots').replace(/-/g, 'dash').replace(/\//g, 'slash');
+  return formattedName.replace(/:/g, 'twodots').replace(/\//g, 'slash');
 };
 
 // --- Description helper ---
@@ -104,7 +103,7 @@ export const loadSbomsForImage = async (
       console.error('Failed to fetch SBOM files list');
       return { sboms: {} };
     }
-
+    console.log(response)
     const { files } = await response.json();
     const sbomList: ISbom[] = [];
 

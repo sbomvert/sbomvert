@@ -14,7 +14,7 @@ export interface IPackageComparison {
   // Common attributes (same across all tools)
   name: string;
   version: string;
-  packageType?: ISbomPackage['packageType'];
+  packageType: ISbomPackage['packageType'];
 
   // Tools that detected this package
   foundInTools: string[];

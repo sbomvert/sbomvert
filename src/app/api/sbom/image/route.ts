@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET(request: Request) {
+  //console.log(request)
   const { searchParams } = new URL(request.url);
   const container = searchParams.get('name');
   if (container === null) {
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   }
   try {
     const sbomDir = path.join(process.cwd(), 'public', 'sbom', container ?? '');
-
+    console.log(sbomDir)
     // Check if directory exists
     if (!fs.existsSync(sbomDir)) {
       return NextResponse.json({ containers: [] });

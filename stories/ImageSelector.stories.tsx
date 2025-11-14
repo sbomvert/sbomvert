@@ -14,10 +14,10 @@ export default meta;
 type Story = StoryObj<typeof ImageSelector>;
 
 const mockImages = [
-  { id: 'nginx:1.21', name: 'nginx:1.21', description: 'Popular web server', toolCount: 3 },
-  { id: 'node:18-alpine', name: 'node:18-alpine', description: 'Node.js runtime', toolCount: 3 },
-  { id: 'postgres:14', name: 'postgres:14', description: 'PostgreSQL database', toolCount: 2 },
-  { id: 'redis:7-alpine', name: 'redis:7-alpine', description: 'Redis cache', toolCount: 2 },
+  { id: 'nginx:1.21', name: 'nginx:1.21', description: 'Popular web server', toolCount: 3,sbomCount: 3 },
+  { id: 'node:18-alpine', name: 'node:18-alpine', description: 'Node.js runtime', toolCount: 3 ,sbomCount: 3},
+  { id: 'postgres:14', name: 'postgres:14', description: 'PostgreSQL database', toolCount: 2 ,sbomCount: 2},
+  { id: 'redis:7-alpine', name: 'redis:7-alpine', description: 'Redis cache', toolCount: 2 ,sbomCount: 2},
 ];
 
 export const WithImages: Story = {

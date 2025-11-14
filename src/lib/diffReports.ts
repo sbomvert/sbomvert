@@ -1,4 +1,4 @@
-import { ISbom } from '@/models/ISbom';
+import { ISbom, ISbomPackage } from '@/models/ISbom';
 import {
   IMultiToolComparison,
   IPackageComparison,
@@ -14,8 +14,11 @@ const extractMetadata = (pkg: ISbom['packages'][0]): IPackageMetadata => ({
 });
 
 const getUniqueValues = (values: (string | undefined)[]): string[] => {
-  const unique = new Set(values.filter(v => v !== undefined && v !== ''));
-  return Array.from(unique);
+  const unique: Set<string> = new Set(
+  values.filter((v): v is string => v !== undefined && v !== '')
+);
+  const arr = Array.from(unique)
+  return arr ?? [];
 };
 
 export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
@@ -24,7 +27,7 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
     {
       name: string;
       version: string;
-      packageType?: string;
+      packageType: ISbomPackage['packageType'];
       foundInTools: string[];
       metadataByTool: Map<string, IPackageMetadata>;
     }

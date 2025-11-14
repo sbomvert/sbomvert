@@ -68,12 +68,18 @@ export default function Home() {
   // ------------------------------------------------------------
   // Load SBOMs for selected image
   // ------------------------------------------------------------
-  const handleImageSelect = async (imageId: string) => {
+const handleImageSelect = async (imageId: string) => {
+  try {
+    console.log("HERERER")
     const thesboms = await loadSbomsForImage(imageId);
     setSboms(thesboms.sboms);
     setSelectedImage(imageId);
     setViewMode('summary');
-  };
+    setSelectedTools(new Set()); // Reset selected tools on new image selection
+  } catch (error) {
+    console.error('Error loading SBOM for image:', error);
+  }
+};
 
   // ------------------------------------------------------------
   // Get SBOMs for the currently selected image

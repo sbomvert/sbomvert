@@ -227,9 +227,9 @@ export const parseSpdxSbom = (
 };
 
 export const parseCycloneDxSbom = (
-  data: unknown,
-  containerName: string,
-  toolName: string
+  _data: unknown,
+  _containerName: string,
+  _toolName: string
 ): ISbom | null => {
   // Placeholder for CycloneDX parsing
   // Will be implemented when CycloneDX files are provided

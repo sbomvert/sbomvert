@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { ResponsiveContainer } from 'recharts';
 
 export type HeatmapDatum = {
   x: string;
