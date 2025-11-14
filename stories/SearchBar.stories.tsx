@@ -16,14 +16,14 @@ type Story = StoryObj<typeof SearchBar>;
 export const Default: Story = {
   args: {
     value: '',
-    onChange: (value) => console.log('Search:', value),
+    onChange: value => console.log('Search:', value),
   },
 };
 
 export const WithValue: Story = {
   args: {
     value: 'nginx',
-    onChange: (value) => console.log('Search:', value),
+    onChange: value => console.log('Search:', value),
   },
 };
 
@@ -31,6 +31,6 @@ export const CustomPlaceholder: Story = {
   args: {
     value: '',
     placeholder: 'Search for images...',
-    onChange: (value) => console.log('Search:', value),
+    onChange: value => console.log('Search:', value),
   },
 };

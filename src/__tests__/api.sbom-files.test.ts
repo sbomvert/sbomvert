@@ -29,16 +29,16 @@ const mockResponse = {
       name: 'nginx-twodotslatest',
       files: [
         { name: 'syft.spdx.json', path: '/sbom/nginx-twodotslatest/syft.spdx.json' },
-        { name: 'trivy.cyclonedx.json', path: '/sbom/nginx-twodotslatest/trivy.cyclonedx.json' }
-      ]
-    }
+        { name: 'trivy.cyclonedx.json', path: '/sbom/nginx-twodotslatest/trivy.cyclonedx.json' },
+      ],
+    },
   ],
   pagination: {
     currentPage: 1,
     totalPages: 1,
     totalItems: 1,
-    itemsPerPage: 20
-  }
+    itemsPerPage: 20,
+  },
 };
 
 jest.mock('fs');
@@ -114,7 +114,7 @@ describe('GET /api/sbom-files (service-backed)', () => {
     const json = await (res as any).json();
 
     expect(json).toEqual({
-      error: 'Failed to read SBOM directory'
+      error: 'Failed to read SBOM directory',
     });
   });
 });
@@ -141,8 +141,8 @@ describe('GET /api/sbom-files (filesystem-backed)', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 20
-      }
+        itemsPerPage: 20,
+      },
     });
 
     const res = await GET(createMockRequest());
@@ -154,8 +154,8 @@ describe('GET /api/sbom-files (filesystem-backed)', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 20
-      }
+        itemsPerPage: 20,
+      },
     });
   });
 });

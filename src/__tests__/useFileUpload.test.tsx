@@ -36,5 +36,3 @@ describe('useFileUpload', () => {
     expect(result.current.error).toBeNull();
   });
 });
-
-

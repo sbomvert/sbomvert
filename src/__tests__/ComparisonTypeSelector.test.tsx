@@ -17,5 +17,3 @@ test('renders disabled CVE button', () => {
   render(<ComparisonTypeSelector comparisonType="SBOM" onComparisonTypeChange={() => {}} />);
   expect(screen.getByText(/CVE Comparison/)).toBeDisabled();
 });
-
-

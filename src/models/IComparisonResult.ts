@@ -15,13 +15,13 @@ export interface IPackageComparison {
   name: string;
   version: string;
   packageType?: ISbomPackage['packageType'];
-  
+
   // Tools that detected this package
   foundInTools: string[];
-  
+
   // Metadata per tool (may differ)
   metadataByTool: Map<string, IPackageMetadata>;
-  
+
   // Consolidated metadata (for display)
   hasMetadataConflicts: boolean;
   uniqueSuppliers: string[];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
 import { ImageSelector } from '@/app/compare/components/ImageSelector';
-import { jest,describe,it,expect } from '@jest/globals';
+import { jest, describe, it, expect } from '@jest/globals';
 
 jest.mock('framer-motion', () => ({
   motion: { div: (p: any) => <div {...p} />, button: (p: any) => <button {...p} /> },
@@ -9,7 +9,15 @@ jest.mock('framer-motion', () => ({
 
 describe('ImageSelector', () => {
   it('renders empty state', () => {
-    render(<ImageSelector images={[]} onImageSelect={() => {}} onPageChange={() => {}} currentPage={0} totalPages={10} />);
+    render(
+      <ImageSelector
+        images={[]}
+        onImageSelect={() => {}}
+        onPageChange={() => {}}
+        currentPage={0}
+        totalPages={10}
+      />
+    );
     expect(screen.getByText(/No container images found/i)).not.toBeNull();
   });
 
@@ -17,7 +25,10 @@ describe('ImageSelector', () => {
     const onImageSelect = jest.fn();
     render(
       <ImageSelector
-        images={[{ id: 'nginx:latest', name: 'nginx:latest', description: 'desc', sbomCount: 3 }]} currentPage={0} totalPages={10} onPageChange={onImageSelect}
+        images={[{ id: 'nginx:latest', name: 'nginx:latest', description: 'desc', sbomCount: 3 }]}
+        currentPage={0}
+        totalPages={10}
+        onPageChange={onImageSelect}
         onImageSelect={onImageSelect}
       />
     );

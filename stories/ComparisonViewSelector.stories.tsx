@@ -16,20 +16,20 @@ type Story = StoryObj<typeof ComparisonViewSelector>;
 export const SummaryView: Story = {
   args: {
     viewMode: 'summary',
-    onViewModeChange: (mode) => console.log('View mode:', mode),
+    onViewModeChange: mode => console.log('View mode:', mode),
   },
 };
 
 export const TableView: Story = {
   args: {
     viewMode: 'table',
-    onViewModeChange: (mode) => console.log('View mode:', mode),
+    onViewModeChange: mode => console.log('View mode:', mode),
   },
 };
 
 export const ChartView: Story = {
   args: {
     viewMode: 'chart',
-    onViewModeChange: (mode) => console.log('View mode:', mode),
+    onViewModeChange: mode => console.log('View mode:', mode),
   },
 };

@@ -32,5 +32,3 @@ describe('useTheme', () => {
     expect(localStorage.setItem).toHaveBeenCalledWith('theme', 'dark');
   });
 });
-
-

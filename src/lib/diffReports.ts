@@ -1,5 +1,9 @@
 import { ISbom } from '@/models/ISbom';
-import { IMultiToolComparison, IPackageComparison, IPackageMetadata } from '@/models/IComparisonResult';
+import {
+  IMultiToolComparison,
+  IPackageComparison,
+  IPackageMetadata,
+} from '@/models/IComparisonResult';
 
 const extractMetadata = (pkg: ISbom['packages'][0]): IPackageMetadata => ({
   supplier: pkg.supplier,
@@ -15,27 +19,30 @@ const getUniqueValues = (values: (string | undefined)[]): string[] => {
 };
 
 export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
-  const packageMap = new Map<string, {
-    name: string;
-    version: string;
-    packageType?: string;
-    foundInTools: string[];
-    metadataByTool: Map<string, IPackageMetadata>;
-  }>();
+  const packageMap = new Map<
+    string,
+    {
+      name: string;
+      version: string;
+      packageType?: string;
+      foundInTools: string[];
+      metadataByTool: Map<string, IPackageMetadata>;
+    }
+  >();
 
   // First pass: collect all packages and their metadata per tool
   sboms.forEach(sbom => {
     sbom.packages.forEach(pkg => {
       const key = `${pkg.name}@${pkg.version}`;
       const existing = packageMap.get(key);
-      
+
       if (existing) {
         existing.foundInTools.push(sbom.tool);
         existing.metadataByTool.set(sbom.tool, extractMetadata(pkg));
       } else {
         const metadataByTool = new Map<string, IPackageMetadata>();
         metadataByTool.set(sbom.tool, extractMetadata(pkg));
-        
+
         packageMap.set(key, {
           name: pkg.name,
           version: pkg.version,
@@ -53,24 +60,24 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
 
   packageMap.forEach((pkgData, key) => {
     const allMetadata = Array.from(pkgData.metadataByTool.values());
-    
+
     const uniqueSuppliers = getUniqueValues(allMetadata.map(m => m.supplier));
     const uniqueLicenses = getUniqueValues(allMetadata.map(m => m.license));
     const uniquePurls = getUniqueValues(allMetadata.map(m => m.purl));
     const uniqueCpes = getUniqueValues(allMetadata.map(m => m.cpe));
     const uniqueHashes = getUniqueValues(allMetadata.map(m => m.hash));
-    
-    const hasMetadataConflicts = 
+
+    const hasMetadataConflicts =
       uniqueSuppliers.length > 1 ||
       uniqueLicenses.length > 1 ||
       uniquePurls.length > 1 ||
       uniqueCpes.length > 1 ||
       uniqueHashes.length > 1;
-    
+
     if (hasMetadataConflicts) {
       packagesWithConflicts++;
     }
-    
+
     allPackages.set(key, {
       name: pkgData.name,
       version: pkgData.version,

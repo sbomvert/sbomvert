@@ -44,5 +44,3 @@ describe('loadSbomsFromPublic branches', () => {
     expect(sboms['redis:latest']).toHaveLength(1);
   });
 });
-
-

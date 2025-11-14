@@ -31,5 +31,3 @@ test('exports JSON and PDF', () => {
   fireEvent.click(screen.getByText(/Export PDF/));
   expect(alert).toHaveBeenCalled();
 });
-
-

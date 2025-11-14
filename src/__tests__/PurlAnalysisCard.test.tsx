@@ -18,5 +18,3 @@ test('expands to show purl components', () => {
   expect(screen.getByText(/pURL Components/)).toBeInTheDocument();
   expect(screen.getByText('express')).toBeInTheDocument();
 });
-
-

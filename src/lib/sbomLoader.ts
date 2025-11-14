@@ -29,10 +29,7 @@ const formatContainerName = (folderName: string): string => {
 };
 
 const reverseFormatContainerName = (formattedName: string): string => {
-  return formattedName
-    .replace(/:/g, 'twodots')
-    .replace(/-/g, 'dash')
-    .replace(/\//g, 'slash');
+  return formattedName.replace(/:/g, 'twodots').replace(/-/g, 'dash').replace(/\//g, 'slash');
 };
 
 // --- Description helper ---
@@ -93,7 +90,9 @@ export const loadSbomImagesFromPublic = async (
 };
 
 // --- Existing: Load SBOMs for a single image when clicked ---
-export const loadSbomsForImage = async (image: string): Promise<{
+export const loadSbomsForImage = async (
+  image: string
+): Promise<{
   sboms: ContainerSboms;
 }> => {
   try {

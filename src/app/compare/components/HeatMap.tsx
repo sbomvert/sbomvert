@@ -1,6 +1,5 @@
-
-import React, { useMemo } from "react";
-import { ResponsiveContainer } from "recharts";
+import React, { useMemo } from 'react';
+import { ResponsiveContainer } from 'recharts';
 
 export type HeatmapDatum = {
   x: string;
@@ -18,8 +17,16 @@ export type HeatmapProps = {
 };
 
 function hexToRgb(hex: string) {
-  const h = hex.replace("#", "");
-  const bigint = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
+  const h = hex.replace('#', '');
+  const bigint = parseInt(
+    h.length === 3
+      ? h
+          .split('')
+          .map(c => c + c)
+          .join('')
+      : h,
+    16
+  );
   return {
     r: (bigint >> 16) & 255,
     g: (bigint >> 8) & 255,
@@ -40,13 +47,19 @@ export default function Heatmap({
   data,
   xLabels: xLabelsProp,
   yLabels: yLabelsProp,
-  colorRange = ["#e0f7fa", "#006064"],
+  colorRange = ['#e0f7fa', '#006064'],
   width,
   height,
 }: HeatmapProps) {
-  const xLabels = useMemo(() => xLabelsProp ?? Array.from(new Set(data.map(d => d.x))), [data, xLabelsProp]);
-  const yLabels = useMemo(() => yLabelsProp ?? Array.from(new Set(data.map(d => d.y))), [data, yLabelsProp]);
-  
+  const xLabels = useMemo(
+    () => xLabelsProp ?? Array.from(new Set(data.map(d => d.x))),
+    [data, xLabelsProp]
+  );
+  const yLabels = useMemo(
+    () => yLabelsProp ?? Array.from(new Set(data.map(d => d.y))),
+    [data, yLabelsProp]
+  );
+
   const lookup = useMemo(() => {
     const m = new Map<string, number>();
     data.forEach(d => m.set(`${d.x}||${d.y}`, d.value));
@@ -77,9 +90,9 @@ export default function Heatmap({
   const [tooltip, setTooltip] = React.useState<any>(null);
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="w-full h-full relative" 
+      className="w-full h-full relative"
       style={{ width: width || '100%', height: height || '100%' }}
     >
       <svg width="100%" height="100%" className="overflow-visible">
@@ -89,14 +102,14 @@ export default function Heatmap({
             .heatmap-cell:hover { opacity: 0.8; }
           `}</style>
         </defs>
-        
+
         {/* Main group with margins */}
         <g transform="translate(100, 20)">
           {/* Calculate available space */}
           {(() => {
             const availableWidth = dimensions.width - 140;
             const availableHeight = dimensions.height - 100;
-            
+
             // Calculate cell size to maintain squares
             const cellSize = Math.min(
               availableWidth / xLabels.length,
@@ -108,12 +121,12 @@ export default function Heatmap({
             return (
               <>
                 {/* Heatmap cells */}
-                {yLabels.map((yLabel, yi) => (
+                {yLabels.map((yLabel, yi) =>
                   xLabels.map((xLabel, xi) => {
                     const val = lookup.get(`${xLabel}||${yLabel}`) ?? 0;
                     const t = Math.max(0, Math.min(1, (val - min) / range));
                     const fill = interpolateColor(colorRange[0], colorRange[1], t);
-                    
+
                     return (
                       <rect
                         key={`${xLabel}-${yLabel}`}
@@ -125,7 +138,7 @@ export default function Heatmap({
                         stroke="#fff"
                         strokeWidth={0.5}
                         className="heatmap-cell"
-                        onMouseEnter={(e) => {
+                        onMouseEnter={e => {
                           const svgRect = containerRef.current?.getBoundingClientRect();
                           const cellRect = e.currentTarget.getBoundingClientRect();
                           if (svgRect) {
@@ -135,7 +148,7 @@ export default function Heatmap({
                               y: cellRect.top - svgRect.top - 10,
                               xLabel,
                               yLabel,
-                              value: val
+                              value: val,
                             });
                           }
                         }}
@@ -143,7 +156,7 @@ export default function Heatmap({
                       />
                     );
                   })
-                ))}
+                )}
 
                 {/* Border box around heatmap */}
                 <rect
@@ -188,13 +201,15 @@ export default function Heatmap({
           })()}
         </g>
       </svg>
-      
+
       {tooltip && tooltip.active && (
-        <div 
+        <div
           className="absolute bg-white border border-gray-300 rounded shadow-lg p-2 text-sm pointer-events-none z-50"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
-          <div className="font-semibold">{tooltip.xLabel} / {tooltip.yLabel}</div>
+          <div className="font-semibold">
+            {tooltip.xLabel} / {tooltip.yLabel}
+          </div>
           <div className="text-gray-600">Value: {tooltip.value}</div>
         </div>
       )}

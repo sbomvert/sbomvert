@@ -7,7 +7,7 @@ import { defaultSbomService } from '@/services/localSbomService';
 jest.mock('fs', () => ({
   existsSync: jest.fn(),
   readdirSync: jest.fn(),
-  statSync: jest.fn()
+  statSync: jest.fn(),
 }));
 
 describe('SbomService', () => {
@@ -26,15 +26,15 @@ describe('SbomService', () => {
       (fs.readdirSync as jest.Mock)
         .mockReturnValueOnce([
           { name: 'container1', isDirectory: () => true, isFile: () => false },
-          { name: 'container2', isDirectory: () => true, isFile: () => false }
+          { name: 'container2', isDirectory: () => true, isFile: () => false },
         ])
         .mockReturnValueOnce([
           { name: 'syft.spdx.json', isDirectory: () => false, isFile: () => true },
-          { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true }
+          { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true },
         ])
         .mockReturnValueOnce([
           { name: 'syft.spdx.json', isDirectory: () => false, isFile: () => true },
-          { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true }
+          { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true },
         ]);
 
       const result = service.listSboms(1);
@@ -42,8 +42,12 @@ describe('SbomService', () => {
       // Verify correct fs calls
       expect(fs.existsSync).toHaveBeenCalledWith(testDir);
       expect(fs.readdirSync).toHaveBeenCalledWith(testDir, { withFileTypes: true });
-      expect(fs.readdirSync).toHaveBeenCalledWith(path.join(testDir, 'container1'), { withFileTypes: true });
-      expect(fs.readdirSync).toHaveBeenCalledWith(path.join(testDir, 'container2'), { withFileTypes: true });
+      expect(fs.readdirSync).toHaveBeenCalledWith(path.join(testDir, 'container1'), {
+        withFileTypes: true,
+      });
+      expect(fs.readdirSync).toHaveBeenCalledWith(path.join(testDir, 'container2'), {
+        withFileTypes: true,
+      });
 
       // Verify result structure
       expect(result.containers).toHaveLength(2);
@@ -65,7 +69,7 @@ describe('SbomService', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 20
+        itemsPerPage: 20,
       });
     });
 
@@ -74,10 +78,10 @@ describe('SbomService', () => {
       (fs.readdirSync as jest.Mock)
         .mockReturnValueOnce([
           { name: 'python-3.9', isDirectory: () => true, isFile: () => false },
-          { name: 'nginx-1.21', isDirectory: () => true, isFile: () => false }
+          { name: 'nginx-1.21', isDirectory: () => true, isFile: () => false },
         ])
         .mockReturnValueOnce([
-          { name: 'syft.spdx.json', isDirectory: () => false, isFile: () => true }
+          { name: 'syft.spdx.json', isDirectory: () => false, isFile: () => true },
         ]);
 
       const searchTerm = 'python';
@@ -91,7 +95,7 @@ describe('SbomService', () => {
     it('should normalize invalid page numbers', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue([
-        { name: 'container1', isDirectory: () => true, isFile: () => false }
+        { name: 'container1', isDirectory: () => true, isFile: () => false },
       ]);
 
       const result = service.listSboms(-1);
@@ -112,12 +116,12 @@ describe('SbomService', () => {
   const mockDirents = [
     { name: 'nginx-twodotslatest', isDirectory: () => true, isFile: () => false },
     { name: 'python-twodots3.9', isDirectory: () => true, isFile: () => false },
-    { name: 'not-a-dir', isDirectory: () => false, isFile: () => true }
+    { name: 'not-a-dir', isDirectory: () => false, isFile: () => true },
   ];
 
   const mockFiles = [
     { name: 'syft.spdx.json', isDirectory: () => false, isFile: () => true },
-    { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true }
+    { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true },
   ];
 
   beforeEach(() => {
@@ -128,7 +132,10 @@ describe('SbomService', () => {
     it('lists containers and their SBOM files', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockImplementation((p: unknown) => {
-        if (typeof p === 'string' && (p.endsWith('nginx-twodotslatest') || p.endsWith('python-twodots3.9'))) {
+        if (
+          typeof p === 'string' &&
+          (p.endsWith('nginx-twodotslatest') || p.endsWith('python-twodots3.9'))
+        ) {
           return mockFiles;
         }
         return mockDirents;
@@ -153,17 +160,19 @@ describe('SbomService', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 20
+        itemsPerPage: 20,
       });
     });
 
     it('paginates results correctly', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readdirSync as jest.Mock).mockReturnValue(Array.from({ length: 10 }, (_, i) => ({
-        name: `container-${i}`,
-        isDirectory: () => true,
-        isFile: () => false
-      })));
+      (fs.readdirSync as jest.Mock).mockReturnValue(
+        Array.from({ length: 10 }, (_, i) => ({
+          name: `container-${i}`,
+          isDirectory: () => true,
+          isFile: () => false,
+        }))
+      );
 
       const page1 = defaultSbomService.listSboms(1);
       const page2 = defaultSbomService.listSboms(2);
@@ -179,7 +188,7 @@ describe('SbomService', () => {
       (fs.readdirSync as jest.Mock).mockReturnValue([
         { name: 'nginx-1.0', isDirectory: () => true, isFile: () => false },
         { name: 'python-3.9', isDirectory: () => true, isFile: () => false },
-        { name: 'node-16', isDirectory: () => true, isFile: () => false }
+        { name: 'node-16', isDirectory: () => true, isFile: () => false },
       ]);
 
       const result = defaultSbomService.listSboms(1, 'python');
@@ -203,8 +212,7 @@ describe('SbomService', () => {
         throw new Error('File system error');
       });
 
-      expect(() => defaultSbomService.listSboms(1))
-        .toThrow('File system error');
+      expect(() => defaultSbomService.listSboms(1)).toThrow('File system error');
     });
   });
 });

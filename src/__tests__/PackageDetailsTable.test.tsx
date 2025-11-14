@@ -21,21 +21,27 @@ const makeComparison = (): IMultiToolComparison => {
     uniqueCpes: ['cpe:/a:a:a:1.0.0'],
     hasMetadataConflicts: false,
     metadataByTool: new Map([
-      ['Syft', { 
-        supplier: 'Supplier A', 
-        license: 'MIT', 
-        hash: 'hash123', 
-        purl: 'pkg:generic/a@1.0.0',
-        cpe: 'cpe:/a:a:a:1.0.0'
-      }],
-      ['Trivy', { 
-        supplier: 'Supplier A', 
-        license: 'MIT', 
-        hash: 'hash123', 
-        purl: 'pkg:generic/a@1.0.0',
-        cpe: 'cpe:/a:a:a:1.0.0'
-      }]
-    ])
+      [
+        'Syft',
+        {
+          supplier: 'Supplier A',
+          license: 'MIT',
+          hash: 'hash123',
+          purl: 'pkg:generic/a@1.0.0',
+          cpe: 'cpe:/a:a:a:1.0.0',
+        },
+      ],
+      [
+        'Trivy',
+        {
+          supplier: 'Supplier A',
+          license: 'MIT',
+          hash: 'hash123',
+          purl: 'pkg:generic/a@1.0.0',
+          cpe: 'cpe:/a:a:a:1.0.0',
+        },
+      ],
+    ]),
   });
   map.set('b@1.0.0', {
     name: 'b',
@@ -50,20 +56,27 @@ const makeComparison = (): IMultiToolComparison => {
     uniqueCpes: ['cpe:/a:b:b:1.0.0'],
     hasMetadataConflicts: false,
     metadataByTool: new Map([
-      ['Syft', { 
-        supplier: 'Supplier B', 
-        license: 'MIT', 
-        hash: 'hash456', 
-        purl: 'pkg:npm/b@1.0.0',
-        cpe: 'cpe:/a:b:b:1.0.0'
-      }]
-    ])
+      [
+        'Syft',
+        {
+          supplier: 'Supplier B',
+          license: 'MIT',
+          hash: 'hash456',
+          purl: 'pkg:npm/b@1.0.0',
+          cpe: 'cpe:/a:b:b:1.0.0',
+        },
+      ],
+    ]),
   });
   return {
     imageId: 'img',
     tools,
     allPackages: map,
-    statistics: { toolCounts: { Syft: 2, Trivy: 1 }, commonToAll: 1, uniquePerTool: { Syft: 1, Trivy: 0 } },
+    statistics: {
+      toolCounts: { Syft: 2, Trivy: 1 },
+      commonToAll: 1,
+      uniquePerTool: { Syft: 1, Trivy: 0 },
+    },
   } as any;
 };
 
@@ -93,15 +106,20 @@ test('shows empty state when no items for filter', () => {
     { name: 'Trivy', version: '1', vendor: 'B', format: 'SPDX' },
   ];
   const map = new Map<string, any>();
-  map.set('a@1.0.0', { package: { name: 'a', version: '1.0.0', packageType: 'library' }, foundInTools: ['Syft', 'Trivy'] });
+  map.set('a@1.0.0', {
+    package: { name: 'a', version: '1.0.0', packageType: 'library' },
+    foundInTools: ['Syft', 'Trivy'],
+  });
   const comparison = {
     imageId: 'img',
     tools,
     allPackages: map,
-    statistics: { toolCounts: { Syft: 1, Trivy: 1 }, commonToAll: 1, uniquePerTool: { Syft: 0, Trivy: 0 } },
+    statistics: {
+      toolCounts: { Syft: 1, Trivy: 1 },
+      commonToAll: 1,
+      uniquePerTool: { Syft: 0, Trivy: 0 },
+    },
   } as any;
   render(<PackageDetailsTable comparison={comparison} filter="unique" />);
   expect(screen.getByText(/No packages found matching/)).toBeInTheDocument();
 });
-
-

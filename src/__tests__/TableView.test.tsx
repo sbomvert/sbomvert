@@ -19,5 +19,3 @@ test('switches filters', () => {
   fireEvent.click(screen.getByText(/Unique/));
   expect(screen.getByText(/Package Details/)).toBeInTheDocument();
 });
-
-

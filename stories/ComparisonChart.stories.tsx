@@ -10,22 +10,37 @@ const mockComparison: IMultiToolComparison = {
     { name: 'Docker Scout', version: '1.2.0', vendor: 'Docker Inc.', format: 'SPDX' },
   ],
   allPackages: new Map([
-    ['readline@8.2-1.3', {
-      name: 'readline',
-      version: '8.2-1.3',
-      packageType: 'os',
-      foundInTools: ['Amazon', 'Docker'],
-      metadataByTool: new Map([
-        ['Amazon', { purl: 'pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg' }],
-        ['Docker', { purl: 'pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg' }]
-      ]),
-      hasMetadataConflicts: false,
-      uniqueSuppliers: [],
-      uniqueLicenses: [],
-      uniquePurls: ['pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg'],
-      uniqueCpes: [],
-      uniqueHashes: []
-    }]
+    [
+      'readline@8.2-1.3',
+      {
+        name: 'readline',
+        version: '8.2-1.3',
+        packageType: 'os',
+        foundInTools: ['Amazon', 'Docker'],
+        metadataByTool: new Map([
+          [
+            'Amazon',
+            {
+              purl: 'pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg',
+            },
+          ],
+          [
+            'Docker',
+            {
+              purl: 'pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg',
+            },
+          ],
+        ]),
+        hasMetadataConflicts: false,
+        uniqueSuppliers: [],
+        uniqueLicenses: [],
+        uniquePurls: [
+          'pkg:dpkg/readline@8.2-1.3?arch=AMD64&epoch=0&upstream=readline-8.2-1.3.src.dpkg',
+        ],
+        uniqueCpes: [],
+        uniqueHashes: [],
+      },
+    ],
   ]),
   statistics: {
     toolCounts: {
@@ -39,7 +54,7 @@ const mockComparison: IMultiToolComparison = {
       Trivy: 1,
       'Docker Scout': 0,
     },
-    packagesWithConflicts: 0
+    packagesWithConflicts: 0,
   },
 };
 

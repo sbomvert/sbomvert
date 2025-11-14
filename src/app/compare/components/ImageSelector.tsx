@@ -21,19 +21,19 @@ interface ImageSelectorProps {
 const handleImageName = (name: string) => {
   const parts = name.split('/');
   const imageName = parts.pop(); // Get the last part as the name
-  
+
   // If there are remaining parts, join them; otherwise, set to default
   const repository = parts.length > 0 ? parts.join('/') : 'dockerhub';
 
   return { imageName, repository };
 };
 
-export const ImageSelector: React.FC<ImageSelectorProps> = ({ 
-  images, 
+export const ImageSelector: React.FC<ImageSelectorProps> = ({
+  images,
   onImageSelect,
   currentPage,
   totalPages,
-  onPageChange
+  onPageChange,
 }) => {
   if (images.length === 0) {
     return (
@@ -55,43 +55,43 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
       >
         {images.map((image, idx) => {
-        const { imageName, repository } = handleImageName(image.name);
+          const { imageName, repository } = handleImageName(image.name);
 
-        return (
-          <motion.button
-            key={image.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            onClick={image.sbomCount >= 2 ? () => onImageSelect(image.id) : undefined}
-            className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-left ${
-              image.sbomCount >= 2
-                ? 'hover:shadow-xl transition-all hover:scale-105 cursor-pointer'
-                : 'opacity-50 cursor-not-allowed'
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <Package className="text-indigo-600 dark:text-indigo-400" size={24} />
-              <h3 className="font-bold dark:text-white">{imageName}</h3>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{image.description}</p>
-            <div className="mt-2 space-y-1">
-              {image.toolCount !== undefined && (
+          return (
+            <motion.button
+              key={image.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              onClick={image.sbomCount >= 2 ? () => onImageSelect(image.id) : undefined}
+              className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-left ${
+                image.sbomCount >= 2
+                  ? 'hover:shadow-xl transition-all hover:scale-105 cursor-pointer'
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Package className="text-indigo-600 dark:text-indigo-400" size={24} />
+                <h3 className="font-bold dark:text-white">{imageName}</h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{image.description}</p>
+              <div className="mt-2 space-y-1">
+                {image.toolCount !== undefined && (
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    {image.toolCount} tools available
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 dark:text-gray-500">
-                  {image.toolCount} tools available
+                  {image.sbomCount} SBOMs available {image.sbomCount < 2 && '(minimum 2 required)'}
                 </p>
-              )}
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                {image.sbomCount} SBOMs available {image.sbomCount < 2 && '(minimum 2 required)'}
+              </div>
+              {/* Optionally display the repository information */}
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                Repository: {repository}
               </p>
-            </div>
-            {/* Optionally display the repository information */}
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              Repository: {repository}
-            </p>
-          </motion.button>
-        );
-      })}
+            </motion.button>
+          );
+        })}
       </motion.div>
       <div className="flex justify-center gap-2 mt-4">
         <button

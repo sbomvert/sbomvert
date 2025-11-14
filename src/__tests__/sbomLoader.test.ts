@@ -23,7 +23,11 @@ describe('loadSbomsFromPublic', () => {
     });
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ spdxVersion: 'SPDX-2.3', creationInfo: { creators: ['Tool: syft-1.0.0', 'Organization: Anchore'], created: 'd' }, packages: [] }),
+      json: async () => ({
+        spdxVersion: 'SPDX-2.3',
+        creationInfo: { creators: ['Tool: syft-1.0.0', 'Organization: Anchore'], created: 'd' },
+        packages: [],
+      }),
     });
     (parseSpdxSbom as jest.Mock).mockReturnValue({
       format: 'SPDX',
@@ -48,5 +52,3 @@ describe('loadSbomsFromPublic', () => {
     expect(res.sboms).toEqual({});
   });
 });
-
-

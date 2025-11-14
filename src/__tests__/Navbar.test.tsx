@@ -11,5 +11,3 @@ test('fires logo and theme actions', () => {
   fireEvent.click(screen.getByLabelText('Toggle theme'));
   expect(onToggle).toHaveBeenCalled();
 });
-
-

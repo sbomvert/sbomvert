@@ -5,30 +5,29 @@ const config: StorybookConfig = {
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
-    '@storybook/addon-interactions'
+    '@storybook/addon-interactions',
   ],
   framework: {
     name: '@storybook/nextjs',
-    options: {}
+    options: {},
   },
   docs: {
-    autodocs: 'tag'
+    autodocs: 'tag',
   },
   core: {
-    builder: 'webpack5'
+    builder: 'webpack5',
   },
-  webpackFinal: async (baseConfig) => {
+  webpackFinal: async baseConfig => {
     // Remove ReactRefreshWebpackPlugin or other problematic plugin
     if (baseConfig.plugins) {
       baseConfig.plugins = baseConfig.plugins.filter(
-        (plugin) => plugin.constructor.name !== 'ReactRefreshWebpackPlugin'
+        plugin => plugin.constructor.name !== 'ReactRefreshWebpackPlugin'
       );
     }
 
     // (Optional) You may also guard other plugin hooks if identified
     return baseConfig;
-  }
+  },
 };
 
 export default config;
-

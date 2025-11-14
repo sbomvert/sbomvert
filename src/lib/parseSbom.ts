@@ -82,25 +82,24 @@ const extractPackageType = (
   // Try to infer from attribution texts if provided
 
   if (purl) {
-    const thepurl = parsePurl(purl)
+    const thepurl = parsePurl(purl);
     switch (thepurl?.type) {
-      case "deb":
-      case "dpkg":
-      case "apk":
-        return "os"
-      case "px§ypi":
-        return "python"
-      case "nuget":
-        return ".net"
-      case "gem":
-        return "library"
-      case "generic":
-        return "generic"
+      case 'deb':
+      case 'dpkg':
+      case 'apk':
+        return 'os';
+      case 'px§ypi':
+        return 'python';
+      case 'nuget':
+        return '.net';
+      case 'gem':
+        return 'library';
+      case 'generic':
+        return 'generic';
 
       default:
-        console.log(thepurl?.type)
-        return "generic"
-
+        console.log(thepurl?.type);
+        return 'generic';
     }
   }
   if (attributionTexts) {
@@ -130,9 +129,14 @@ export const parseSpdxSbom = (
 ): ISbom | null => {
   try {
     // Extract tool info from creators
-    const tname = data.creationInfo.creators.find(c => c.startsWith('Tool:'))?.replace('Tool:', '').trim();
-    const tvendor =data.creationInfo.creators.find(c => c.startsWith('Organization:'))?.replace('Organization:', '').trim(); 
-    
+    const tname = data.creationInfo.creators
+      .find(c => c.startsWith('Tool:'))
+      ?.replace('Tool:', '')
+      .trim();
+    const tvendor = data.creationInfo.creators
+      .find(c => c.startsWith('Organization:'))
+      ?.replace('Organization:', '')
+      .trim();
 
     let toolVersion = 'unknown';
     let toolBaseName = tname ?? 'Unknown';
@@ -145,11 +149,14 @@ export const parseSpdxSbom = (
       }
     }
 
-    const toolName  = toolBaseName
-    const vendor  = tvendor? tvendor : "Unknown"
+    const toolName = toolBaseName;
+    const vendor = tvendor ? tvendor : 'Unknown';
 
     const toolInfo: IToolInfo = {
-      name: toolName.charAt(0).toUpperCase() + toolName.slice(1) + (tnameid.includes('all') ? ' all' : ''),
+      name:
+        toolName.charAt(0).toUpperCase() +
+        toolName.slice(1) +
+        (tnameid.includes('all') ? ' all' : ''),
       version: toolVersion,
       vendor: vendor,
       format: 'SPDX',
@@ -194,7 +201,11 @@ export const parseSpdxSbom = (
           version: pkg.versionInfo || 'unknown',
           supplier,
           license,
-          packageType: extractPackageType(pkg.attributionTexts, pkg.primaryPackagePurpose,purlRef?.referenceLocator),
+          packageType: extractPackageType(
+            pkg.attributionTexts,
+            pkg.primaryPackagePurpose,
+            purlRef?.referenceLocator
+          ),
           hash,
           purl: purlRef?.referenceLocator,
           cpe: cpeRef?.referenceLocator,

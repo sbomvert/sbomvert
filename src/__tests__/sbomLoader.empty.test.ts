@@ -8,7 +8,9 @@ describe('loadSbomsFromPublic skips empty containers', () => {
   it('does not add image when no SBOMs parsed', async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ containers: [{ name: 'ubuntu-twodots20dash04', files: [{ name: 'unknown.txt' }] }] }),
+      json: async () => ({
+        containers: [{ name: 'ubuntu-twodots20dash04', files: [{ name: 'unknown.txt' }] }],
+      }),
     });
     (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
 
@@ -17,5 +19,3 @@ describe('loadSbomsFromPublic skips empty containers', () => {
     expect(Object.keys(sboms)).toHaveLength(0);
   });
 });
-
-

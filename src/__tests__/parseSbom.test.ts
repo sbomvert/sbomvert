@@ -34,7 +34,9 @@ describe('parsePurl', () => {
   });
 
   it('should parse pURL with multiple qualifiers', () => {
-    const result = parsePurl('pkg:maven/org.springframework/spring-core@5.3.0?type=jar&classifier=sources');
+    const result = parsePurl(
+      'pkg:maven/org.springframework/spring-core@5.3.0?type=jar&classifier=sources'
+    );
     expect(result?.qualifiers).toEqual({
       type: 'jar',
       classifier: 'sources',

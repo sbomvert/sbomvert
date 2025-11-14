@@ -24,7 +24,7 @@ const mockComparison = {
     toolCounts: { Syft: 5, Trivy: 5 },
     commonToAll: 3,
     uniquePerTool: { Syft: 1, Trivy: 1 },
-    packagesWithConflicts: 0
+    packagesWithConflicts: 0,
   },
 };
 

@@ -45,9 +45,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
 
     switch (filter) {
       case 'common':
-        return packages.filter(
-          ([, pkg]) => pkg.foundInTools.length === comparison.tools.length
-        );
+        return packages.filter(([, pkg]) => pkg.foundInTools.length === comparison.tools.length);
       case 'unique':
         return packages.filter(([, pkg]) => pkg.foundInTools.length === 1);
       default:
@@ -145,11 +143,9 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
                       <div className="font-medium dark:text-white truncate" title={pkg.name}>
                         {pkg.name}
                       </div>
-                      {(pkg.hasMetadataConflicts || pkg.foundInTools.length != comparison.tools.length) && (
-                        <AlertTriangle 
-                          size={16} 
-                          className="text-amber-500 flex-shrink-0" 
-                        />
+                      {(pkg.hasMetadataConflicts ||
+                        pkg.foundInTools.length != comparison.tools.length) && (
+                        <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
                       )}
                     </div>
                   </td>
@@ -163,7 +159,10 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
                       {pkg.packageType || 'unknown'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 dark:text-gray-300 font-mono text-sm truncate" title={pkg.version}>
+                  <td
+                    className="py-3 px-4 dark:text-gray-300 font-mono text-sm truncate"
+                    title={pkg.version}
+                  >
                     {pkg.version}
                   </td>
                   <td className="py-3 px-4">
@@ -204,7 +203,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                       >
-                        <PackageMetadataDetails 
+                        <PackageMetadataDetails
                           packageData={pkg}
                           tools={comparison.tools}
                           toolColors={TOOL_COLORS}

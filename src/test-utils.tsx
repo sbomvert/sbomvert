@@ -31,7 +31,7 @@ export const customRender = (
 
   return {
     ...rtlRender(ui, { wrapper: Wrapper, ...options }),
-    user: userEvent.setup()
+    user: userEvent.setup(),
   };
 };
 
@@ -47,16 +47,16 @@ export const mockSbomData = {
       name: 'test-container',
       files: [
         { name: 'syft.spdx.json', path: '/sbom/test-container/syft.spdx.json' },
-        { name: 'trivy.spdx.json', path: '/sbom/test-container/trivy.spdx.json' }
-      ]
-    }
+        { name: 'trivy.spdx.json', path: '/sbom/test-container/trivy.spdx.json' },
+      ],
+    },
   ],
   pagination: {
     currentPage: 1,
     totalPages: 1,
     totalItems: 1,
-    itemsPerPage: 20
-  }
+    itemsPerPage: 20,
+  },
 };
 
 // Common utility functions for tests
@@ -81,6 +81,6 @@ export const mockRouter = {
   events: {
     on: (event: string, cb: () => void) => jest.fn()(event, cb),
     off: (event: string, cb: () => void) => jest.fn()(event, cb),
-    emit: (event: string, ...args: any[]) => jest.fn()(event, ...args)
-  }
+    emit: (event: string, ...args: any[]) => jest.fn()(event, ...args),
+  },
 };

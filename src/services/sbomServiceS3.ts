@@ -1,15 +1,10 @@
-import { 
-  S3Client, 
-  ListObjectsV2Command, 
+import {
+  S3Client,
+  ListObjectsV2Command,
   ListObjectsV2CommandInput,
-  _Object 
+  _Object,
 } from '@aws-sdk/client-s3';
-import type {
-  ISbomService,
-  SbomFile,
-  Container,
-  SbomListResponse,
-} from './sbomService.types';
+import type { ISbomService, SbomFile, Container, SbomListResponse } from './sbomService.types';
 
 /**
  * S3-compatible implementation of SBOM service
@@ -30,16 +25,20 @@ export class S3SbomService implements ISbomService {
     this.bucketName = bucketName;
     this.prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
     this.itemsPerPage = itemsPerPage;
-    
-    this.s3Client = s3Client || new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
-      endpoint: process.env.S3_ENDPOINT, // For MinIO or other S3-compatible services
-      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true', // Required for MinIO
-      credentials: process.env.S3_ENDPOINT ? {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-      } : undefined,
-    });
+
+    this.s3Client =
+      s3Client ||
+      new S3Client({
+        region: process.env.AWS_REGION || 'us-east-1',
+        endpoint: process.env.S3_ENDPOINT, // For MinIO or other S3-compatible services
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true', // Required for MinIO
+        credentials: process.env.S3_ENDPOINT
+          ? {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+            }
+          : undefined,
+      });
   }
 
   /**
@@ -47,10 +46,8 @@ export class S3SbomService implements ISbomService {
    * Expected format: prefix/{containerName}/{filename}.json
    */
   private extractContainerName(key: string): string | null {
-    const relativePath = key.startsWith(this.prefix)
-      ? key.slice(this.prefix.length)
-      : key;
-    
+    const relativePath = key.startsWith(this.prefix) ? key.slice(this.prefix.length) : key;
+
     const parts = relativePath.split('/');
     return parts.length >= 2 ? parts[0] : null;
   }
@@ -58,7 +55,9 @@ export class S3SbomService implements ISbomService {
   /**
    * Lists all JSON objects in the S3 bucket under the prefix
    */
-  private async listAllObjects(): Promise<Array<{ key: string; size: number; lastModified: Date }>> {
+  private async listAllObjects(): Promise<
+    Array<{ key: string; size: number; lastModified: Date }>
+  > {
     const objects: Array<{ key: string; size: number; lastModified: Date }> = [];
     let continuationToken: string | undefined;
 
@@ -74,13 +73,13 @@ export class S3SbomService implements ISbomService {
 
       if (response.Contents) {
         objects.push(
-          ...response.Contents
-            .filter((obj: _Object) => obj.Key && obj.Key.endsWith('.json'))
-            .map((obj: _Object) => ({
+          ...response.Contents.filter((obj: _Object) => obj.Key && obj.Key.endsWith('.json')).map(
+            (obj: _Object) => ({
               key: obj.Key!,
               size: obj.Size || 0,
               lastModified: obj.LastModified || new Date(),
-            }))
+            })
+          )
         );
       }
 
@@ -124,11 +123,9 @@ export class S3SbomService implements ISbomService {
    */
   private filterContainers(containerNames: string[], search?: string): string[] {
     if (!search) return containerNames;
-    
+
     const searchLower = search.toLowerCase();
-    return containerNames.filter(name =>
-      name.toLowerCase().includes(searchLower)
-    );
+    return containerNames.filter(name => name.toLowerCase().includes(searchLower));
   }
 
   /**
@@ -166,7 +163,7 @@ export class S3SbomService implements ISbomService {
       };
     } catch (error) {
       console.error('Error listing SBOMs from S3:', error);
-      
+
       return {
         containers: [],
         pagination: {

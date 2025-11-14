@@ -15,5 +15,3 @@ describe('getPackageTypeColor', () => {
     expect(getPackageTypeColor(undefined)).toMatch('gray');
   });
 });
-
-

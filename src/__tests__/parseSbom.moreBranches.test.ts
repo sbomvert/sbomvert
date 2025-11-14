@@ -25,5 +25,3 @@ test('extractPackageType via attributionTexts PkgType:maven', () => {
   const res = parseSpdxSbom(doc, 'img', 'SomeToolName');
   expect(res?.packages[0].packageType).toBe('maven');
 });
-
-

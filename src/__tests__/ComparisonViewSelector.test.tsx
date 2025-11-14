@@ -8,5 +8,3 @@ test('switches view mode', () => {
   fireEvent.click(screen.getByText('Table'));
   expect(onChange).toHaveBeenCalledWith('table');
 });
-
-

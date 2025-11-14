@@ -14,8 +14,16 @@ const sample = {
       versionInfo: '1.0.0',
       licenseConcluded: 'MIT',
       externalRefs: [
-        { referenceCategory: 'PACKAGE-MANAGER', referenceType: 'purl', referenceLocator: 'pkg:npm/leftpad@1.0.0' },
-        { referenceCategory: 'OTHER', referenceType: 'cpe23Type', referenceLocator: 'cpe:/a:vendor:leftpad:1.0.0' },
+        {
+          referenceCategory: 'PACKAGE-MANAGER',
+          referenceType: 'purl',
+          referenceLocator: 'pkg:npm/leftpad@1.0.0',
+        },
+        {
+          referenceCategory: 'OTHER',
+          referenceType: 'cpe23Type',
+          referenceLocator: 'cpe:/a:vendor:leftpad:1.0.0',
+        },
       ],
       checksums: [{ algorithm: 'SHA256', checksumValue: 'abc' }],
       primaryPackagePurpose: 'LIBRARY',
@@ -54,5 +62,3 @@ describe('parseSpdxSbom', () => {
     expect(res?.toolInfo.vendor).toBe('Unknown');
   });
 });
-
-

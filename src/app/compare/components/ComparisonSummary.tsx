@@ -113,7 +113,7 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             </RadarChart>
           </ResponsiveContainer>
         </div>
-      {/*
+        {/*
         <div className="max-w-full overflow-hidden">
           <h3 className="text-lg font-semibold mb-3 dark:text-white">HeatMap</h3>
           <ResponsiveContainer width="100%" height={600}>
@@ -125,6 +125,5 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
         </div>*/}
       </div>
     </motion.div>
-
   );
 };

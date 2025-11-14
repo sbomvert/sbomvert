@@ -8,7 +8,6 @@ const meta: Meta<typeof ToolInfoCard> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-
 };
 
 export default meta;
@@ -18,10 +17,10 @@ export const ToolInfoCardStory: ToolInfoCardStory = {
   args: {
     color: '#4f46e5',
     toolInfo: {
-      name: "Trivy",
-      vendor: "Aquasecurity",
-      version: "1.0.0",
-      format: "SPDX"
+      name: 'Trivy',
+      vendor: 'Aquasecurity',
+      version: '1.0.0',
+      format: 'SPDX',
     },
   },
 };

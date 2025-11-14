@@ -9,16 +9,10 @@ export const metadata: Metadata = {
   description: 'Compare SBOM tool outputs for container images',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-background text-foreground`}>
-  {children}
-</body>
+      <body className={`${inter.className} bg-background text-foreground`}>{children}</body>
     </html>
   );
 }

@@ -19,17 +19,20 @@ A modern web application for comparing SBOM (Software Bill of Materials) tool ou
 ## Setup
 
 ### 1. Install Node.js version
+
 ```bash
 nvm install
 nvm use
 ```
 
 ### 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 ### 3. Run development server
+
 ```bash
 npm run dev
 ```
@@ -49,6 +52,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `npm run format` - Format code with Prettier
 
 ## Project Structure
+
 ```
 sbom-comparator/
 ├── src/
@@ -91,6 +95,7 @@ sbom-comparator/
 4. Update mock data in `src/lib/mockData.ts`
 
 ## Testing
+
 ```bash
 # Run all tests
 npm test
@@ -105,11 +110,13 @@ npm test -- --coverage
 ## Deployment
 
 ### Build for production
+
 ```bash
 npm run build
 ```
 
 ### Deploy to Vercel
+
 ```bash
 vercel deploy
 ```

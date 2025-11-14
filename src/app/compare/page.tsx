@@ -23,7 +23,6 @@ type ViewMode = 'summary' | 'table' | 'chart';
 type ComparisonType = 'SBOM' | 'CVE';
 
 export default function Home() {
-
   const [comparisonType, setComparisonType] = useState<ComparisonType>('SBOM');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -43,7 +42,10 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const { images: loadedImages, pagination } = await loadSbomImagesFromPublic(currentPage, searchTerm);
+      const { images: loadedImages, pagination } = await loadSbomImagesFromPublic(
+        currentPage,
+        searchTerm
+      );
       setImages(loadedImages);
       setTotalPages(pagination.totalPages);
       setLoading(false);
@@ -142,10 +144,7 @@ export default function Home() {
   };
 
   return (
-<div
-  className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900"
->
-
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
       {/* ✔ Navbar uses global theme hook internally */}
       <Navbar />
 
@@ -195,10 +194,7 @@ export default function Home() {
                     </h2>
 
                     <div className="flex gap-3 flex-wrap">
-                      <ComparisonViewSelector
-                        viewMode={viewMode}
-                        onViewModeChange={setViewMode}
-                      />
+                      <ComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
                       <ExportButtons comparison={comparison} />
 
                       <button

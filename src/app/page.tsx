@@ -39,7 +39,8 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Compare SBOMs of the container images you use to bring clairity and eliminate false positives.
+            Compare SBOMs of the container images you use to bring clairity and eliminate false
+            positives.
           </motion.p>
 
           <motion.div

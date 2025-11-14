@@ -9,9 +9,9 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ open, onClose }: ContactModalProps) {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<"success" | "error" | null>(null);
+  const [result, setResult] = useState<'success' | 'error' | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -22,18 +22,18 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
     setResult(null);
 
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) throw new Error('Request failed');
 
-      setResult("success");
-      setForm({ name: "", email: "", message: "" });
+      setResult('success');
+      setForm({ name: '', email: '', message: '' });
     } catch {
-      setResult("error");
+      setResult('error');
     } finally {
       setLoading(false);
     }
@@ -81,12 +81,8 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
               />
             </div>
 
-            {result === "success" && (
-              <p className="text-green-500 mt-3">Message sent!</p>
-            )}
-            {result === "error" && (
-              <p className="text-red-500 mt-3">Something went wrong.</p>
-            )}
+            {result === 'success' && <p className="text-green-500 mt-3">Message sent!</p>}
+            {result === 'error' && <p className="text-red-500 mt-3">Something went wrong.</p>}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
@@ -101,7 +97,7 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
                 onClick={handleSubmit}
                 className="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-90"
               >
-                {loading ? "Sending..." : "Send"}
+                {loading ? 'Sending...' : 'Send'}
               </button>
             </div>
           </motion.div>

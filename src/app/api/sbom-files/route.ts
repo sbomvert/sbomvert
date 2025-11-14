@@ -8,7 +8,7 @@ const sbomService = new LocalSbomService('./public/sbom', 20);
 function createResponse(data: any, init?: ResponseInit) {
   if (process.env.NODE_ENV === 'test') {
     return {
-      json: () => Promise.resolve(data)
+      json: () => Promise.resolve(data),
     };
   }
   return NextResponse.json(data, init);
@@ -24,9 +24,6 @@ export async function GET(request: NextRequest) {
     return createResponse(result);
   } catch (error) {
     console.error('Error reading SBOM directory:', error);
-    return createResponse(
-      { error: 'Failed to read SBOM directory' },
-      { status: 500 }
-    );
+    return createResponse({ error: 'Failed to read SBOM directory' }, { status: 500 });
   }
 }

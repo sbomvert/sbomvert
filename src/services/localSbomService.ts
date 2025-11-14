@@ -1,11 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type {
-  ISbomService,
-  SbomFile,
-  Container,
-  SbomListResponse,
-} from './sbomService.types';
+import type { ISbomService, SbomFile, Container, SbomListResponse } from './sbomService.types';
 
 /**
  * Local file system implementation of SBOM service
@@ -24,23 +19,23 @@ export class LocalSbomService implements ISbomService {
   }
 
   private getContainerDirs(search?: string): string[] {
-    const dirs = fs.readdirSync(this.sbomDir, { withFileTypes: true })
+    const dirs = fs
+      .readdirSync(this.sbomDir, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
 
     if (search) {
-      return dirs.filter(name =>
-        name.toLowerCase().includes(search.toLowerCase())
-      );
+      return dirs.filter(name => name.toLowerCase().includes(search.toLowerCase()));
     }
     return dirs;
   }
 
   private getContainerFiles(containerName: string): SbomFile[] {
     const containerPath = path.join(this.sbomDir, containerName);
-    
+
     try {
-      return fs.readdirSync(containerPath, { withFileTypes: true })
+      return fs
+        .readdirSync(containerPath, { withFileTypes: true })
         .filter(dirent => dirent.isFile() && dirent.name.endsWith('.json'))
         .map(dirent => {
           const filePath = path.join(containerPath, dirent.name);
@@ -66,8 +61,8 @@ export class LocalSbomService implements ISbomService {
           currentPage: 1,
           totalPages: 0,
           totalItems: 0,
-          itemsPerPage: this.itemsPerPage
-        }
+          itemsPerPage: this.itemsPerPage,
+        },
       };
     }
 
@@ -81,7 +76,7 @@ export class LocalSbomService implements ISbomService {
 
     const containers: Container[] = paginatedDirs.map(name => ({
       name,
-      files: this.getContainerFiles(name)
+      files: this.getContainerFiles(name),
     }));
 
     return {
@@ -90,8 +85,8 @@ export class LocalSbomService implements ISbomService {
         currentPage,
         totalPages,
         totalItems,
-        itemsPerPage: this.itemsPerPage
-      }
+        itemsPerPage: this.itemsPerPage,
+      },
     };
   }
 }

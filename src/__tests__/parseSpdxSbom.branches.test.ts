@@ -25,5 +25,3 @@ describe('parseSpdxSbom branch coverage', () => {
     expect(res?.packages[0].packageType).toBe('binary');
   });
 });
-
-

@@ -12,8 +12,10 @@ test('renders primary button and handles click', () => {
 test('supports secondary and outline variants and sizes', () => {
   const { rerender } = render(<Button variant="secondary">Sec</Button>);
   expect(screen.getByText('Sec')).toBeInTheDocument();
-  rerender(<Button variant="outline" size="lg">Out</Button>);
+  rerender(
+    <Button variant="outline" size="lg">
+      Out
+    </Button>
+  );
   expect(screen.getByText('Out')).toBeInTheDocument();
 });
-
-

@@ -23,20 +23,20 @@ const mockImages = [
 export const WithImages: Story = {
   args: {
     images: mockImages,
-    onImageSelect: (id) => console.log('Selected:', id),
+    onImageSelect: id => console.log('Selected:', id),
   },
 };
 
 export const Empty: Story = {
   args: {
     images: [],
-    onImageSelect: (id) => console.log('Selected:', id),
+    onImageSelect: id => console.log('Selected:', id),
   },
 };
 
 export const SingleImage: Story = {
   args: {
     images: [mockImages[0]],
-    onImageSelect: (id) => console.log('Selected:', id),
+    onImageSelect: id => console.log('Selected:', id),
   },
 };

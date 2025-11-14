@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -9,7 +9,7 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
 
-  const onLogoClick = () => router.push("/");
+  const onLogoClick = () => router.push('/');
 
   return (
     <nav
@@ -25,9 +25,7 @@ export const Navbar: React.FC = () => {
           >
             <img src="/logo.svg" alt="logo" className="w-8 h-8" />
 
-            <h1 className="text-xl font-bold text-foreground dark:text-white">
-              SBOMVert
-            </h1>
+            <h1 className="text-xl font-bold text-foreground dark:text-white">SBOMVert</h1>
           </button>
 
           <ThemeToggle isDark={isDark} toggle={toggleTheme} />

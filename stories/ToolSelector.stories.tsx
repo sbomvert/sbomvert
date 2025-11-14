@@ -24,7 +24,7 @@ export const AllSelected: Story = {
   args: {
     tools: mockTools,
     selectedTools: new Set(['Syft', 'Trivy', 'Docker Scout']),
-    onToolToggle: (name) => console.log('Toggled:', name),
+    onToolToggle: name => console.log('Toggled:', name),
     colors: TOOL_COLORS,
   },
 };
@@ -33,7 +33,7 @@ export const TwoSelected: Story = {
   args: {
     tools: mockTools,
     selectedTools: new Set(['Syft', 'Trivy']),
-    onToolToggle: (name) => console.log('Toggled:', name),
+    onToolToggle: name => console.log('Toggled:', name),
     colors: TOOL_COLORS,
   },
 };
@@ -42,7 +42,7 @@ export const OneSelected: Story = {
   args: {
     tools: mockTools,
     selectedTools: new Set(['Syft']),
-    onToolToggle: (name) => console.log('Toggled:', name),
+    onToolToggle: name => console.log('Toggled:', name),
     colors: TOOL_COLORS,
   },
 };

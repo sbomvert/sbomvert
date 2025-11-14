@@ -25,7 +25,9 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       return (
         <div>
           <h5 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">{title}</h5>
-          <p className="text-sm text-gray-500 dark:text-gray-500 italic">Not reported by any tool</p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 italic">
+            Not reported by any tool
+          </p>
         </div>
       );
     }
@@ -62,7 +64,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
           {tools.map((tool, idx) => {
             const metadata = packageData.metadataByTool.get(tool.name);
             const value = metadata?.[metadataKey];
-            
+
             return (
               <div
                 key={tool.name}
@@ -79,9 +81,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
                     </span>
                   )}
                 </div>
-                {value && (
-                  <p className="text-sm dark:text-white font-mono break-all">{value}</p>
-                )}
+                {value && <p className="text-sm dark:text-white font-mono break-all">{value}</p>}
               </div>
             );
           })}
@@ -104,9 +104,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
               <div
                 key={tool.name}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                  found
-                    ? 'bg-green-50 dark:bg-green-900/20'
-                    : 'bg-gray-100 dark:bg-gray-700'
+                  found ? 'bg-green-50 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 {found ? (
@@ -176,7 +174,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
               const metadata = packageData.metadataByTool.get(tool.name);
               const purl = metadata?.purl;
               const cpe = metadata?.cpe;
-              
+
               return (
                 <div
                   key={tool.name}
@@ -220,9 +218,9 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
               {tools.map((tool, idx) => {
                 const metadata = packageData.metadataByTool.get(tool.name);
                 const cpe = metadata?.cpe;
-                
+
                 if (!cpe) return null;
-                
+
                 return (
                   <div
                     key={tool.name}
@@ -245,14 +243,18 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       {packageData.hasMetadataConflicts && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle size={20} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle
+              size={20}
+              className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+            />
             <div>
               <h5 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
                 Metadata Conflicts Detected
               </h5>
               <p className="text-sm text-amber-800 dark:text-amber-300">
-                This package has inconsistent metadata across different SBOM tools. Review the details above
-                to understand the differences and determine the correct values for your use case.
+                This package has inconsistent metadata across different SBOM tools. Review the
+                details above to understand the differences and determine the correct values for
+                your use case.
               </p>
             </div>
           </div>

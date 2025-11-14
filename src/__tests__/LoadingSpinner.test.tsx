@@ -6,5 +6,3 @@ test('renders with default message', () => {
   render(<LoadingSpinner />);
   expect(screen.getByText('Loading...')).toBeInTheDocument();
 });
-
-

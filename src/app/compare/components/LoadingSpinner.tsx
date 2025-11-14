@@ -4,9 +4,7 @@ interface LoadingSpinnerProps {
   message?: string;
 }
 
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  message = 'Loading...',
-}) => {
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ message = 'Loading...' }) => {
   return (
     <div className="flex items-center justify-center py-12">
       <div className="text-center">
