@@ -20,8 +20,8 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Patch the past <br className="hidden sm:block" />
-          <span className="text-primary">Build the future</span>
+          Weigh the Options <br className="hidden sm:block" />
+          <span className="text-primary">Clarify the Threats</span>
         </motion.h1>
 
         <motion.p
@@ -30,7 +30,7 @@ export default function HomePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          1,700+ trusted container images to eliminate your vulnerabilities and mitigate malware.
+          Compare SBOMs of the container images you use to bring clairity and eliminate false positives.
         </motion.p>
 
         <motion.div
@@ -64,7 +64,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="py-6 text-center opacity-70 text-sm">
-        © {new Date().getFullYear()} YourCompany. All rights reserved.
+        © {new Date().getFullYear()} jackops.dev. All rights reserved.
       </footer>
     </div>
   );
