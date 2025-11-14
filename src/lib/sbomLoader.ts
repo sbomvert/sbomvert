@@ -65,7 +65,7 @@ export const loadSbomImagesFromPublic = async (
       console.error('Failed to fetch SBOM image list');
       return {
         images: [],
-        pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 },
+        pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 20 },
       };
     }
 
@@ -87,7 +87,7 @@ export const loadSbomImagesFromPublic = async (
     console.error('Error loading image list:', error);
     return {
       images: [],
-      pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 8 },
+      pagination: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 20 },
     };
   }
 };

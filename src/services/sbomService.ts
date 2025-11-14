@@ -27,7 +27,7 @@ export class SbomService {
   private readonly sbomDir: string;
   private readonly itemsPerPage: number;
 
-  constructor(sbomDir: string, itemsPerPage: number = 8) {
+  constructor(sbomDir: string, itemsPerPage: number = 20) {
     this.sbomDir = sbomDir;
     this.itemsPerPage = itemsPerPage;
   }

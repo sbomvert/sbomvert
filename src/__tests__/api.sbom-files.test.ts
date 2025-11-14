@@ -37,7 +37,7 @@ const mockResponse = {
     currentPage: 1,
     totalPages: 1,
     totalItems: 1,
-    itemsPerPage: 8
+    itemsPerPage: 20
   }
 };
 
@@ -141,7 +141,7 @@ describe('GET /api/sbom-files (filesystem-backed)', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 8
+        itemsPerPage: 20
       }
     });
 
@@ -154,7 +154,7 @@ describe('GET /api/sbom-files (filesystem-backed)', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 8
+        itemsPerPage: 20
       }
     });
   });

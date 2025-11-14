@@ -65,7 +65,7 @@ describe('SbomService', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 8
+        itemsPerPage: 20
       });
     });
 
@@ -153,7 +153,7 @@ describe('SbomService', () => {
         currentPage: 1,
         totalPages: 0,
         totalItems: 0,
-        itemsPerPage: 8
+        itemsPerPage: 20
       });
     });
 

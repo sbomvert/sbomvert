@@ -55,7 +55,7 @@ export const mockSbomData = {
     currentPage: 1,
     totalPages: 1,
     totalItems: 1,
-    itemsPerPage: 8
+    itemsPerPage: 20
   }
 };
 
