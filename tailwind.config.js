@@ -11,14 +11,12 @@ module.exports = {
       colors: {
         primary: '#4F46E5',
 
-        // Add missing color variables for system tokens
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
       },
-      // Keep your animations
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
