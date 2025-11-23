@@ -101,7 +101,6 @@ export const loadSbomsForImage = async (
       console.error('Failed to fetch SBOM files list');
       return { sboms: {} };
     }
-    console.log(response);
     const { files } = await response.json();
     const sbomList: ISbom[] = [];
 
