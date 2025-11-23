@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LocalSbomService } from '@/services/localSbomService';
+import { S3SbomService } from '@/services/sbomServiceS3';
 
 // Initialize the SBOM service
-const sbomService = new LocalSbomService('./public/sbom', 20);
+var sbomService: any
+if (process.env.NODE_ENV === 'production') {
+ sbomService = new S3SbomService('sbomvert', 'sbom/', 20);
+
+} else {
+ sbomService = new LocalSbomService('./public/sbom', 20); 
+
+}
 
 // Helper function to create responses
 function createResponse(data: any, init?: ResponseInit) {

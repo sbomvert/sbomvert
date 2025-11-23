@@ -13,6 +13,10 @@ export class LocalSbomService implements ISbomService {
     this.sbomDir = sbomDir;
     this.itemsPerPage = itemsPerPage;
   }
+listFiles(containerName: string): Promise<SbomFile[]> {
+  return Promise.resolve(this.getContainerFiles(containerName));
+}
+
 
   private checkDirectoryExists(): boolean {
     return fs.existsSync(this.sbomDir);

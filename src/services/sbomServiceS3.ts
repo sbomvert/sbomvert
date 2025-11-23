@@ -185,4 +185,22 @@ export class S3SbomService implements ISbomService {
   getFileUrl(containerName: string, fileName: string): string {
     return `s3://${this.bucketName}/${this.prefix}${containerName}/${fileName}`;
   }
+  /**
+ * Returns all SBOM JSON files for a specific container name
+ */
+async listFiles(containerName: string): Promise<SbomFile[]> {
+  if (!containerName) return [];
+
+  try {
+    const objects = await this.listAllObjects();
+    const containerMap = this.groupByContainer(objects);
+
+    // Return the files for that container (or empty array)
+    return containerMap.get(containerName) || [];
+  } catch (error) {
+    console.error(`Error listing files for container ${containerName} from S3:`, error);
+    return [];
+  }
+}
+
 }
