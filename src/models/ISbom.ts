@@ -3,7 +3,7 @@ export interface ISbomPackage {
   version: string;
   supplier?: string;
   license?: string;
-  packageType: 'os' | 'npm' | 'python' | 'maven' | 'binary' | 'library' | '.net' | 'generic';
+  packageType: 'os' | 'npm' | 'python' | 'maven' | 'binary' | 'library' | '.net' | 'generic' | 'rust';
   hash?: string;
   purl?: string;
   cpe?: string;

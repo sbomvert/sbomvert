@@ -92,6 +92,8 @@ const extractPackageType = (
         return 'python';
       case 'nuget':
         return '.net';
+      case 'cargo':
+        return 'rust';
       case 'gem':
         return 'library';
       case 'github':

@@ -32,9 +32,17 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
       metadataByTool: Map<string, IPackageMetadata>;
     }
   >();
+    const infoByTool: Record<string, { packages: string[]; purls: string[] }> = {};
+
 
   // First pass: collect all packages and their metadata per tool
   sboms.forEach(sbom => {
+     infoByTool[sbom.tool] = {
+      packages: sbom.packages.map(pkg => `${pkg.name}@${pkg.version}`),
+      purls: sbom.packages
+        .map(pkg => pkg.purl)
+        .filter((purl): purl is string => purl !== undefined && purl !== ''),
+     };
     sbom.packages.forEach(pkg => {
       const key = `${pkg.name}@${pkg.version}`;
       const existing = packageMap.get(key);
@@ -124,5 +132,6 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
       uniquePerTool,
       packagesWithConflicts,
     },
+    infoByTool,
   };
 };

@@ -25,3 +25,58 @@ export const getPackageTypeColor = (type?: string): string => {
       return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   }
 };
+
+interface IJaccardResult {
+  x: string;
+  y: string;
+  value: number;
+}
+
+export const computeJaccard = (
+  infoByTool: Record<string, { packages: string[]; purls: string[] }>,
+  key: 'packages' | 'purls'
+): IJaccardResult[] => {
+  const tools = Object.keys(infoByTool);
+  const results: IJaccardResult[] = [];
+
+
+  // Compare each pair of tools
+  for (let i = 0; i < tools.length; i++) {
+
+     results.push({
+        y: tools[i],
+        x: tools[i],
+        value: 1,
+      });
+
+    for (let j = i + 1; j < tools.length; j++) {
+      const toolA = tools[i];
+      const toolB = tools[j];
+
+      const setA = new Set(infoByTool[toolA][key]);
+      const setB = new Set(infoByTool[toolB][key]);
+
+      // Calculate intersection
+      const intersection = new Set([...setA].filter(item => setB.has(item)));
+
+      // Calculate union
+      const union = new Set([...setA, ...setB]);
+
+      // Jaccard index = |intersection| / |union|
+      const jaccardValue = union.size === 0 ? 0 : intersection.size / union.size;
+
+      results.push({
+        x: toolA,
+        y: toolB,
+        value: jaccardValue,
+      });
+      results.push({
+        y: toolA,
+        x: toolB,
+        value: jaccardValue,
+      });
+    }
+  }
+
+  return results;
+};

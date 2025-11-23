@@ -16,6 +16,8 @@ import {
   Radar,
 } from 'recharts';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
+import Heatmap from './HeatMap';
+import { computeJaccard } from '@/lib/utils';
 
 interface MultiToolSummaryProps {
   comparison: IMultiToolComparison;
@@ -116,16 +118,32 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             </RadarChart>
           </ResponsiveContainer>
         </div>
-        {/*
+        
         <div className="max-w-full overflow-hidden">
-          <h3 className="text-lg font-semibold mb-3 dark:text-white">HeatMap</h3>
+          <h3 className="text-lg font-semibold mb-3 dark:text-white">Package similarity across tools</h3>
           <ResponsiveContainer width="100%" height={600}>
             <Heatmap
-            data={[]}
+            data={computeJaccard(comparison.infoByTool,
+              'packages'
+            )}
           colorRange={["#e0f7fa", "#006064"]}
       />
           </ResponsiveContainer>
-        </div>*/}
+          
+        </div>
+                <div className="max-w-full overflow-hidden">
+          <h3 className="text-lg font-semibold mb-3 dark:text-white">pURL similarity across tools</h3>
+          <ResponsiveContainer width="100%" height={600}>
+            <Heatmap
+            data={computeJaccard(comparison.infoByTool,
+              'purls'
+            )}
+          colorRange={["#ffebee", "#b71c1c"]}
+
+      />
+          </ResponsiveContainer>
+          
+        </div>
       </div>
     </motion.div>
   );

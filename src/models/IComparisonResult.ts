@@ -41,4 +41,9 @@ export interface IMultiToolComparison {
     uniquePerTool: Record<string, number>;
     packagesWithConflicts: number;
   };
+  // Per-tool information
+  infoByTool: Record<string, {
+    packages: string[];  // ["package@version", ...]
+    purls: string[];     // ["pkg:type/name@version", ...]
+  }>;
 }

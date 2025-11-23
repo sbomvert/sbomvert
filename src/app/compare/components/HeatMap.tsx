@@ -20,9 +20,9 @@ function hexToRgb(hex: string) {
   const bigint = parseInt(
     h.length === 3
       ? h
-          .split('')
-          .map(c => c + c)
-          .join('')
+        .split('')
+        .map(c => c + c)
+        .join('')
       : h,
     16
   );
@@ -60,11 +60,11 @@ export default function Heatmap({
   );
   const lookup = useMemo(() => {
     const m = new Map<string, number>();
-    data.forEach(d => m.set(`${d.x}||${d.y}`,  Math.round(d.value*100)));
+    data.forEach(d => m.set(`${d.x}||${d.y}`, Math.round(d.value * 100)));
     return m;
   }, [data]);
 
-  const values = data.map(d => Math.round(d.value*100));
+  const values = data.map(d => Math.round(d.value * 100));
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -109,10 +109,10 @@ export default function Heatmap({
             const availableHeight = dimensions.height - 100;
 
             // Calculate cell size to maintain squares
-            const cellSize = Math.min(
+            const cellSize = Math.max(40, Math.min(
               availableWidth / xLabels.length,
               availableHeight / yLabels.length
-            );
+            ));
             const cellWidth = cellSize;
             const cellHeight = cellSize;
 
@@ -140,10 +140,31 @@ export default function Heatmap({
                           const svgRect = containerRef.current?.getBoundingClientRect();
                           const cellRect = e.currentTarget.getBoundingClientRect();
                           if (svgRect) {
+                            const baseX = cellRect.left - svgRect.left + cellRect.width / 2;
+                            const baseY = cellRect.top - svgRect.top - 10;
+
+                            // Estimate tooltip width (adjust as needed)
+                            const tooltipWidth = 200;
+                            const tooltipHeight = 60;
+
+                            // Adjust X if it would overflow right
+                            let adjustedX = baseX;
+                            if (baseX + tooltipWidth / 2 > dimensions.width) {
+                              adjustedX = dimensions.width - tooltipWidth - 10;
+                            } else if (baseX - tooltipWidth / 2 < 0) {
+                              adjustedX = tooltipWidth / 2 + 10;
+                            }
+
+                            // Adjust Y if it would overflow top
+                            let adjustedY = baseY;
+                            if (baseY - tooltipHeight < 0) {
+                              adjustedY = cellRect.bottom - svgRect.top + 10; // Show below instead
+                            }
+
                             setTooltip({
                               active: true,
-                              x: cellRect.left - svgRect.left + cellRect.width / 2,
-                              y: cellRect.top - svgRect.top - 10,
+                              x: adjustedX,
+                              y: adjustedY,
                               xLabel,
                               yLabel,
                               value: val,
@@ -171,10 +192,10 @@ export default function Heatmap({
                 {xLabels.map((label, i) => (
                   <text
                     key={`x-${i}`}
-                    x={i * cellWidth + cellWidth / 2 -20}
-                    y={cellHeight * yLabels.length +30}
+                    x={i * cellWidth + cellWidth / 2 - 20}
+                    y={cellHeight * yLabels.length + 30}
                     textAnchor="middle"
-                    fontSize={12}
+                    fontSize={14}
                     fill='#9ca3af'
                     transform={`rotate(-45, ${i * cellWidth + cellWidth / 2}, ${cellHeight * yLabels.length + 20})`}
                   >
