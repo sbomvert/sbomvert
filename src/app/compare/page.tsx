@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ComparisonTypeSelector } from './components/ComparisonTypeSelector';
 import { SearchBar } from './components/SearchBar';
 import { ImageSelector, ImageInfo } from './components/ImageSelector';
@@ -13,17 +12,35 @@ type ComparisonType = 'SBOM' | 'CVE';
 
 export default function Home() {
   const router = useRouter();
-
   const setSelectedImage = useArtifactStore(s => s.setSelectedImage);
-
   const [comparisonType, setComparisonType] = useState<ComparisonType>('SBOM');
-  const [searchTerm, setSearchTerm] = useState('');
-
+  const [searchInput, setSearchInput] = useState(''); // Local input state
+  const [searchTerm, setSearchTerm] = useState(''); // Debounced search term
   const [images, setImages] = useState<ImageInfo[]>([]);
-
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // ------------------------------------------------------------
+  // Debounce search input (500ms delay)
+  // ------------------------------------------------------------
+  useEffect(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setCurrentPage(1);
+    }, 500);
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [searchInput]);
 
   // ------------------------------------------------------------
   // Load paginated images
@@ -39,12 +56,11 @@ export default function Home() {
       setTotalPages(pagination.totalPages);
       setLoading(false);
     };
-
     loadData();
   }, [currentPage, searchTerm]);
 
   // ------------------------------------------------------------
-  // Filter images for search
+  // Filter images for search (client-side filtering)
   // ------------------------------------------------------------
   const filteredImages = useMemo(() => {
     return images.filter(
@@ -62,12 +78,9 @@ export default function Home() {
     router.push('/compare/artifact');
   };
 
-  // ------------------------------------------------------------
-  // Handle search input
-  // ------------------------------------------------------------
+
   const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
+    setSearchInput(value);
   };
 
   return (
@@ -76,16 +89,13 @@ export default function Home() {
         comparisonType={comparisonType}
         onComparisonTypeChange={setComparisonType}
       />
-
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
-
       {/* ------------------------------------------------------------
             IMAGE SELECTION
            ------------------------------------------------------------ */}
       {!loading && (
         <>
-          <SearchBar value={searchTerm} onChange={handleSearch} />
-
+          <SearchBar value={searchInput} onChange={handleSearch} />
           <ImageSelector
             images={filteredImages}
             onImageSelect={handleImageSelect}
