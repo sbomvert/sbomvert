@@ -3,8 +3,10 @@ import {
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   _Object,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import type { ISbomService, SbomFile, Container, SbomListResponse } from './sbomService.types';
+import { Readable } from 'stream';
 
 /**
  * S3-compatible implementation of SBOM service
@@ -202,5 +204,36 @@ async listFiles(containerName: string): Promise<SbomFile[]> {
     return [];
   }
 }
+
+ async getFileContent(containerName: string, fileName: string): Promise<string> {
+    const key = `${this.prefix}${containerName}/${fileName}`;
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      });
+
+      const response = await this.s3Client.send(command);
+
+      if (!response.Body) {
+        throw new Error("Empty S3 object");
+      }
+
+      // Convert S3 stream → string
+      const stream = response.Body as Readable;
+      const chunks: Buffer[] = [];
+
+      for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+      }
+
+      return Buffer.concat(chunks).toString("utf8");
+    } catch (err) {
+      console.error(`Error reading SBOM from S3: ${key}`, err);
+      throw new Error("SBOM file not found");
+    }
+  }
+
 
 }

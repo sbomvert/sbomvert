@@ -93,4 +93,18 @@ listFiles(containerName: string): Promise<SbomFile[]> {
       },
     };
   }
+    async getFileContent(containerName: string, fileName: string): Promise<string> {
+    const filePath = path.join(this.sbomDir, containerName, fileName);
+
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+          console.error(`Failed to read SBOM file: ${filePath}`, err);
+          return reject(new Error('SBOM file not found'));
+        }
+        resolve(data);
+      });
+    });
+  }
+
 }

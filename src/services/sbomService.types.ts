@@ -27,6 +27,7 @@ export interface SbomListResponse {
 // Abstract interface that both implementations follow
 export interface ISbomService {
   listSboms(page?: number, search?: string): Promise<SbomListResponse>;
-    listFiles(containerName: string): Promise<SbomFile[]>; 
+  listFiles(containerName: string): Promise<SbomFile[]>; 
+  getFileContent(containerName: string, fileName: string): Promise<string>;
 
 }

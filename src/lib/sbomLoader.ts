@@ -106,7 +106,7 @@ export const loadSbomsForImage = async (
 
     for (const file of files) {
       try {
-        const filePath = `/sbom/${reformatName}/${file.name}`;
+        const filePath = `/api/sbom/${reformatName}/${file.name}`;
         const sbomResponse = await fetch(filePath);
         if (!sbomResponse.ok) continue;
 
