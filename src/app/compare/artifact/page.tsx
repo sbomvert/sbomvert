@@ -13,7 +13,7 @@ import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
 import { loadSbomsForImage } from '@/lib/sbomLoader';
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import { TOOL_COLORS } from '@/lib/utils';
 import { useArtifactStore } from '@/store/useArtifactStore';
 
@@ -21,7 +21,7 @@ type ViewMode = 'summary' | 'table' | 'chart';
 
 export default function Home() {
   const router = useRouter();
-  const selectedImage = useArtifactStore((s) => s.selectedImage);
+  const selectedImage = useArtifactStore(s => s.selectedImage);
   const [searchTerm, setSearchTerm] = useState('');
 
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
@@ -36,18 +36,14 @@ export default function Home() {
   // ------------------------------------------------------------
   useEffect(() => {
     setLoading(true);
-
   }, []);
 
   useEffect(() => {
     if (!selectedImage) {
-      router.replace("/compare");
-
+      router.replace('/compare');
     }
-
-
   }, [selectedImage, router]);
-  
+
   useEffect(() => {
     if (!selectedImage) return;
 
@@ -63,7 +59,6 @@ export default function Home() {
 
     loadData();
   }, [selectedImage]);
-
 
   // ------------------------------------------------------------
   // Get SBOMs for the currently selected image
@@ -133,12 +128,8 @@ export default function Home() {
   };
 
   return (
-
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-
       {loading && <LoadingSpinner message="Loading SBOMs ..." />}
-
 
       {/* ------------------------------------------------------------
             SBOM ANALYSIS SCREEN

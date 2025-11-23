@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface ArtifactStore {
   selectedImage: string | null;
@@ -6,8 +6,8 @@ interface ArtifactStore {
   clearSelectedImage: () => void;
 }
 
-export const useArtifactStore = create<ArtifactStore>((set) => ({
+export const useArtifactStore = create<ArtifactStore>(set => ({
   selectedImage: null,
-  setSelectedImage: (value:string) => set({ selectedImage: value }),
+  setSelectedImage: (value: string) => set({ selectedImage: value }),
   clearSelectedImage: () => set({ selectedImage: null }),
 }));

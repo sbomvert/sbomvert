@@ -23,7 +23,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           © {new Date().getFullYear()} jackops.dev. All rights reserved.
         </footer>
       </body>
-
     </html>
   );
 }

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   }
   try {
     const sbomDir = path.join(process.cwd(), 'public', 'sbom', container ?? '');
-    console.log(sbomDir)
+    console.log(sbomDir);
     // Check if directory exists
     if (!fs.existsSync(sbomDir)) {
       return NextResponse.json({ containers: [] });

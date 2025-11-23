@@ -40,7 +40,9 @@ export class S3SbomService implements ISbomService {
           : undefined,
       });
 
-    console.log(`S3SbomService initialized: Bucket = ${this.bucketName}, Prefix = ${this.prefix}, Items Per Page = ${this.itemsPerPage}`);
+    console.log(
+      `S3SbomService initialized: Bucket = ${this.bucketName}, Prefix = ${this.prefix}, Items Per Page = ${this.itemsPerPage}`
+    );
   }
 
   /**
@@ -53,7 +55,7 @@ export class S3SbomService implements ISbomService {
     const parts = relativePath.split('/');
     const containerName = parts.length >= 2 ? parts[0] : null;
     console.log(`Extracted container name: ${containerName} from key: ${key}`);
-    
+
     return containerName;
   }
 
@@ -76,17 +78,17 @@ export class S3SbomService implements ISbomService {
       const command = new ListObjectsV2Command(params);
       console.log(`Listing objects with params:`, params);
       const response = await this.s3Client.send(command);
-      
+
       if (response.Contents) {
-        const newObjects = response.Contents.filter((obj: _Object) => obj.Key && obj.Key.endsWith('.json')).map(
-          (obj: _Object) => ({
-            key: obj.Key!,
-            size: obj.Size || 0,
-            lastModified: obj.LastModified || new Date(),
-          })
-        );
+        const newObjects = response.Contents.filter(
+          (obj: _Object) => obj.Key && obj.Key.endsWith('.json')
+        ).map((obj: _Object) => ({
+          key: obj.Key!,
+          size: obj.Size || 0,
+          lastModified: obj.LastModified || new Date(),
+        }));
         objects.push(...newObjects);
-        
+
         console.log(`Found ${newObjects.length} JSON objects.`);
       }
 

@@ -29,7 +29,7 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
     color: ['#4f46e5', '#10b981', '#f59e0b'][idx],
   }));
 
-  const radarData = comparison.tools.map((tool) => {
+  const radarData = comparison.tools.map(tool => {
     const total = comparison.statistics.toolCounts[tool.name];
     const unique = comparison.statistics.uniquePerTool[tool.name];
     const common = total - unique;

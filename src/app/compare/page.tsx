@@ -6,15 +6,15 @@ import { SearchBar } from './components/SearchBar';
 import { ImageSelector, ImageInfo } from './components/ImageSelector';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
-import { useArtifactStore } from "@/store/useArtifactStore";
-import { useRouter } from "next/navigation";
+import { useArtifactStore } from '@/store/useArtifactStore';
+import { useRouter } from 'next/navigation';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
 export default function Home() {
   const router = useRouter();
 
-  const setSelectedImage = useArtifactStore((s) => s.setSelectedImage);
+  const setSelectedImage = useArtifactStore(s => s.setSelectedImage);
 
   const [comparisonType, setComparisonType] = useState<ComparisonType>('SBOM');
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,12 +57,10 @@ export default function Home() {
   // ------------------------------------------------------------
   // Load SBOMs for selected image
   // ------------------------------------------------------------
-const handleImageSelect = async (image: string) => {
-    setSelectedImage(image); 
-    router.push("/compare/artifact");
- 
-};
-
+  const handleImageSelect = async (image: string) => {
+    setSelectedImage(image);
+    router.push('/compare/artifact');
+  };
 
   // ------------------------------------------------------------
   // Handle search input
@@ -72,36 +70,31 @@ const handleImageSelect = async (image: string) => {
     setCurrentPage(1);
   };
 
-
-
   return (
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ComparisonTypeSelector
+        comparisonType={comparisonType}
+        onComparisonTypeChange={setComparisonType}
+      />
 
+      {loading && <LoadingSpinner message="Loading SBOM files..." />}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ComparisonTypeSelector
-          comparisonType={comparisonType}
-          onComparisonTypeChange={setComparisonType}
-        />
-
-        {loading && <LoadingSpinner message="Loading SBOM files..." />}
-
-        {/* ------------------------------------------------------------
+      {/* ------------------------------------------------------------
             IMAGE SELECTION
            ------------------------------------------------------------ */}
-        {!loading && (
-          <>
-            <SearchBar value={searchTerm} onChange={handleSearch} />
+      {!loading && (
+        <>
+          <SearchBar value={searchTerm} onChange={handleSearch} />
 
-            <ImageSelector
-              images={filteredImages}
-              onImageSelect={handleImageSelect}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </>
-        )}
-      </main>
-
+          <ImageSelector
+            images={filteredImages}
+            onImageSelect={handleImageSelect}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
+      )}
+    </main>
   );
 }

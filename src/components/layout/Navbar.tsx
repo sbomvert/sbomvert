@@ -4,7 +4,7 @@ import React from 'react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/hooks/useTheme';
-import  Image  from 'next/image';
+import Image from 'next/image';
 
 export const Navbar: React.FC = () => {
   const router = useRouter();

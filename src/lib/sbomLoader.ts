@@ -22,9 +22,7 @@ interface PaginationInfo {
 
 // --- Name format helpers ---
 const formatContainerName = (folderName: string): string => {
-  return folderName
-    .replace(/-?twodots/g, ':')
-    .replace(/-?slash/g, '/');
+  return folderName.replace(/-?twodots/g, ':').replace(/-?slash/g, '/');
 };
 
 const reverseFormatContainerName = (formattedName: string): string => {
@@ -103,7 +101,7 @@ export const loadSbomsForImage = async (
       console.error('Failed to fetch SBOM files list');
       return { sboms: {} };
     }
-    console.log(response)
+    console.log(response);
     const { files } = await response.json();
     const sbomList: ISbom[] = [];
 

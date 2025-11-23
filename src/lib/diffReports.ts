@@ -15,9 +15,9 @@ const extractMetadata = (pkg: ISbom['packages'][0]): IPackageMetadata => ({
 
 const getUniqueValues = (values: (string | undefined)[]): string[] => {
   const unique: Set<string> = new Set(
-  values.filter((v): v is string => v !== undefined && v !== '')
-);
-  const arr = Array.from(unique)
+    values.filter((v): v is string => v !== undefined && v !== '')
+  );
+  const arr = Array.from(unique);
   return arr ?? [];
 };
 
