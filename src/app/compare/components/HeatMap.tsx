@@ -58,14 +58,13 @@ export default function Heatmap({
     () => yLabelsProp ?? Array.from(new Set(data.map(d => d.y))),
     [data, yLabelsProp]
   );
-
   const lookup = useMemo(() => {
     const m = new Map<string, number>();
-    data.forEach(d => m.set(`${d.x}||${d.y}`, d.value));
+    data.forEach(d => m.set(`${d.x}||${d.y}`,  Math.round(d.value*100)));
     return m;
   }, [data]);
 
-  const values = data.map(d => d.value);
+  const values = data.map(d => Math.round(d.value*100));
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -164,7 +163,7 @@ export default function Heatmap({
                   width={cellWidth * xLabels.length}
                   height={cellHeight * yLabels.length}
                   fill="none"
-                  stroke="#333"
+                  stroke="#9ca3af"
                   strokeWidth={1.5}
                 />
 
@@ -172,10 +171,11 @@ export default function Heatmap({
                 {xLabels.map((label, i) => (
                   <text
                     key={`x-${i}`}
-                    x={i * cellWidth + cellWidth / 2}
-                    y={cellHeight * yLabels.length + 20}
+                    x={i * cellWidth + cellWidth / 2 -20}
+                    y={cellHeight * yLabels.length +30}
                     textAnchor="middle"
                     fontSize={12}
+                    fill='#9ca3af'
                     transform={`rotate(-45, ${i * cellWidth + cellWidth / 2}, ${cellHeight * yLabels.length + 20})`}
                   >
                     {label}
@@ -189,8 +189,8 @@ export default function Heatmap({
                     x={-10}
                     y={i * cellHeight + cellHeight / 2}
                     textAnchor="end"
-                    dominantBaseline="middle"
-                    fontSize={12}
+                    fill='#9ca3af'
+                    fontSize={14}
                   >
                     {label}
                   </text>
@@ -206,10 +206,10 @@ export default function Heatmap({
           className="absolute bg-white border border-gray-300 rounded shadow-lg p-2 text-sm pointer-events-none z-50"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
-          <div className="font-semibold">
+          <div className="font-semibold text-gray-800">
             {tooltip.xLabel} / {tooltip.yLabel}
           </div>
-          <div className="text-gray-600">Value: {tooltip.value}</div>
+          <div className="text-gray-600">Value: {tooltip.value}%</div>
         </div>
       )}
     </div>
