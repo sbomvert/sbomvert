@@ -15,10 +15,7 @@ export default function HomePage() {
     <>
       <Head>
         <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
-        {/* Navbar */}
-        <Navbar />
+      </Head> 
         <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
         {/* Hero Section */}
@@ -72,11 +69,8 @@ export default function HomePage() {
           </motion.div>
         </main>
 
-        {/* Footer */}
-        <footer className="py-6 text-center opacity-70 text-sm">
-          © {new Date().getFullYear()} jackops.dev. All rights reserved.
-        </footer>
-      </div>
+
+    
     </>
   );
 }
