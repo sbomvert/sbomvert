@@ -29,8 +29,8 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            Weigh the Options <br className="hidden sm:block" />
-            <span className="text-primary">Clarify the Threats</span>
+            Weigh the Options <br className="hidden block" />
+            <span className="text-primary mt-1 block">Clarify the Threats</span>
           </motion.h1>
 
           <motion.p
