@@ -88,12 +88,14 @@ const extractPackageType = (
       case 'dpkg':
       case 'apk':
         return 'os';
-      case 'px§ypi':
+      case 'pypi':
         return 'python';
       case 'nuget':
         return '.net';
       case 'gem':
         return 'library';
+      case 'github':
+        return 'generic';
       case 'generic':
         return 'generic';
 
