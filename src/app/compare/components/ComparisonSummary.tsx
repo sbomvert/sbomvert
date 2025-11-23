@@ -50,9 +50,14 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
     >
       <h2 className="text-2xl font-bold mb-4 dark:text-white">Comparison Summary</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6">
-        {/* Existing Cards Here */}
-        {/* ... */}
+      <div className="grid grid-cols-1 gap-3 mb-6">
+
+        <h3 className="text-lg font-semibold dark:text-white">Package info</h3>
+        <ol className="s ml-6 text-gray-700 dark:text-gray-200">
+          <li className='font-semibold'>Total packages: {comparison.allPackages.size}</li>
+          <li className='font-semibold' >Packages with conflicts: {comparison.statistics.packagesWithConflicts}</li>
+          <li className='font-semibold' >Common packages: {comparison.statistics.commonToAll}</li>
+        </ol>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

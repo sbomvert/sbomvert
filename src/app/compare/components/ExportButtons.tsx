@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, FileJson } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
+import { Button } from '@/components/ui/Button';
 
 interface ExportButtonsProps {
   comparison: IMultiToolComparison;
@@ -40,20 +41,21 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
 
   return (
     <>
-      <button
+      <Button
         onClick={() => handleExport('json')}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        size='Sm'
       >
         <FileJson size={18} />
         Export JSON
-      </button>
-      <button
+      </Button>
+      {/*  <button
         onClick={() => handleExport('pdf')}
         className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
       >
         <Download size={18} />
         Export PDF
       </button>
+*/}
     </>
   );
 };

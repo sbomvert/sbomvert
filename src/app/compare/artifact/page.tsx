@@ -22,14 +22,12 @@ type ViewMode = 'summary' | 'table' | 'chart';
 export default function Home() {
   const router = useRouter();
   const selectedImage = useArtifactStore(s => s.selectedImage);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
   const [sboms, setSboms] = useState<Record<string, ISbom[]>>({});
   const [selectedTools, setSelectedTools] = useState<Set<string>>(new Set());
 
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
 
   // ------------------------------------------------------------
   // Load paginated images
@@ -90,21 +88,11 @@ export default function Home() {
   }, [currentSboms, selectedTools]);
 
   // ------------------------------------------------------------
-  // Handle search input
-  // ------------------------------------------------------------
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  // ------------------------------------------------------------
   // Reset page state
   // ------------------------------------------------------------
   const handleReset = () => {
-    setSearchTerm('');
     setViewMode('summary');
     setSelectedTools(new Set());
-    setCurrentPage(1);
   };
 
   // ------------------------------------------------------------
@@ -155,15 +143,6 @@ export default function Home() {
                     <ComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
                     <ExportButtons comparison={comparison} />
 
-                    <button
-                      onClick={handleReset}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 
-                                   text-gray-700 dark:text-gray-300 
-                                   rounded-lg hover:bg-gray-300 
-                                   dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Back
-                    </button>
                   </div>
                 </div>
 
