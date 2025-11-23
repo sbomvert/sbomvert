@@ -40,9 +40,6 @@ export class S3SbomService implements ISbomService {
           : undefined,
       });
 
-    console.log(
-      `S3SbomService initialized: Bucket = ${this.bucketName}, Prefix = ${this.prefix}, Items Per Page = ${this.itemsPerPage}`
-    );
   }
 
   /**
@@ -54,7 +51,6 @@ export class S3SbomService implements ISbomService {
 
     const parts = relativePath.split('/');
     const containerName = parts.length >= 2 ? parts[0] : null;
-    console.log(`Extracted container name: ${containerName} from key: ${key}`);
 
     return containerName;
   }
@@ -76,7 +72,6 @@ export class S3SbomService implements ISbomService {
       };
 
       const command = new ListObjectsV2Command(params);
-      console.log(`Listing objects with params:`, params);
       const response = await this.s3Client.send(command);
 
       if (response.Contents) {
@@ -89,13 +84,11 @@ export class S3SbomService implements ISbomService {
         }));
         objects.push(...newObjects);
 
-        console.log(`Found ${newObjects.length} JSON objects.`);
       }
 
       continuationToken = response.NextContinuationToken;
     } while (continuationToken);
 
-    console.log(`Total objects listed: ${objects.length}`);
     return objects;
   }
 

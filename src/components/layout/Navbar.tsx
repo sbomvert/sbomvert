@@ -24,7 +24,7 @@ export const Navbar: React.FC = () => {
             onClick={onLogoClick}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <Image src="/logo.svg" width={24} height={24} alt="logo" className="w-8 h-8" />
+            <Image src="/public/logo.svg" width={24} height={24} alt="logo" className="w-8 h-8" />
 
             <h1 className="text-xl font-bold text-foreground dark:text-white">SBOMVert</h1>
           </button>

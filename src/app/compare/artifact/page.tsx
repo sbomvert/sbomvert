@@ -87,13 +87,6 @@ export default function Home() {
     return compareMultipleTools(filteredSboms);
   }, [currentSboms, selectedTools]);
 
-  // ------------------------------------------------------------
-  // Reset page state
-  // ------------------------------------------------------------
-  const handleReset = () => {
-    setViewMode('summary');
-    setSelectedTools(new Set());
-  };
 
   // ------------------------------------------------------------
   // Toggle tool selection

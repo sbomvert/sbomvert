@@ -26,6 +26,7 @@ const mockComparison = {
     uniquePerTool: { Syft: 1, Trivy: 1 },
     packagesWithConflicts: 0,
   },
+  infoByTool: {}
 };
 
 export const Default: Story = {

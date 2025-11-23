@@ -10,8 +10,7 @@ interface ComparisonTypeSelectorProps {
   onComparisonTypeChange: (type: ComparisonType) => void;
 }
 
-export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
-  comparisonType,
+export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({ 
   onComparisonTypeChange,
 }) => {
   return (

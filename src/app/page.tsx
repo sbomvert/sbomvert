@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Navbar } from '@/components/layout/Navbar';
 import { useState } from 'react';
 import { ContactModal } from './compare/components/ContactModal';
 import Head from 'next/head';

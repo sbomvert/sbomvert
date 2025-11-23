@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, FileJson } from 'lucide-react';
+import { FileJson } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Button } from '@/components/ui/Button';
 
