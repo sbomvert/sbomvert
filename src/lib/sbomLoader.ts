@@ -89,46 +89,58 @@ export const loadSbomImagesFromPublic = async (
 // --- Existing: Load SBOMs for a single image when clicked ---
 export const loadSbomsForImage = async (
   image: string
-): Promise<{
-  sboms: ContainerSboms;
-}> => {
+): Promise<{ sboms: ContainerSboms }> => {
   try {
     const reformatName = reverseFormatContainerName(image);
     const sboms: ContainerSboms = {};
 
+    // Fetch list of files
     const response = await fetch(`/api/sbom/image?name=${reformatName}`);
     if (!response.ok) {
-      console.error('Failed to fetch SBOM files list');
+      console.error("Failed to fetch SBOM files list");
       return { sboms: {} };
     }
-    const { files } = await response.json();
-    const sbomList: ISbom[] = [];
 
-    for (const file of files) {
+    const { files } = await response.json();
+    if (!files || !Array.isArray(files)) return { sboms: {} };
+
+    // 🌟 Parallel fetch of all SBOM file contents
+    const sbomPromises = files.map(async (file: { name: string }) => {
       try {
         const filePath = `/api/sbom/${reformatName}/${file.name}`;
         const sbomResponse = await fetch(filePath);
-        if (!sbomResponse.ok) continue;
+
+        if (!sbomResponse.ok) return null;
 
         const sbomData = await sbomResponse.json();
-        const nameParts = file.name.split('.');
-        const toolName = nameParts[0];
-        const format = nameParts[1]?.toUpperCase();
 
-        let parsedSbom: ISbom | null = null;
-        if (format === 'SPDX') parsedSbom = parseSpdxSbom(sbomData, image, toolName);
-        else if (format === 'CYCLONEDX') parsedSbom = parseCycloneDxSbom(sbomData, image, toolName);
+        const [toolName, ext] = file.name.split(".");
+        const format = ext?.toUpperCase();
 
-        if (parsedSbom) sbomList.push(parsedSbom);
-      } catch (error) {
-        console.error(`Error loading SBOM ${file.name}:`, error);
+        if (format === "SPDX")
+          return parseSpdxSbom(sbomData, image, toolName);
+
+        if (format === "CYCLONEDX")
+          return parseCycloneDxSbom(sbomData, image, toolName);
+
+        return null;
+      } catch (err) {
+        console.error(`Error loading SBOM ${file.name}:`, err);
+        return null;
       }
-    }
+    });
+
+    // Wait for all SBOMs (in parallel)
+    const results = await Promise.all(sbomPromises);
+
+    // Filter out failed/null results
+    const sbomList = results.filter((x): x is ISbom => x !== null);
 
     if (sbomList.length > 0) sboms[image] = sbomList;
+
     return { sboms };
   } catch (error) {
-    console.error('Error loading SBOMs:', error);
+    console.error("Error loading SBOMs:", error);
     return { sboms: {} };
   }
 };
