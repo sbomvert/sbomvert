@@ -16,7 +16,7 @@ FROM node:20.19.5-alpine3.22 AS target
 WORKDIR /app
 
 COPY --from=base /app/package*.json ./
-COPY --from=base /app/public ./
+COPY --from=base /app/public ./public
 COPY --from=base /app/.next ./.next
 
 RUN npm install --production
