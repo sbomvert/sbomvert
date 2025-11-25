@@ -53,7 +53,7 @@ export default function HomePage() {
                        border border-border
                        hover:bg-ring/20 transition-all shadow"
           >
-            Talk to an expert
+            Talk to us
           </button>
 
           {/* Primary button */}
@@ -63,7 +63,7 @@ export default function HomePage() {
                        bg-primary text-white 
                        hover:opacity-90 transition-all shadow-lg"
           >
-            Get started free
+            Try it! It's FOSS
           </button>
         </motion.div>
       </main>

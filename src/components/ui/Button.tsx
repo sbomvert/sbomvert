@@ -4,31 +4,47 @@ import { cn } from '@/lib/utils';
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline'|'disabled' | 'unfocused';
   size?: 'sm' | 'md' | 'lg' | 'Sm';
+  withHover?:boolean
   children?: React.ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
+  withHover,
   className,
   children = undefined,
   ...props
 }) => {
-  const baseStyles = 'flex items-center gap-2 rounded font-medium transition-all';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded font-medium transition-all';
 
 
-  const variantStyles = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-lg',
-    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-400 shadow-lg',
-    outline: 'border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 focus:ring-indigo-500',
-    unfocused: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200',
 
-    disabled: 'flex items-center bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-  };
+ const variantStyles = {
+  primary:
+    'bg-primary text-white focus:ring-indigo-500 shadow-lg ' +
+    (withHover ? 'hover:bg-indigo-700' : ''),
+
+  secondary:
+    'bg-gray-200 text-gray-900 focus:ring-gray-400 shadow-lg ' +
+    (withHover ? 'hover:bg-gray-300' : ''),
+
+  outline:
+    'border-2 border-primary text-primary focus:ring-indigo-500 ' +
+    (withHover ? 'hover:bg-indigo-50' : ''),
+
+  unfocused:
+    'text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 ' +
+    (withHover ? 'hover:text-gray-900' : ''),
+
+  disabled:
+    'flex items-center bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed',
+};
+
 
   const sizeStyles = {
     sm: 'px-3 py-1.5 text-sm',
-    Sm: 'px-4 py-2 text-base',
+    Sm: 'px-4 py-2 text-base min-w-24',
     md: 'px-6 py-3 text-base',
     lg: 'px-9 py-6 text-lg',
   };

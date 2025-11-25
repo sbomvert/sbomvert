@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Package } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 export interface ImageInfo {
   id: string;
@@ -64,14 +65,14 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               onClick={image.sbomCount >= 2 ? () => onImageSelect(image.id) : undefined}
-              className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-left ${
+              className={`bg-white dark:bg-gray-800 rounded-md p-6 shadow-md text-left ${
                 image.sbomCount >= 2
                   ? 'hover:shadow-xl transition-all hover:scale-105 cursor-pointer'
                   : 'opacity-50 cursor-not-allowed'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
-                <Package className="text-indigo-600 dark:text-indigo-400" size={24} />
+                <Package className="text-primary dark:text-indigo-400" size={24} />
                 <h3 className="font-bold dark:text-white">{imageName}</h3>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">{image.description}</p>
@@ -94,31 +95,28 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         })}
       </motion.div>
       <div className="flex justify-center gap-2 mt-4">
-        <button
+        <Button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className={`px-4 py-2 rounded ${
-            currentPage <= 1
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-indigo-600 text-white hover:bg-indigo-700'
-          }`}
+          withHover={false}
+          variant={currentPage <= 1 ? 'secondary': 'primary'}
+          size='Sm'
         >
           Previous
-        </button>
+        </Button>
         <span className="px-4 py-2">
           Page {currentPage} of {totalPages}
         </span>
-        <button
+        <Button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className={`px-4 py-2 rounded ${
-            currentPage >= totalPages
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-indigo-600 text-white hover:bg-indigo-700'
-          }`}
+          withHover={false}
+          variant={currentPage >= totalPages ? 'secondary': 'primary'}
+          size='Sm'
+         
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

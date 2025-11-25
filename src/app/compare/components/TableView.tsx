@@ -25,7 +25,7 @@ export const TableView: React.FC<TableViewProps> = ({ comparison }) => {
             onClick={() => setPackageFilter('all')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               packageFilter === 'all'
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -35,7 +35,7 @@ export const TableView: React.FC<TableViewProps> = ({ comparison }) => {
             onClick={() => setPackageFilter('common')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               packageFilter === 'common'
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -45,7 +45,7 @@ export const TableView: React.FC<TableViewProps> = ({ comparison }) => {
             onClick={() => setPackageFilter('unique')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               packageFilter === 'unique'
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >

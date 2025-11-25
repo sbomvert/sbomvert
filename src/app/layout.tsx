@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         {/* Footer */}
         <footer className="py-6 text-center opacity-70 text-sm">
-          © {new Date().getFullYear()} jackops.dev. All rights reserved.
+          © {new Date().getFullYear()} Author jackops.dev  - License Apache-2
         </footer>
       </body>
     </html>

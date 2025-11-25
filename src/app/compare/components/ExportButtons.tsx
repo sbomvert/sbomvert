@@ -50,7 +50,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       </Button>
       {/*  <button
         onClick={() => handleExport('pdf')}
-        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors"
       >
         <Download size={18} />
         Export PDF

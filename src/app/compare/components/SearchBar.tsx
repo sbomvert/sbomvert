@@ -30,7 +30,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none"
+          className="w-full pl-12 pr-4 py-3 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
         />
       </div>
     </motion.div>
