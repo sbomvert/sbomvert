@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import SBOMService from '@/services/sbomStorageService/sbomStorageService';
 
-
 // Helper function to create responses
 function createResponse(data: any, init?: ResponseInit) {
   return NextResponse.json(data, init);

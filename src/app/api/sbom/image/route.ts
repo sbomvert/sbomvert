@@ -20,9 +20,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ files });
   } catch (error) {
     console.error(`Error listing SBOM files for ${container}:`, error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve SBOM files' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to retrieve SBOM files' }, { status: 500 });
   }
 }

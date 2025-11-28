@@ -78,7 +78,6 @@ export default function Home() {
     router.push('/compare/artifact');
   };
 
-
   const handleSearch = (value: string) => {
     setSearchInput(value);
   };

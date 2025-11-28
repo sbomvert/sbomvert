@@ -56,7 +56,7 @@ const mockComparison: IMultiToolComparison = {
     },
     packagesWithConflicts: 0,
   },
-  infoByTool: {}
+  infoByTool: {},
 };
 
 const meta: Meta<typeof MultiToolSummary> = {

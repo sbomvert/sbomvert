@@ -41,10 +41,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
 
   return (
     <>
-      <Button
-        onClick={() => handleExport('json')}
-        size='Sm'
-      >
+      <Button onClick={() => handleExport('json')} size="Sm">
         <FileJson size={18} />
         Export JSON
       </Button>

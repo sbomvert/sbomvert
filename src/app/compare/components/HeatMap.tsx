@@ -20,9 +20,9 @@ function hexToRgb(hex: string) {
   const bigint = parseInt(
     h.length === 3
       ? h
-        .split('')
-        .map(c => c + c)
-        .join('')
+          .split('')
+          .map(c => c + c)
+          .join('')
       : h,
     16
   );
@@ -109,10 +109,10 @@ export default function Heatmap({
             const availableHeight = dimensions.height - 100;
 
             // Calculate cell size to maintain squares
-            const cellSize = Math.max(40, Math.min(
-              availableWidth / xLabels.length,
-              availableHeight / yLabels.length
-            ));
+            const cellSize = Math.max(
+              40,
+              Math.min(availableWidth / xLabels.length, availableHeight / yLabels.length)
+            );
             const cellWidth = cellSize;
             const cellHeight = cellSize;
 
@@ -196,7 +196,7 @@ export default function Heatmap({
                     y={cellHeight * yLabels.length + 30}
                     textAnchor="middle"
                     fontSize={14}
-                    fill='#9ca3af'
+                    fill="#9ca3af"
                     transform={`rotate(-45, ${i * cellWidth + cellWidth / 2}, ${cellHeight * yLabels.length + 20})`}
                   >
                     {label}
@@ -210,7 +210,7 @@ export default function Heatmap({
                     x={-10}
                     y={i * cellHeight + cellHeight / 2}
                     textAnchor="end"
-                    fill='#9ca3af'
+                    fill="#9ca3af"
                     fontSize={14}
                   >
                     {label}

@@ -13,10 +13,9 @@ export class LocalSbomService implements ISbomService {
     this.sbomDir = sbomDir;
     this.itemsPerPage = itemsPerPage;
   }
-listFiles(containerName: string): Promise<SbomFile[]> {
-  return Promise.resolve(this.getContainerFiles(containerName));
-}
-
+  listFiles(containerName: string): Promise<SbomFile[]> {
+    return Promise.resolve(this.getContainerFiles(containerName));
+  }
 
   private checkDirectoryExists(): boolean {
     return fs.existsSync(this.sbomDir);
@@ -93,7 +92,7 @@ listFiles(containerName: string): Promise<SbomFile[]> {
       },
     };
   }
-    async getFileContent(containerName: string, fileName: string): Promise<string> {
+  async getFileContent(containerName: string, fileName: string): Promise<string> {
     const filePath = path.join(this.sbomDir, containerName, fileName);
 
     return new Promise((resolve, reject) => {
@@ -106,5 +105,4 @@ listFiles(containerName: string): Promise<SbomFile[]> {
       });
     });
   }
-
 }

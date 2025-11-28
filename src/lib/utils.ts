@@ -39,15 +39,13 @@ export const computeJaccard = (
   const tools = Object.keys(infoByTool);
   const results: IJaccardResult[] = [];
 
-
   // Compare each pair of tools
   for (let i = 0; i < tools.length; i++) {
-
-     results.push({
-        y: tools[i],
-        x: tools[i],
-        value: 1,
-      });
+    results.push({
+      y: tools[i],
+      x: tools[i],
+      value: 1,
+    });
 
     for (let j = i + 1; j < tools.length; j++) {
       const toolA = tools[i];

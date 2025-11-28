@@ -99,8 +99,8 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           withHover={false}
-          variant={currentPage <= 1 ? 'secondary': 'primary'}
-          size='Sm'
+          variant={currentPage <= 1 ? 'secondary' : 'primary'}
+          size="Sm"
         >
           Previous
         </Button>
@@ -111,9 +111,8 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
           withHover={false}
-          variant={currentPage >= totalPages ? 'secondary': 'primary'}
-          size='Sm'
-         
+          variant={currentPage >= totalPages ? 'secondary' : 'primary'}
+          size="Sm"
         >
           Next
         </Button>

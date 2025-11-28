@@ -1,5 +1,5 @@
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import {TutorialStep} from "../hooks/useTutorial"
+import { TutorialStep } from '../hooks/useTutorial';
 import React, { useState, useEffect } from 'react';
 
 export interface TutorialOverlayProps {
@@ -134,12 +134,12 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                   step.position === 'top'
                     ? 'translate(-50%, -100%)'
                     : step.position === 'bottom'
-                    ? 'translate(-50%, 0)'
-                    : step.position === 'left'
-                    ? 'translate(-100%, -50%)'
-                    : step.position === 'right'
-                    ? 'translate(0, -50%)'
-                    : 'translate(-50%, -50%)',
+                      ? 'translate(-50%, 0)'
+                      : step.position === 'left'
+                        ? 'translate(-100%, -50%)'
+                        : step.position === 'right'
+                          ? 'translate(0, -50%)'
+                          : 'translate(-50%, -50%)',
               }
             : {}
         }
@@ -147,7 +147,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         <div className="bg-white rounded-lg shadow-2xl max-w-md w-full pointer-events-auto m-4">
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="text-lg font-semibold text-gray-900">{step.title}</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -169,7 +172,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           </div>
 
           <div className="flex items-center justify-between p-4 border-t bg-gray-50 rounded-b-lg">
-            <button onClick={onSkip} className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+            <button
+              onClick={onSkip}
+              className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            >
               Skip tutorial
             </button>
 

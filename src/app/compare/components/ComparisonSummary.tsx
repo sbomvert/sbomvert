@@ -53,12 +53,13 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
       <h2 className="text-2xl font-bold mb-4 dark:text-white">Comparison Summary</h2>
 
       <div className="grid grid-cols-1 gap-3 mb-6">
-
         <h3 className="text-lg font-semibold dark:text-white">Package info</h3>
         <ol className="s ml-6 text-gray-700 dark:text-gray-200">
-          <li className='font-semibold'>Total packages: {comparison.allPackages.size}</li>
-          <li className='font-semibold' >Packages with conflicts: {comparison.statistics.packagesWithConflicts}</li>
-          <li className='font-semibold' >Common packages: {comparison.statistics.commonToAll}</li>
+          <li className="font-semibold">Total packages: {comparison.allPackages.size}</li>
+          <li className="font-semibold">
+            Packages with conflicts: {comparison.statistics.packagesWithConflicts}
+          </li>
+          <li className="font-semibold">Common packages: {comparison.statistics.commonToAll}</li>
         </ol>
       </div>
 
@@ -118,31 +119,28 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             </RadarChart>
           </ResponsiveContainer>
         </div>
-        
-        <div className="max-w-full overflow-hidden">
-          <h3 className="text-lg font-semibold mb-3 dark:text-white">Package similarity across tools</h3>
-          <ResponsiveContainer width="100%" height={600}>
-            <Heatmap
-            data={computeJaccard(comparison.infoByTool,
-              'packages'
-            )}
-          colorRange={["#e0f7fa", "#006064"]}
-      />
-          </ResponsiveContainer>
-          
-        </div>
-                <div className="max-w-full overflow-hidden">
-          <h3 className="text-lg font-semibold mb-3 dark:text-white">pURL similarity across tools</h3>
-          <ResponsiveContainer width="100%" height={600}>
-            <Heatmap
-            data={computeJaccard(comparison.infoByTool,
-              'purls'
-            )}
-          colorRange={["#ffebee", "#b71c1c"]}
 
-      />
+        <div className="max-w-full overflow-hidden">
+          <h3 className="text-lg font-semibold mb-3 dark:text-white">
+            Package similarity across tools
+          </h3>
+          <ResponsiveContainer width="100%" height={600}>
+            <Heatmap
+              data={computeJaccard(comparison.infoByTool, 'packages')}
+              colorRange={['#e0f7fa', '#006064']}
+            />
           </ResponsiveContainer>
-          
+        </div>
+        <div className="max-w-full overflow-hidden">
+          <h3 className="text-lg font-semibold mb-3 dark:text-white">
+            pURL similarity across tools
+          </h3>
+          <ResponsiveContainer width="100%" height={600}>
+            <Heatmap
+              data={computeJaccard(comparison.infoByTool, 'purls')}
+              colorRange={['#ffebee', '#b71c1c']}
+            />
+          </ResponsiveContainer>
         </div>
       </div>
     </motion.div>
