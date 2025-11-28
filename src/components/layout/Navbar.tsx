@@ -1,16 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { useRouter } from 'next/navigation';
+
 import { useTheme } from '@/hooks/useTheme';
 import Image from 'next/image';
 
-export const Navbar: React.FC = () => {
-  const router = useRouter();
+export const Navbar: React.FC<{onLogoClick: ()=>void}> = ({onLogoClick}) => {
+
+
   const { isDark, toggleTheme } = useTheme();
 
-  const onLogoClick = () => router.push('/');
 
   return (
     <nav

@@ -17,8 +17,8 @@ jest.mock('next/server', () => ({
 
 // Mock sbomService
 const mockListSboms = jest.fn();
-jest.mock('@/services/sbomService', () => ({
-  defaultSbomService: {
+jest.mock('@/services/sbomStorageService/sbomStorageService', () => ({
+  SBOMService: {
     listSboms: mockListSboms,
   },
 }));
@@ -52,7 +52,7 @@ const createMockRequest = (opts?: { page?: number | string; search?: string }) =
   const url = createMockUrl(query);
 
   return {
-    nextUrl: url,
+    url:url,
     headers: new Headers(),
     json: () => Promise.resolve({}),
     method: 'GET',
