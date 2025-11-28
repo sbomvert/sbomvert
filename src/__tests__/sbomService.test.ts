@@ -1,8 +1,8 @@
+import { LocalSbomService } from '@/services/sbomStorageService/localSbomService';
+import { ISbomService } from '@/services/sbomStorageService/sbomService.types';
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
-import { SbomService } from '@/services/localSbomService';
 import fs from 'fs';
 import path from 'path';
-import { defaultSbomService } from '@/services/localSbomService';
 // Mock fs module
 jest.mock('fs', () => ({
   existsSync: jest.fn(),
@@ -11,16 +11,16 @@ jest.mock('fs', () => ({
 }));
 
 describe('SbomService', () => {
-  let service: SbomService;
+  let service: ISbomService;
   const testDir = '/test/sbom/dir';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new SbomService(testDir);
+    service = new LocalSbomService(testDir);
   });
 
   describe('listSboms', () => {
-    it('should list SBOM files with pagination', () => {
+    it('should list SBOM files with pagination', async () => {
       // Mock container directories
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock)
@@ -37,7 +37,7 @@ describe('SbomService', () => {
           { name: 'trivy.spdx.json', isDirectory: () => false, isFile: () => true },
         ]);
 
-      const result = service.listSboms(1);
+      const result = await service.listSboms(1);
 
       // Verify correct fs calls
       expect(fs.existsSync).toHaveBeenCalledWith(testDir);
@@ -57,10 +57,10 @@ describe('SbomService', () => {
       expect(result.pagination.totalPages).toBe(1);
     });
 
-    it('should handle missing SBOM directory', () => {
+    it('should handle missing SBOM directory', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const result = service.listSboms(1);
+      const result = await service.listSboms(1);
 
       expect(fs.existsSync).toHaveBeenCalledWith(testDir);
       expect(fs.readdirSync).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('SbomService', () => {
       });
     });
 
-    it('should filter containers by search term', () => {
+    it('should filter containers by search term', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock)
         .mockReturnValueOnce([
@@ -85,20 +85,20 @@ describe('SbomService', () => {
         ]);
 
       const searchTerm = 'python';
-      const result = service.listSboms(1, searchTerm);
+      const result = await service.listSboms(1, searchTerm);
 
       expect(fs.readdirSync).toHaveBeenCalledWith(testDir, { withFileTypes: true });
       expect(result.containers).toHaveLength(1);
       expect(result.containers[0].name).toBe('python-3.9');
     });
 
-    it('should normalize invalid page numbers', () => {
+    it('should normalize invalid page numbers', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue([
         { name: 'container1', isDirectory: () => true, isFile: () => false },
       ]);
 
-      const result = service.listSboms(-1);
+      const result = await service.listSboms(-1);
 
       expect(result.pagination.currentPage).toBe(1);
       expect(result.containers).not.toHaveLength(0);
@@ -129,7 +129,7 @@ describe('SbomService', () => {
   });
 
   describe('listSboms', () => {
-    it('lists containers and their SBOM files', () => {
+    it('lists containers and their SBOM files', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockImplementation((p: unknown) => {
         if (
@@ -141,7 +141,7 @@ describe('SbomService', () => {
         return mockDirents;
       });
 
-      const result = defaultSbomService.listSboms(1);
+      const result = await service.listSboms(1);
 
       expect(result.containers).toHaveLength(2);
       expect(result.containers[0].name).toBe('nginx-twodotslatest');
@@ -150,10 +150,10 @@ describe('SbomService', () => {
       expect(result.pagination.currentPage).toBe(1);
     });
 
-    it('handles missing SBOM directory', () => {
+    it('handles missing SBOM directory', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const result = defaultSbomService.listSboms(1);
+      const result = await service.listSboms(1);
 
       expect(result.containers).toEqual([]);
       expect(result.pagination).toEqual({
@@ -164,7 +164,7 @@ describe('SbomService', () => {
       });
     });
 
-    it('paginates results correctly', () => {
+    it('paginates results correctly', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue(
         Array.from({ length: 10 }, (_, i) => ({
@@ -174,8 +174,8 @@ describe('SbomService', () => {
         }))
       );
 
-      const page1 = defaultSbomService.listSboms(1);
-      const page2 = defaultSbomService.listSboms(2);
+      const page1 = await service.listSboms(1);
+      const page2 = await service.listSboms(2);
 
       expect(page1.containers).toHaveLength(8);
       expect(page2.containers).toHaveLength(2);
@@ -183,7 +183,7 @@ describe('SbomService', () => {
       expect(page2.pagination.currentPage).toBe(2);
     });
 
-    it('filters containers by search term', () => {
+    it('filters containers by search term', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue([
         { name: 'nginx-1.0', isDirectory: () => true, isFile: () => false },
@@ -191,17 +191,17 @@ describe('SbomService', () => {
         { name: 'node-16', isDirectory: () => true, isFile: () => false },
       ]);
 
-      const result = defaultSbomService.listSboms(1, 'python');
+      const result = await service.listSboms(1, 'python');
 
       expect(result.containers).toHaveLength(1);
       expect(result.containers[0].name).toBe('python-3.9');
     });
 
-    it('normalizes invalid page numbers', () => {
+    it('normalizes invalid page numbers', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue(mockDirents);
 
-      const result = defaultSbomService.listSboms(-1);
+      const result = await service.listSboms(-1);
 
       expect(result.pagination.currentPage).toBe(1);
       expect(result.containers).not.toHaveLength(0);
@@ -212,7 +212,7 @@ describe('SbomService', () => {
         throw new Error('File system error');
       });
 
-      expect(() => defaultSbomService.listSboms(1)).toThrow('File system error');
+      expect(async () => await service.listSboms(1)).toThrow('File system error');
     });
   });
 });
