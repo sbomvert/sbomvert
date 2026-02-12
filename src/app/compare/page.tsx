@@ -7,6 +7,8 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Upload } from 'lucide-react';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
@@ -84,6 +86,12 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex justify-end mb-4">
+            <Button variant="secondary" size="md">
+                        <Upload size={20} />
+              Upload SBOM
+            </Button>
+          </div>
       <ComparisonTypeSelector
         comparisonType={comparisonType}
         onComparisonTypeChange={setComparisonType}
