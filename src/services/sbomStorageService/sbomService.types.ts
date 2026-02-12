@@ -29,4 +29,5 @@ export interface ISbomService {
   listSboms(page?: number, search?: string): Promise<SbomListResponse>;
   listFiles(containerName: string): Promise<SbomFile[]>;
   getFileContent(containerName: string, fileName: string): Promise<string>;
+  saveFile(fileName: string, content: string): Promise<void>;
 }

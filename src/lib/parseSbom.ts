@@ -64,7 +64,7 @@ interface SpdxPackage {
   primaryPackagePurpose?: string;
 }
 
-interface SpdxDocument {
+export interface SpdxDocument {
   spdxVersion: string;
   name: string;
   creationInfo: {
@@ -154,7 +154,7 @@ export const parseSpdxSbom = (
     }
 
     const toolName = toolBaseName;
-    const vendor = tvendor ? tvendor : 'Unknown';
+    const vendor = tvendor ? tvendor : 'Anchore';
 
     const toolInfo: IToolInfo = {
       name:

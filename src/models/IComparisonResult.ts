@@ -42,8 +42,11 @@ export interface IMultiToolComparison {
     packagesWithConflicts: number;
   };
   // Per-tool information
-  infoByTool: Record<string, {
-    packages: string[];  // ["package@version", ...]
-    purls: string[];     // ["pkg:type/name@version", ...]
-  }>;
+  infoByTool: Record<
+    string,
+    {
+      packages: string[]; // ["package@version", ...]
+      purls: string[]; // ["pkg:type/name@version", ...]
+    }
+  >;
 }

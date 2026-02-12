@@ -2,9 +2,9 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline'|'disabled' | 'unfocused';
+  variant?: 'primary' | 'secondary' | 'outline' | 'disabled' | 'unfocused';
   size?: 'sm' | 'md' | 'lg' | 'Sm';
-  withHover?:boolean
+  withHover?: boolean;
   children?: React.ReactNode;
 }
 
@@ -16,31 +16,29 @@ export const Button: React.FC<ButtonProps> = ({
   children = undefined,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded font-medium transition-all';
+  const baseStyles =
+    'inline-flex items-center justify-center gap-2 rounded font-medium transition-all';
 
+  const variantStyles = {
+    primary:
+      'bg-primary text-white focus:ring-indigo-500 shadow-lg ' +
+      (withHover ? 'hover:bg-indigo-700' : ''),
 
+    secondary:
+      'bg-gray-200 text-gray-900 focus:ring-gray-400 shadow-lg ' +
+      (withHover ? 'hover:bg-gray-300' : ''),
 
- const variantStyles = {
-  primary:
-    'bg-primary text-white focus:ring-indigo-500 shadow-lg ' +
-    (withHover ? 'hover:bg-indigo-700' : ''),
+    outline:
+      'border-2 border-primary text-primary focus:ring-indigo-500 ' +
+      (withHover ? 'hover:bg-indigo-50' : ''),
 
-  secondary:
-    'bg-gray-200 text-gray-900 focus:ring-gray-400 shadow-lg ' +
-    (withHover ? 'hover:bg-gray-300' : ''),
+    unfocused:
+      'text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 ' +
+      (withHover ? 'hover:text-gray-900' : ''),
 
-  outline:
-    'border-2 border-primary text-primary focus:ring-indigo-500 ' +
-    (withHover ? 'hover:bg-indigo-50' : ''),
-
-  unfocused:
-    'text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 ' +
-    (withHover ? 'hover:text-gray-900' : ''),
-
-  disabled:
-    'flex items-center bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed',
-};
-
+    disabled:
+      'flex items-center bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed',
+  };
 
   const sizeStyles = {
     sm: 'px-3 py-1.5 text-sm',
@@ -50,13 +48,13 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <div className=''>
-    <button
-      className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
-      {...props}
-    >
-      {children}
-    </button>
+    <div className="">
+      <button
+        className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
+        {...props}
+      >
+        {children}
+      </button>
     </div>
   );
 };

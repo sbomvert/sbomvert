@@ -1,4 +1,4 @@
-import { parseSpdxSbom } from '../lib/parseSbom';
+import { parseSpdxSbom } from '@/lib/parseSbom';
 import { describe, expect, it } from '@jest/globals';
 
 describe('parseSpdxSbom branch coverage', () => {

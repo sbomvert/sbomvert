@@ -23,6 +23,10 @@ const customJestConfig = {
       statements: 80,
     },
   },
+  reporters: [
+    'default',
+ 
+  ],
 };
 
 module.exports = createJestConfig(customJestConfig);

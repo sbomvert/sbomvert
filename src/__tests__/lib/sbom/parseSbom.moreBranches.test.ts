@@ -1,4 +1,4 @@
-import { parsePurl, parseSpdxSbom } from '../lib/parseSbom';
+import { parsePurl, parseSpdxSbom } from '@/lib/parseSbom';
 import { expect, test } from '@jest/globals';
 
 test('parsePurl supports subpath with #', () => {

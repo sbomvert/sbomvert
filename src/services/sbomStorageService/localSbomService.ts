@@ -18,7 +18,10 @@ export class LocalSbomService implements ISbomService {
   }
 
   private checkDirectoryExists(): boolean {
-    return fs.existsSync(this.sbomDir);
+    if (!fs.existsSync(this.sbomDir)) {
+      fs.mkdirSync(this.sbomDir, { recursive: true })
+    }
+    return fs.existsSync(this.sbomDir)
   }
 
   private getContainerDirs(search?: string): string[] {
@@ -37,19 +40,19 @@ export class LocalSbomService implements ISbomService {
     const containerPath = path.join(this.sbomDir, containerName);
 
     try {
-      return fs
-        .readdirSync(containerPath, { withFileTypes: true })
-        .filter(dirent => dirent.isFile() && dirent.name.endsWith('.json'))
-        .map(dirent => {
-          const filePath = path.join(containerPath, dirent.name);
-          const stats = fs.statSync(filePath);
-          return {
-            name: dirent.name,
-            path: `/sbom/${containerName}/${dirent.name}`,
-            size: stats.size,
-            lastModified: stats.mtime,
-          };
-        });
+      const fileNames = fs.readdirSync(containerPath)
+        .filter(name => name.endsWith('.json'))
+      const files = fileNames.map(name => {
+        const filePath = path.join(containerPath, name)
+        const stats = fs.statSync(filePath)
+        return {
+          name,
+          path: `/sbom/${containerName}/${name}`,
+          size: stats.size,
+          lastModified: stats.mtime,
+        }
+      })
+      return files
     } catch (error) {
       console.error(`Error reading container ${containerName}:`, error);
       return [];
@@ -104,5 +107,21 @@ export class LocalSbomService implements ISbomService {
         resolve(data);
       });
     });
+  }
+
+  /**
+   * Save a file to the local file system
+   */
+  async saveFile(fileName: string, content: string): Promise<void> {
+    // Ensure the directory exists
+    const fullPath = path.join(this.sbomDir, fileName);
+    const dir = path.dirname(fullPath);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // Write the file
+    fs.writeFileSync(fullPath, content, 'utf8');
   }
 }

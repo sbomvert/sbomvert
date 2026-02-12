@@ -2,5 +2,7 @@
  * Feature flags configuration
  */
 export const FEATURE_FLAGS = {
-  ENABLE_SBOM_UPLOAD: process.env.ENABLE_SBOM_UPLOAD === 'enabled',
+  get ENABLE_SBOM_UPLOAD() {
+    return process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD === 'true';
+  },
 };

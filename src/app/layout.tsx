@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         {/* Footer */}
         <footer className="py-6 text-center opacity-70 text-sm">
-          © {new Date().getFullYear()} Author jackops.dev  - License Apache-2
+          © {new Date().getFullYear()} Author jackops.dev - License Apache-2
           <div className="mt-2">
             <a
               href="https://github.com/sbomvert/sbomvert"

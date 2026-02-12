@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
 import { ImageSelector } from '@/app/compare/components/ImageSelector';
 import { jest, describe, it, expect } from '@jest/globals';

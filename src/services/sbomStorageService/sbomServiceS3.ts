@@ -4,6 +4,7 @@ import {
   ListObjectsV2CommandInput,
   _Object,
   GetObjectCommand,
+  PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import type { ISbomService, SbomFile, Container, SbomListResponse } from './sbomService.types';
 import { Readable } from 'stream';
@@ -231,5 +232,21 @@ export class S3SbomService implements ISbomService {
       console.error(`Error reading SBOM from S3: ${key}`, err);
       throw new Error('SBOM file not found');
     }
+  }
+
+  /**
+   * Save a file to S3
+   */
+  async saveFile(fileName: string, content: string): Promise<void> {
+    const key = `${this.prefix}${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+      Body: content,
+      ContentType: 'application/json',
+    });
+
+    await this.s3Client.send(command);
   }
 }

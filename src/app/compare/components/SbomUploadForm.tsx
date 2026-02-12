@@ -29,14 +29,27 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !containerName || !file) {
+    if (!name || !containerName) {
+      alert('Please fill all fields and select a file');
+      return;
+    }
+
+    let fileToUpload = file;
+    if (!fileToUpload) {
+      const input = document.getElementById('file-input') as HTMLInputElement | null;
+      if (input && input.files && input.files[0]) {
+        fileToUpload = input.files[0];
+      }
+    }
+
+    if (!fileToUpload) {
       alert('Please fill all fields and select a file');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      onUpload(name, containerName, file);
+      onUpload(name, containerName, fileToUpload);
     } catch (error) {
       console.error('Upload error:', error);
       alert('Failed to upload SBOM file');
@@ -97,7 +110,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
 
           <div className="ml-2">
             <label
-              htmlFor="file"
+              htmlFor="file-input"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               SBOM File (JSON)
@@ -127,9 +140,13 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={isSubmitting}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center gap-2 rounded font-medium transition-all bg-primary text-white focus:ring-indigo-500 shadow-lg px-6 py-3 text-base"
+            >
               {isSubmitting ? 'Uploading...' : 'Upload SBOM'}
-            </Button>
+            </button>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>

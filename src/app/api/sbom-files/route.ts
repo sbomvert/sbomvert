@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import SBOMService  from '@/services/sbomStorageService/sbomStorageService';
+import SBOMService from '@/services/sbomStorageService/sbomStorageService';
 
 // Initialize the SBOM service
-
 
 // Helper function to create responses
 function createResponse(data: any, init?: ResponseInit) {

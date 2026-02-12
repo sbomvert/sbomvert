@@ -87,9 +87,7 @@ export const loadSbomImagesFromPublic = async (
 };
 
 // --- Existing: Load SBOMs for a single image when clicked ---
-export const loadSbomsForImage = async (
-  image: string
-): Promise<{ sboms: ContainerSboms }> => {
+export const loadSbomsForImage = async (image: string): Promise<{ sboms: ContainerSboms }> => {
   try {
     const reformatName = reverseFormatContainerName(image);
     const sboms: ContainerSboms = {};
@@ -97,7 +95,7 @@ export const loadSbomsForImage = async (
     // Fetch list of files
     const response = await fetch(`/api/sbom/image?name=${reformatName}`);
     if (!response.ok) {
-      console.error("Failed to fetch SBOM files list");
+      console.error('Failed to fetch SBOM files list');
       return { sboms: {} };
     }
 
@@ -114,14 +112,12 @@ export const loadSbomsForImage = async (
 
         const sbomData = await sbomResponse.json();
 
-        const [toolName, ext] = file.name.split(".");
+        const [toolName, ext] = file.name.split('.');
         const format = ext?.toUpperCase();
 
-        if (format === "SPDX")
-          return parseSpdxSbom(sbomData, image, toolName);
+        if (format === 'SPDX') return parseSpdxSbom(sbomData, image, toolName);
 
-        if (format === "CYCLONEDX")
-          return parseCycloneDxSbom(sbomData, image, toolName);
+        if (format === 'CYCLONEDX') return parseCycloneDxSbom(sbomData, image, toolName);
 
         return null;
       } catch (err) {
@@ -140,7 +136,7 @@ export const loadSbomsForImage = async (
 
     return { sboms };
   } catch (error) {
-    console.error("Error loading SBOMs:", error);
+    console.error('Error loading SBOMs:', error);
     return { sboms: {} };
   }
 };

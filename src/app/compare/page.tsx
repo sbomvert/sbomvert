@@ -83,7 +83,6 @@ export default function Home() {
     router.push('/compare/artifact');
   };
 
-
   const handleSearch = (value: string) => {
     setSearchInput(value);
   };
@@ -94,7 +93,10 @@ export default function Home() {
   const handleUpload = async (name: string, containerName: string, file: File) => {
     // In a real implementation, this would upload to the backend
     // For now, we'll just simulate the upload
-    console.log('Uploading SBOM:', { name, containerName, file });
+    const data = JSON.parse(await file.text());
+    console.log(data);
+    console.log(data.name);
+    console.log('Uploading SBOM:', { name, containerName, file: await file.text() });
 
     // Reset form and hide upload
     setShowUploadForm(false);
@@ -112,18 +114,14 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-       <div className="flex justify-end mb-4">
-            {FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => setShowUploadForm(!showUploadForm)}
-              >
-                <Upload size={20} />
-                Upload SBOM
-              </Button>
-            )}
-          </div>
+      <div className="flex justify-end mb-4">
+        {FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
+          <Button variant="secondary" size="md" onClick={() => setShowUploadForm(!showUploadForm)}>
+            <Upload size={20} />
+            Upload SBOM
+          </Button>
+        )}
+      </div>
       <ComparisonTypeSelector
         comparisonType={comparisonType}
         onComparisonTypeChange={setComparisonType}
@@ -134,12 +132,8 @@ export default function Home() {
            ------------------------------------------------------------ */}
       {!loading && (
         <>
-         
           {showUploadForm && FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
-            <SbomUploadForm
-              onUpload={handleUpload}
-              onCancel={() => setShowUploadForm(false)}
-            />
+            <SbomUploadForm onUpload={handleUpload} onCancel={() => setShowUploadForm(false)} />
           )}
           <SearchBar value={searchInput} onChange={handleSearch} />
           <ImageSelector

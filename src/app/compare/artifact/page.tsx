@@ -87,7 +87,6 @@ export default function Home() {
     return compareMultipleTools(filteredSboms);
   }, [currentSboms, selectedTools]);
 
-
   // ------------------------------------------------------------
   // Toggle tool selection
   // ------------------------------------------------------------
@@ -135,7 +134,6 @@ export default function Home() {
                   <div className="flex gap-3 flex-wrap">
                     <ComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
                     <ExportButtons comparison={comparison} />
-
                   </div>
                 </div>
 
