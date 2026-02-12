@@ -41,7 +41,6 @@ export class S3SbomService implements ISbomService {
             }
           : undefined,
       });
-
   }
 
   /**
@@ -85,7 +84,6 @@ export class S3SbomService implements ISbomService {
           lastModified: obj.LastModified || new Date(),
         }));
         objects.push(...newObjects);
-
       }
 
       continuationToken = response.NextContinuationToken;
@@ -188,24 +186,24 @@ export class S3SbomService implements ISbomService {
     return `s3://${this.bucketName}/${this.prefix}${containerName}/${fileName}`;
   }
   /**
- * Returns all SBOM JSON files for a specific container name
- */
-async listFiles(containerName: string): Promise<SbomFile[]> {
-  if (!containerName) return [];
+   * Returns all SBOM JSON files for a specific container name
+   */
+  async listFiles(containerName: string): Promise<SbomFile[]> {
+    if (!containerName) return [];
 
-  try {
-    const objects = await this.listAllObjects();
-    const containerMap = this.groupByContainer(objects);
+    try {
+      const objects = await this.listAllObjects();
+      const containerMap = this.groupByContainer(objects);
 
-    // Return the files for that container (or empty array)
-    return containerMap.get(containerName) || [];
-  } catch (error) {
-    console.error(`Error listing files for container ${containerName} from S3:`, error);
-    return [];
+      // Return the files for that container (or empty array)
+      return containerMap.get(containerName) || [];
+    } catch (error) {
+      console.error(`Error listing files for container ${containerName} from S3:`, error);
+      return [];
+    }
   }
-}
 
- async getFileContent(containerName: string, fileName: string): Promise<string> {
+  async getFileContent(containerName: string, fileName: string): Promise<string> {
     const key = `${this.prefix}${containerName}/${fileName}`;
 
     try {
@@ -217,7 +215,7 @@ async listFiles(containerName: string): Promise<SbomFile[]> {
       const response = await this.s3Client.send(command);
 
       if (!response.Body) {
-        throw new Error("Empty S3 object");
+        throw new Error('Empty S3 object');
       }
 
       // Convert S3 stream → string
@@ -228,12 +226,10 @@ async listFiles(containerName: string): Promise<SbomFile[]> {
         chunks.push(Buffer.from(chunk));
       }
 
-      return Buffer.concat(chunks).toString("utf8");
+      return Buffer.concat(chunks).toString('utf8');
     } catch (err) {
       console.error(`Error reading SBOM from S3: ${key}`, err);
-      throw new Error("SBOM file not found");
+      throw new Error('SBOM file not found');
     }
   }
-
-
 }

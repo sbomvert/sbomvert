@@ -7,6 +7,10 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Upload } from 'lucide-react';
+import { SbomUploadForm } from './components/SbomUploadForm';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
@@ -20,6 +24,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showUploadForm, setShowUploadForm] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // ------------------------------------------------------------
@@ -83,8 +88,42 @@ export default function Home() {
     setSearchInput(value);
   };
 
+  // ------------------------------------------------------------
+  // Handle SBOM upload
+  // ------------------------------------------------------------
+  const handleUpload = async (name: string, containerName: string, file: File) => {
+    // In a real implementation, this would upload to the backend
+    // For now, we'll just simulate the upload
+    console.log('Uploading SBOM:', { name, containerName, file });
+
+    // Reset form and hide upload
+    setShowUploadForm(false);
+
+    // In a real app, you would make an API call here
+    // Example:
+    // const formData = new FormData();
+    // formData.append('name', name);
+    // formData.append('containerName', containerName);
+    // formData.append('file', file);
+    // await fetch('/api/sbom/upload', { method: 'POST', body: formData });
+
+    alert(`SBOM "${name}" uploaded successfully for container "${containerName}"`);
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+       <div className="flex justify-end mb-4">
+            {FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setShowUploadForm(!showUploadForm)}
+              >
+                <Upload size={20} />
+                Upload SBOM
+              </Button>
+            )}
+          </div>
       <ComparisonTypeSelector
         comparisonType={comparisonType}
         onComparisonTypeChange={setComparisonType}
@@ -95,6 +134,13 @@ export default function Home() {
            ------------------------------------------------------------ */}
       {!loading && (
         <>
+         
+          {showUploadForm && FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
+            <SbomUploadForm
+              onUpload={handleUpload}
+              onCancel={() => setShowUploadForm(false)}
+            />
+          )}
           <SearchBar value={searchInput} onChange={handleSearch} />
           <ImageSelector
             images={filteredImages}

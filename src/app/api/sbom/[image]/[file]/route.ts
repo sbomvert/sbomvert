@@ -1,6 +1,5 @@
-import { LocalSbomService } from "@/services/localSbomService";
-import { ISbomService } from "@/services/sbomService.types";
-import { S3SbomService } from "@/services/sbomServiceS3";
+import SBOMService  from '@/services/sbomStorageService/sbomStorageService';
+
 import { NextResponse } from "next/server";
 
 interface Params {
@@ -8,24 +7,14 @@ interface Params {
     file: string;
 }
 
-let sbomService: ISbomService;
 
-if (process.env.NODE_ENV === 'production') {
-    sbomService = new S3SbomService(
-        process.env.S3_SBOM_BUCKET || 'sbomvert',
-        process.env.S3_SBOM_PREFIX || 'sbom/',
-        20
-    );
-} else {
-    sbomService = new LocalSbomService('./public/sbom', 20);
-}
 
 export async function GET(
     _req: Request,
     { params }: { params: Params }
 ) {
-    const { image, file } = params;
-    const result = await sbomService.getFileContent(image, file)
+    const { image, file } = await params;
+    const result = await SBOMService.getFileContent(image, file)
     // Example logic: return JSON
    return NextResponse.json(JSON.parse(result));
 
