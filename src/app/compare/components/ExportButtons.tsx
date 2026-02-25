@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileJson } from 'lucide-react';
+import { FileJson, Download } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Button } from '@/components/ui/Button';
 
@@ -39,20 +39,51 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
     }
   };
 
+  const handleDownload = (toolName: string) => {
+    try {
+      // Get the image name from comparison
+      const imageName = comparison.imageId;
+
+      // Format the image name for API calls (this mimics what sbomLoader does)
+      const formatContainerName = (folderName: string): string => {
+        return folderName.replace(/-?twodots/g, ':').replace(/-?slash/g, '/');
+      };
+
+      const reformatName = formatContainerName(imageName);
+
+      // Find the tool format to determine file extension
+      const tool = comparison.tools.find(t => t.name === toolName);
+      const fileExtension = tool?.format === 'CycloneDX' ? 'cyclonedx' : 'spdx';
+
+      // Construct the download URL
+      const downloadUrl = `/api/sbom/${reformatName}/${toolName}.${fileExtension}`;
+
+      // Open the download in a new tab
+      window.open(downloadUrl, '_blank');
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert(`Failed to download ${toolName} SBOM file`);
+    }
+  };
+
   return (
     <>
       <Button onClick={() => handleExport('json')} size="Sm">
         <FileJson size={18} />
         Export JSON
       </Button>
-      {/*  <button
-        onClick={() => handleExport('pdf')}
-        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors"
-      >
-        <Download size={18} />
-        Export PDF
-      </button>
-*/}
+      {/* Add download buttons for each tool */}
+      {comparison.tools.map(tool => (
+        <Button
+          key={tool.name}
+          onClick={() => handleDownload(tool.name)}
+          size="Sm"
+          variant="outline"
+        >
+          <Download size={18} />
+          Download {tool.name}
+        </Button>
+      ))}
     </>
   );
 };

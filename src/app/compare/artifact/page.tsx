@@ -33,7 +33,7 @@ export default function Home() {
   // Load paginated images
   // ------------------------------------------------------------
   useEffect(() => {
-    setLoading(true);
+    // This effect is just for setting loading state, no setState needed
   }, []);
 
   useEffect(() => {
@@ -51,7 +51,9 @@ export default function Home() {
 
       setSboms(response.sboms);
       setViewMode('summary');
-      setSelectedTools(new Set());
+      // Set selected tools after data is loaded
+      const tools = new Set(response.sboms[selectedImage]?.map(sbom => sbom.tool) || []);
+      setSelectedTools(tools);
       setLoading(false);
     };
 
@@ -70,9 +72,8 @@ export default function Home() {
   // Initialize selected tools from SBOMs
   // ------------------------------------------------------------
   useEffect(() => {
-    if (currentSboms.length > 0) {
-      setSelectedTools(new Set(currentSboms.map(sbom => sbom.tool)));
-    }
+    // Initialize selected tools from SBOMs without calling setState directly in effect
+    // This should be handled in the loadData function instead
   }, [currentSboms]);
 
   // ------------------------------------------------------------
