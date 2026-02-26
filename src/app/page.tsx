@@ -35,7 +35,7 @@ export default function HomePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          Compare SBOMs of the container images you use to bring clairity and eliminate false
+          Compare SBOMs of the container images you use to bring clarity and eliminate false
           positives.
         </motion.p>
 
@@ -63,7 +63,7 @@ export default function HomePage() {
                        bg-primary text-white 
                        hover:opacity-90 transition-all shadow-lg"
           >
-            Try it! It's FOSS
+            Try it! It&apos;s FOSS
           </button>
         </motion.div>
       </main>

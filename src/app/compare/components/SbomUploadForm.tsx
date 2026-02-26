@@ -16,15 +16,15 @@ interface SbomUploadFormProps {
 }
 
 export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCancel }) => {
-  // If feature flag is disabled, return null
-  if (!FEATURE_FLAGS.ENABLE_SBOM_UPLOAD) {
-    return null;
-  }
-
   const [name, setName] = useState('');
   const [containerName, setContainerName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // If feature flag is disabled, return null
+  if (!FEATURE_FLAGS.ENABLE_SBOM_UPLOAD) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

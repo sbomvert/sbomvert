@@ -91,25 +91,33 @@ export default function Home() {
   // Handle SBOM upload
   // ------------------------------------------------------------
   const handleUpload = async (name: string, containerName: string, file: File) => {
-    // In a real implementation, this would upload to the backend
-    // For now, we'll just simulate the upload
-    const data = JSON.parse(await file.text());
-    console.log(data);
-    console.log(data.name);
-    console.log('Uploading SBOM:', { name, containerName, file: await file.text() });
+    // Prepare form data for the upload API
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('containerName', containerName);
+    formData.append('file', file);
 
-    // Reset form and hide upload
-    setShowUploadForm(false);
+    try {
+      const response = await fetch('/api/sbom/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    // In a real app, you would make an API call here
-    // Example:
-    // const formData = new FormData();
-    // formData.append('name', name);
-    // formData.append('containerName', containerName);
-    // formData.append('file', file);
-    // await fetch('/api/sbom/upload', { method: 'POST', body: formData });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
 
-    alert(`SBOM "${name}" uploaded successfully for container "${containerName}"`);
+      const result = await response.json();
+      alert(`SBOM "${name}" uploaded successfully for container "${containerName}"`);
+      console.log('Upload result:', result);
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert(`Failed to upload SBOM: ${(error as Error).message}`);
+    } finally {
+      // Reset form and hide upload regardless of success
+      setShowUploadForm(false);
+    }
   };
 
   return (
