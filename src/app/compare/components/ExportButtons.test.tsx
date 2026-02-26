@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ExportButtons } from './ExportButtons';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
@@ -8,44 +8,34 @@ describe('ExportButtons', () => {
   const mockComparison: IMultiToolComparison = {
     imageId: 'test-image',
     tools: [
-      {
-        name: 'Trivy',
-        version: '0.40.0',
-        vendor: 'Aqua Security',
-        format: 'SPDX'
-      },
-      {
-        name: 'Syft',
-        version: '0.40.0',
-        vendor: 'Anchore',
-        format: 'SPDX'
-      }
+      { name: 'Trivy', version: '0.40.0', vendor: 'Aqua Security', format: 'SPDX' },
+      { name: 'Syft', version: '0.40.0', vendor: 'Anchore', format: 'SPDX' },
     ],
     allPackages: new Map(),
-    statistics: {
-      toolCounts: {},
-      commonToAll: 0,
-      uniquePerTool: {},
-      packagesWithConflicts: 0
-    },
-    infoByTool: {}
+    statistics: { toolCounts: {}, commonToAll: 0, uniquePerTool: {}, packagesWithConflicts: 0 },
+    infoByTool: {},
   };
 
-  test('renders export buttons and download buttons', () => {
+  test('renders Select and Download button', () => {
     render(<ExportButtons comparison={mockComparison} />);
 
-    // Check that the export button is rendered
+    // Export JSON button present
     expect(screen.getByText('Export JSON')).toBeInTheDocument();
-
-    // Check that download buttons are rendered for each tool
-    expect(screen.getByText('Download Trivy')).toBeInTheDocument();
-    expect(screen.getByText('Download Syft')).toBeInTheDocument();
+    // Select (combobox) present
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
-  test('renders correct number of download buttons', () => {
+  test('selects a tool and triggers download', async () => {
+    const mockOpen = jest.fn();
+    // @ts-ignore replace global window.open
+    window.open = mockOpen;
+
     render(<ExportButtons comparison={mockComparison} />);
 
-    const downloadButtons = screen.getAllByText(/Download/);
-    expect(downloadButtons).toHaveLength(2);
+    // Open select and choose Trivy
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Trivy' } });
+
+    // After selecting, download should be triggered via window.open
+    await waitFor(() => expect(mockOpen).toHaveBeenCalled());
   });
 });

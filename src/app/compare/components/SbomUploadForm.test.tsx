@@ -51,7 +51,6 @@ describe('SbomUploadForm', () => {
 
     render(<SbomUploadForm onUpload={mockOnUpload} onCancel={mockOnCancel} />);
 
-    // Submit without filling fields
     const submitButton = screen.getByRole('button', { name: /Upload SBOM/i });
     fireEvent.click(submitButton);
 

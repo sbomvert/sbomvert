@@ -73,7 +73,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="ml-2">
             <label
               htmlFor="name"
