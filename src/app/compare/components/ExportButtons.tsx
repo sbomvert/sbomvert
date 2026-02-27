@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileJson, Download } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Button } from '@/components/ui/Button';
+import { Selector } from '@/components/ui/Selector';
 
 interface ExportButtonsProps {
   comparison: IMultiToolComparison;
@@ -59,8 +60,18 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       // Construct the download URL
       const downloadUrl = `/api/sbom/${sanitizedContainer}/${sanitizedTool}.${fileExtension}`;
 
-      // Open the download in a new tab
-      window.open(downloadUrl, '_blank');
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = ''; // Optionally specify a filename here
+
+      // Append to the body to make it work in Firefox
+      document.body.appendChild(link);
+
+      // Trigger click
+      link.click();
+
+      // Remove the link after triggering
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Download failed:', error);
       alert(`Failed to download ${toolName} SBOM file`);
@@ -69,31 +80,31 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
 
   return (
     <>
-      <Button onClick={() => handleExport('json')} size="Sm">
+      {/*<Button onClick={() => handleExport('json')} size="sm">
         <FileJson size={18} />
         Export JSON
-      </Button>
-      {/* Add download buttons for each tool */}
-      <div className="flex items-center space-x-2">
-        <select
-          value={selectedTool}
-          onChange={e => {
-            const val = e.target.value;
-            setSelectedTool(val);
-            if (val) {
-              handleDownload(val);
-            }
-          }}
-          className="inline-flex items-center justify-center gap-2 rounded font-medium transition-all bg-primary text-white hover:bg-primary/90 px-4 py-2"
-        >
-          <option value="" disabled>Download SBOM</option>
-          {comparison.tools.map(tool => (
-            <option key={tool.name} value={tool.name}>
-              {tool.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      </Button>*/}
+      <Selector
+        size="md"
+        defaultValue=""
+        onChange={(e) => {
+          const val = e.target.value;
+          setSelectedTool(val);
+          if (val) {
+            handleDownload(val);
+          }
+        }}
+      >
+        <option value="" disabled>
+          Download SBOM
+        </option>
+
+        {comparison.tools.map((tool) => (
+          <option key={tool.name} value={tool.name}>
+            {tool.name}
+          </option>
+        ))}
+      </Selector>
     </>
   );
 };
