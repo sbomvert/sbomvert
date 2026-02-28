@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { SbomUploadForm } from '@/app/compare/components/SbomUploadForm';
+import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 
 const meta: Meta<typeof SbomUploadForm> = {
   title: 'Components/SbomUploadForm',

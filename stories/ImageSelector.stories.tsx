@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ImageSelector } from '@/app/compare/components/ImageSelector';
+import { ImageSelector } from '@/components/hoc/ImageSelector';
 
 const meta: Meta<typeof ImageSelector> = {
   title: 'Compare/ImageSelector',

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ExportButtons } from '@/app/compare/components/ExportButtons';
+import { ExportButtons } from '@/components/hoc/ExportButtons';
 
 const meta: Meta<typeof ExportButtons> = {
   title: 'Compare/ExportButtons',

@@ -1,4 +1,4 @@
-import { ToolInfoCard } from '@/app/compare/components/ToolInfoCard';
+import { ToolInfoCard } from '@/components/hoc/ToolInfoCard';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof ToolInfoCard> = {

@@ -1,15 +1,15 @@
 'use client';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ComparisonTypeSelector } from './components/ComparisonTypeSelector';
+import { ComparisonTypeSelector } from '../../components/hoc/ComparisonTypeSelector';
 import { SearchBar } from '../../components/searchbar/SearchBar';
-import { ImageSelector, ImageInfo } from './components/ImageSelector';
-import { LoadingSpinner } from './components/LoadingSpinner';
+import { ImageSelector, ImageInfo } from '../../components/hoc/ImageSelector';
+import { LoadingSpinner } from '../../components/hoc/LoadingSpinner';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/button/Button';
 import { Upload } from 'lucide-react';
-import { SbomUploadForm } from './components/SbomUploadForm';
+import { SbomUploadForm } from '../../components/hoc/SbomUploadForm';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 type ComparisonType = 'SBOM' | 'CVE';

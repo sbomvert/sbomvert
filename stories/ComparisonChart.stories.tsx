@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MultiToolSummary } from '@/app/compare/components/ComparisonSummary';
+import { MultiToolSummary } from '@/components/hoc/ComparisonSummary';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 
 const mockComparison: IMultiToolComparison = {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ToolSelector } from '@/app/compare/components/ToolSelector';
+import { ToolSelector } from '@/components/hoc/ToolSelector';
 import { TOOL_COLORS } from '@/lib/utils';
 
 const meta: Meta<typeof ToolSelector> = {
