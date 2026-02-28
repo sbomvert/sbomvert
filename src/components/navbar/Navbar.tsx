@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/hooks/useTheme';
 import Image from 'next/image';

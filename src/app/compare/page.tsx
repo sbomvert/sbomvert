@@ -1,13 +1,13 @@
 'use client';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ComparisonTypeSelector } from './components/ComparisonTypeSelector';
-import { SearchBar } from './components/SearchBar';
+import { SearchBar } from '../../components/searchbar/SearchBar';
 import { ImageSelector, ImageInfo } from './components/ImageSelector';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/button/Button';
 import { Upload } from 'lucide-react';
 import { SbomUploadForm } from './components/SbomUploadForm';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';

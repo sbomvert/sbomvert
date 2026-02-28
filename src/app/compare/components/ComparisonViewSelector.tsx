@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/button/Button';
 import React from 'react';
 
 type ViewMode = 'summary' | 'table' | 'chart';

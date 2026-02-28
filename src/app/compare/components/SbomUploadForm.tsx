@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
-import { CardHeader } from '@/components/ui/CardHeader';
-import { CardTitle } from '@/components/ui/CardTitle';
-import { CardContent } from '@/components/ui/CardContent';
+import { Button } from '@/components/button/Button';
+import { Input } from '@/components/input/Input';
+import { Card } from '@/components/card/Card';
+import { CardHeader } from '@/components/card/CardHeader';
+import { CardTitle } from '@/components/card/CardTitle';
+import { CardContent } from '@/components/card/CardContent';
 import { FileUp } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 

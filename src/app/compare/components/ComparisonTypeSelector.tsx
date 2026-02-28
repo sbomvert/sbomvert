@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/button/Button';
 
 type ComparisonType = 'SBOM' | 'CVE';
 

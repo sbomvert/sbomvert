@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { FileJson, Download } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
-import { Button } from '@/components/ui/Button';
-import { Selector } from '@/components/ui/Selector';
+import { Button } from '@/components/button/Button';
+import { Selector } from '@/components/select/Selector';
 
 interface ExportButtonsProps {
   comparison: IMultiToolComparison;

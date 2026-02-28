@@ -16,7 +16,7 @@ import {
   Radar,
 } from 'recharts';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
-import Heatmap from './HeatMap';
+import Heatmap from '@/components/heatmap/HeatMap';
 import { computeJaccard } from '@/lib/utils';
 
 interface MultiToolSummaryProps {
