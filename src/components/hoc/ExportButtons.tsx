@@ -85,7 +85,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
         Export JSON
       </Button>*/}
       <Selector
-        size="md"
+        size="Sm"
         defaultValue=""
         onChange={(e) => {
           const val = e.target.value;
