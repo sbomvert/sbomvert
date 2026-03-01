@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { Home } from '@/app/compare/page';
+import Home from '@/app/compare/page';
 
 const meta: Meta<typeof Home> = {
   title: 'Pages/ComparePage',
