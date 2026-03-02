@@ -7,6 +7,7 @@ jest.mock('next/navigation', () => ({
 
 describe('Scan API integration test', () => {
   beforeEach(() => {
+    process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'true';
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,

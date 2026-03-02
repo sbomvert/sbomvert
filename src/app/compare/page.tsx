@@ -159,10 +159,11 @@ const handleSearch = (value: string) => {
             Upload SBOM
           </Button>
         )}
-        {/* Scan button */}
+        {FEATURE_FLAGS.ENABLE_SCAN_API && (
         <Button variant="primary" size="md" onClick={handleScan} className="ml-2">
           Scan Image
         </Button>
+      )}
       </div>
       <ComparisonTypeSelector
         comparisonType={comparisonType}

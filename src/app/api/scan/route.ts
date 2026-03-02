@@ -9,6 +9,9 @@ const ScanRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (process.env.NEXT_PUBLIC_ENABLE_SCAN_API !== 'true') {
+    return NextResponse.json({ error: 'Scan feature disabled' }, { status: 403 });
+  }
   try {
     const body = await request.json();
     const parsed = ScanRequestSchema.parse(body);
