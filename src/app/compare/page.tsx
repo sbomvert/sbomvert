@@ -11,62 +11,62 @@ import { Button } from '@/components/button/Button';
 import { Upload } from 'lucide-react';
 import { SbomUploadForm } from '../../components/hoc/SbomUploadForm';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
+import { ImageScanForm } from '../../components/hoc/ImageScanForm/ImageScanForm';
+import { RecentScans } from '../../components/hoc/RecentScans/RecentScans';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
 export default function Home() {
   const router = useRouter();
   const setSelectedImage = useArtifactStore(s => s.setSelectedImage);
+  const [showRecentScans, setShowRecentScans] = useState(false);
   const [comparisonType, setComparisonType] = useState<ComparisonType>('SBOM');
-  const [searchInput, setSearchInput] = useState(''); // Local input state
-  const [searchTerm, setSearchTerm] = useState(''); // Debounced search term
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [showScanForm, setShowScanForm] = useState(false);
+
+
+  const [jobIdState, setJobIdState] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<string | null>(null);
+
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // ------------------------------------------------------------
-  // Debounce search input (500ms delay)
-  // ------------------------------------------------------------
+  /* ------------------ Search Debounce ------------------ */
   useEffect(() => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       setSearchTerm(searchInput);
       setCurrentPage(1);
     }, 500);
 
     return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [searchInput]);
 
-  // ------------------------------------------------------------
-  // Load paginated images
-  // ------------------------------------------------------------
+  /* ------------------ Load Images ------------------ */
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const { images: loadedImages, pagination } = await loadSbomImagesFromPublic(
-        currentPage,
-        searchTerm
-      );
+      const { images: loadedImages, pagination } =
+        await loadSbomImagesFromPublic(currentPage, searchTerm);
+
       setImages(loadedImages);
       setTotalPages(pagination.totalPages);
       setLoading(false);
     };
+
     loadData();
   }, [currentPage, searchTerm]);
 
-  // ------------------------------------------------------------
-  // Filter images for search (client-side filtering)
-  // ------------------------------------------------------------
+
+  /* ------------------ Filtering ------------------ */
   const filteredImages = useMemo(() => {
     return images.filter(
       img =>
@@ -75,10 +75,9 @@ export default function Home() {
     );
   }, [images, searchTerm]);
 
-  // ------------------------------------------------------------
-  // Load SBOMs for selected image
-  // ------------------------------------------------------------
-  const handleImageSelect = async (image: string) => {
+  /* ------------------ Handlers ------------------ */
+
+  const handleImageSelect = (image: string) => {
     setSelectedImage(image);
     router.push('/compare/artifact');
   };
@@ -93,11 +92,7 @@ const handleSearch = (value: string) => {
   setSearchInput(value);
 };
 
-  // ------------------------------------------------------------
-  // Handle SBOM upload
-  // ------------------------------------------------------------
   const handleUpload = async (name: string, containerName: string, file: File) => {
-    // Prepare form data for the upload API
     const formData = new FormData();
     formData.append('name', name);
     formData.append('containerName', containerName);
@@ -109,19 +104,13 @@ const handleSearch = (value: string) => {
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
+      if (!response.ok)
+        throw new Error((await response.json()).error || 'Upload failed');
 
-      const result = await response.json();
-      alert(`SBOM "${name}" uploaded successfully for container "${containerName}"`);
-      console.log('Upload result:', result);
+      alert(`SBOM "${name}" uploaded successfully`);
     } catch (error) {
-      console.error('Upload error:', error);
       alert(`Failed to upload SBOM: ${(error as Error).message}`);
     } finally {
-      // Reset form and hide upload regardless of success
       setShowUploadForm(false);
     }
   };
@@ -152,9 +141,14 @@ const handleSearch = (value: string) => {
   };
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-end mb-4">
+
+      <div className="flex justify-end mb-4 gap-2">
         {FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
-          <Button variant="secondary" size="md" onClick={() => setShowUploadForm(!showUploadForm)}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => setShowUploadForm(prev => !prev)}
+          >
             <Upload size={20} />
             Upload SBOM
           </Button>
@@ -165,20 +159,35 @@ const handleSearch = (value: string) => {
         </Button>
       )}
       </div>
-      <ComparisonTypeSelector
-        comparisonType={comparisonType}
-        onComparisonTypeChange={setComparisonType}
-      />
+
+
+
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
-      {/* ------------------------------------------------------------
-            IMAGE SELECTION
-           ------------------------------------------------------------ */}
+
       {!loading && (
         <>
           {showUploadForm && FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
-            <SbomUploadForm onUpload={handleUpload} onCancel={() => setShowUploadForm(false)} />
+            <SbomUploadForm
+              onUpload={handleUpload}
+              onCancel={() => setShowUploadForm(false)}
+            />
           )}
+
+          {showScanForm && FEATURE_FLAGS.ENABLE_SCAN_API && (
+            <ImageScanForm
+              onSubmit={handleScanSubmit}
+              onCancel={() => setShowScanForm(false)}
+            />
+          )}
+
+          {showRecentScans && (
+            <div className="mt-6">
+              <RecentScans />
+            </div>
+          )}
+
           <SearchBar value={searchInput} onChange={handleSearch} />
+
           <ImageSelector
             images={filteredImages}
             onImageSelect={handleImageSelect}

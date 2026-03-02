@@ -40,7 +40,7 @@ jest.mock('@/lib/featureFlags', () => ({
 jest.mock('@/services/sbomStorageService/sbomStorageService', () => ({
   __esModule: true,
   default: {
-    saveFile: jest.fn(),
+    saveSBOM: jest.fn(),
   },
 }));
 
@@ -168,7 +168,7 @@ describe('POST /api/sbom/upload', () => {
       containerName: 'test-container',
     });
 
-    (SBOMService.saveFile as jest.Mock).mockResolvedValue(undefined);
+    (SBOMService.saveSBOM as jest.Mock).mockResolvedValue(undefined);
 
     const response = await POST(mockRequest);
 
@@ -179,7 +179,7 @@ describe('POST /api/sbom/upload', () => {
     expect(data.format).toBe('SPDX');
 
     expect(parseSpdxSbom).toHaveBeenCalled();
-    expect(SBOMService.saveFile).toHaveBeenCalled();
+    expect(SBOMService.saveSBOM).toHaveBeenCalled();
   });
 
   it('should parse and save CycloneDX SBOM file correctly', async () => {
@@ -207,7 +207,7 @@ describe('POST /api/sbom/upload', () => {
       containerName: 'test-container',
     });
 
-    (SBOMService.saveFile as jest.Mock).mockResolvedValue(undefined);
+    (SBOMService.saveSBOM as jest.Mock).mockResolvedValue(undefined);
 
     const response = await POST(mockRequest);
 
@@ -218,7 +218,7 @@ describe('POST /api/sbom/upload', () => {
     expect(data.format).toBe('CycloneDX');
 
     expect(parseCycloneDxSbom).toHaveBeenCalled();
-    expect(SBOMService.saveFile).toHaveBeenCalled();
+    expect(SBOMService.saveSBOM).toHaveBeenCalled();
   });
 
   it('should return 500 when saving file fails', async () => {

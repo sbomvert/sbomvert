@@ -29,19 +29,19 @@ export class S3SbomService implements ISbomService {
     this.prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
     this.itemsPerPage = itemsPerPage;
 
-    this.s3Client =
-      s3Client ||
-      new S3Client({
-        region: process.env.AWS_REGION || 'us-east-1',
-        endpoint: process.env.S3_ENDPOINT, // For MinIO or other S3-compatible services
-        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true', // Required for MinIO
-        credentials: process.env.S3_ENDPOINT
-          ? {
-              accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-            }
-          : undefined,
-      });
+    this.s3Client = s3Client || this.createDefaultClient();
+  }
+
+  private createDefaultClient(): S3Client {
+    return new S3Client({
+      region: process.env.AWS_REGION || 'us-east-1',
+      endpoint: process.env.S3_ENDPOINT,
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+      credentials: process.env.S3_ENDPOINT ? {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+        } : undefined,
+    });
   }
 
   /**
@@ -50,19 +50,14 @@ export class S3SbomService implements ISbomService {
    */
   private extractContainerName(key: string): string | null {
     const relativePath = key.startsWith(this.prefix) ? key.slice(this.prefix.length) : key;
-
     const parts = relativePath.split('/');
-    const containerName = parts.length >= 2 ? parts[0] : null;
-
-    return containerName;
+    return parts.length >= 2 ? parts[0] : null;
   }
 
   /**
    * Lists all JSON objects in the S3 bucket under the prefix
    */
-  private async listAllObjects(): Promise<
-    Array<{ key: string; size: number; lastModified: Date }>
-  > {
+  private async listAllObjects(): Promise<Array<{ key: string; size: number; lastModified: Date }>> {
     const objects: Array<{ key: string; size: number; lastModified: Date }> = [];
     let continuationToken: string | undefined;
 
@@ -96,9 +91,7 @@ export class S3SbomService implements ISbomService {
   /**
    * Groups S3 objects by container name
    */
-  private groupByContainer(
-    objects: Array<{ key: string; size: number; lastModified: Date }>
-  ): Map<string, SbomFile[]> {
+  private groupByContainer(objects: Array<{ key: string; size: number; lastModified: Date }>): Map<string, SbomFile[]> {
     const containerMap = new Map<string, SbomFile[]>();
 
     for (const obj of objects) {
@@ -186,6 +179,7 @@ export class S3SbomService implements ISbomService {
   getFileUrl(containerName: string, fileName: string): string {
     return `s3://${this.bucketName}/${this.prefix}${containerName}/${fileName}`;
   }
+
   /**
    * Returns all SBOM JSON files for a specific container name
    */
@@ -219,7 +213,7 @@ export class S3SbomService implements ISbomService {
         throw new Error('Empty S3 object');
       }
 
-      // Convert S3 stream → string
+      // Convert S3 stream to string
       const stream = response.Body as Readable;
       const chunks: Buffer[] = [];
 
@@ -238,15 +232,24 @@ export class S3SbomService implements ISbomService {
    * Save a file to S3
    */
   async saveFile(fileName: string, content: string): Promise<void> {
-    const key = `${this.prefix}${fileName}`;
+    // Deprecated – forward to saveSBOM
+    const [image, toolWithExt] = fileName.split('/');
+    const [tool, ext] = toolWithExt.split('.');
+    const type = ext?.toLowerCase() ?? '';
+    return this.saveSBOM(image, type, tool, content);
+  }
 
+  /**
+   * Save an SBOM for a given image, type, and tool.
+   */
+  async saveSBOM(image: string, type: string, tool: string, content: string): Promise<void> {
+    const key = `${this.prefix}${image}/${tool}.${type.toLowerCase()}.json`;
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
       Body: content,
       ContentType: 'application/json',
     });
-
     await this.s3Client.send(command);
   }
 }
