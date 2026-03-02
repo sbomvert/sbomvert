@@ -1,15 +1,15 @@
 'use client';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ComparisonTypeSelector } from './components/ComparisonTypeSelector';
-import { SearchBar } from './components/SearchBar';
-import { ImageSelector, ImageInfo } from './components/ImageSelector';
-import { LoadingSpinner } from './components/LoadingSpinner';
+import { ComparisonTypeSelector } from '../../components/hoc/ComparisonTypeSelector';
+import { SearchBar } from '../../components/searchbar/SearchBar';
+import { ImageSelector, ImageInfo } from '../../components/hoc/ImageSelector';
+import { LoadingSpinner } from '../../components/hoc/LoadingSpinner';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/button/Button';
 import { Upload } from 'lucide-react';
-import { SbomUploadForm } from './components/SbomUploadForm';
+import { SbomUploadForm } from '../../components/hoc/SbomUploadForm';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 type ComparisonType = 'SBOM' | 'CVE';
@@ -83,9 +83,15 @@ export default function Home() {
     router.push('/compare/artifact');
   };
 
-  const handleSearch = (value: string) => {
-    setSearchInput(value);
-  };
+  const handleComparisonTypeChange = (type: 'SBOM' | 'CVE') => {
+  if (type === 'CVE') {
+    router.push('/compare/cve');
+  }
+};
+
+const handleSearch = (value: string) => {
+  setSearchInput(value);
+};
 
   // ------------------------------------------------------------
   // Handle SBOM upload
@@ -120,6 +126,30 @@ export default function Home() {
     }
   };
 
+  const handleScan = async () => {
+    const image = window.prompt('Enter image name (e.g., repo/app:tag)');
+    if (!image) return;
+    const payload = {
+      image,
+      tools: ['trivy', 'syft', 'grype', 'scout'],
+    };
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Scan started. Job ID: ${data.jobId}`);
+      } else {
+        alert(`Scan failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to start scan');
+    }
+  };
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-end mb-4">
@@ -129,6 +159,11 @@ export default function Home() {
             Upload SBOM
           </Button>
         )}
+        {FEATURE_FLAGS.ENABLE_SCAN_API && (
+        <Button variant="primary" size="md" onClick={handleScan} className="ml-2">
+          Scan Image
+        </Button>
+      )}
       </div>
       <ComparisonTypeSelector
         comparisonType={comparisonType}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
-import { PurlAnalysisCard } from '@/app/compare/components/PurlAnalysisCard';
+import { PurlAnalysisCard } from '@/components/hoc/PurlAnalysisCard';
 
 jest.mock('framer-motion', () => ({
   motion: { div: (p: any) => <div {...p} /> },

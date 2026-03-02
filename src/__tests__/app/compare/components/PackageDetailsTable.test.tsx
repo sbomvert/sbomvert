@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
-import { PackageDetailsTable } from '@/app/compare/components/PackageDetailsTable';
+import { PackageDetailsTable } from '@/components/hoc/PackageDetailsTable';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 
 const makeComparison = (): IMultiToolComparison => {

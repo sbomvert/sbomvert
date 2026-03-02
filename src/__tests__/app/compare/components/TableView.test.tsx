@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
-import { TableView } from '@/app/compare/components/TableView';
+import { TableView } from '@/components/hoc/TableView';
 
 jest.mock('framer-motion', () => ({
   motion: { div: (p: any) => <div {...p} /> },
