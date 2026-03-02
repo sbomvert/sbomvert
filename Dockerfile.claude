@@ -1,0 +1,72 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_VERSION=22
+
+# ─── System dependencies ──────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    ripgrep \
+    build-essential \
+    python3 \
+    ca-certificates \
+    gnupg \
+    unzip \
+    jq \
+    sudo \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Node.js 22 (required by Claude Code) ────────────────────────────────────
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Global Node.js / Next.js dev toolchain ───────────────────────────────────
+RUN npm install -g \
+    typescript \
+    ts-node \
+    eslint \
+    prettier \
+    pnpm \
+    yarn \
+    turbo \
+    vercel \
+    create-next-app
+
+# ─── Claude Code ─────────────────────────────────────────────────────────────
+RUN npm install -g @anthropic-ai/claude-code
+
+RUN apt update && apt-get install -y zstd
+# ─── Ollama CLI (v0.15+ required for `ollama launch`) ────────────────────────
+# We only need the CLI binary, not the Ollama server — the server runs remotely.
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# ─── Non-root dev user ────────────────────────────────────────────────────────
+RUN useradd -m -s /bin/bash -u 1000 developer \
+    && echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    && mkdir -p /home/developer/.claude \
+    && chown -R developer:developer /home/developer
+
+RUN mkdir -p /workspace && chown developer:developer /workspace
+WORKDIR /workspace
+
+USER developer
+ENV HOME=/home/developer
+ENV PATH="$HOME/.local/bin:$PATH"
+
+# ─── Next.js ports ───────────────────────────────────────────────────────────
+ENV CLAUDE_SKIP_PERMISSIONS=1
+ENV CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS=1
+
+# ─── Ollama endpoint (override at runtime or in docker-compose) ───────────────
+ENV OLLAMA_HOST=http://ollama:11434
+
+# ─── Expose ports used by Next.js dev server ─────────────────────────────────
+EXPOSE 3000 3001
+
+# ─── Default: launch Claude Code interactively ───────────────────────────────
+CMD ["ollama", "launch", "claude"]

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@/test-utils';
-import { LoadingSpinner } from '@/app/compare/components/LoadingSpinner';
+import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 
 test('renders with default message', () => {
   render(<LoadingSpinner />);

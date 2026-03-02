@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
-import { ComparisonViewSelector } from '@/app/compare/components/ComparisonViewSelector';
+import { ComparisonViewSelector } from '@/components/hoc/ComparisonViewSelector';
 
 test('switches view mode', () => {
   const onChange = jest.fn();

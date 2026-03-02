@@ -3,7 +3,7 @@ import path from 'path';
 import type { ISbomService, SbomFile, Container, SbomListResponse } from './sbomService.types';
 
 /**
- * Local file system implementation of SBOM service
+ * Local file system implementation of the SBOM service
  */
 export class LocalSbomService implements ISbomService {
   private readonly sbomDir: string;
@@ -12,21 +12,31 @@ export class LocalSbomService implements ISbomService {
   constructor(sbomDir: string, itemsPerPage: number = 20) {
     this.sbomDir = sbomDir;
     this.itemsPerPage = itemsPerPage;
+    this.checkDirectoryExists();
   }
+
+  /**
+   * List all files in a given container.
+   */
   listFiles(containerName: string): Promise<SbomFile[]> {
     return Promise.resolve(this.getContainerFiles(containerName));
   }
 
+  /**
+   * Ensure that the SBOM directory exists.
+   */
   private checkDirectoryExists(): boolean {
     if (!fs.existsSync(this.sbomDir)) {
-      fs.mkdirSync(this.sbomDir, { recursive: true })
+      fs.mkdirSync(this.sbomDir, { recursive: true });
     }
-    return fs.existsSync(this.sbomDir)
+    return fs.existsSync(this.sbomDir);
   }
 
+  /**
+   * Retrieve directories for containers.
+   */
   private getContainerDirs(search?: string): string[] {
-    const dirs = fs
-      .readdirSync(this.sbomDir, { withFileTypes: true })
+    const dirs = fs.readdirSync(this.sbomDir, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
 
@@ -36,42 +46,37 @@ export class LocalSbomService implements ISbomService {
     return dirs;
   }
 
+  /**
+   * Get files for a specific container.
+   */
   private getContainerFiles(containerName: string): SbomFile[] {
     const containerPath = path.join(this.sbomDir, containerName);
 
     try {
       const fileNames = fs.readdirSync(containerPath)
-        .filter(name => name.endsWith('.json'))
+        .filter(name => name.endsWith('.json'));
+      
       const files = fileNames.map(name => {
-        const filePath = path.join(containerPath, name)
-        const stats = fs.statSync(filePath)
+        const filePath = path.join(containerPath, name);
+        const stats = fs.statSync(filePath);
         return {
           name,
           path: `/sbom/${containerName}/${name}`,
           size: stats.size,
           lastModified: stats.mtime,
-        }
-      })
-      return files
+        };
+      });
+      return files;
     } catch (error) {
       console.error(`Error reading container ${containerName}:`, error);
       return [];
     }
   }
 
+  /**
+   * List SBOMs with pagination.
+   */
   async listSboms(page: number = 1, search?: string): Promise<SbomListResponse> {
-    if (!this.checkDirectoryExists()) {
-      return {
-        containers: [],
-        pagination: {
-          currentPage: 1,
-          totalPages: 0,
-          totalItems: 0,
-          itemsPerPage: this.itemsPerPage,
-        },
-      };
-    }
-
     const containerDirs = this.getContainerDirs(search);
     const totalItems = containerDirs.length;
     const totalPages = Math.ceil(totalItems / this.itemsPerPage) || 1;
@@ -95,6 +100,10 @@ export class LocalSbomService implements ISbomService {
       },
     };
   }
+
+  /**
+   * Get content of a specified file.
+   */
   async getFileContent(containerName: string, fileName: string): Promise<string> {
     const filePath = path.join(this.sbomDir, containerName, fileName);
 
@@ -110,18 +119,27 @@ export class LocalSbomService implements ISbomService {
   }
 
   /**
-   * Save a file to the local file system
+   * Save a file to the local file system.
    */
   async saveFile(fileName: string, content: string): Promise<void> {
-    // Ensure the directory exists
+    const [image, toolWithExt] = fileName.split('/');
+    const [tool, ext] = toolWithExt.split('.');
+    const type = ext?.toLowerCase() ?? '';
+    return this.saveSBOM(image, type, tool, content);
+  }
+
+  /**
+   * Save an SBOM for a given image, type, and tool.
+   */
+  async saveSBOM(image: string, type: string, tool: string, content: string): Promise<void> {
+    const fileName = `${image}/${tool}.${type.toLowerCase()}.json`;
     const fullPath = path.join(this.sbomDir, fileName);
     const dir = path.dirname(fullPath);
-
+    
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-
-    // Write the file
+    
     fs.writeFileSync(fullPath, content, 'utf8');
   }
 }

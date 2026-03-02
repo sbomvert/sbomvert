@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@/test-utils';
-import { ImageSelector } from '@/app/compare/components/ImageSelector';
+import { ImageSelector } from '@/components/hoc/ImageSelector';
 import { jest, describe, it, expect } from '@jest/globals';
 
 jest.mock('framer-motion', () => ({

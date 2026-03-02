@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@/test-utils';
-import { SbomUploadForm } from '@/app/compare/components/SbomUploadForm';
+import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 
 // Mock the FEATURE_FLAGS to control behavior
 jest.mock('@/lib/featureFlags', () => ({

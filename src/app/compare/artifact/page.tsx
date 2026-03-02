@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { ToolSelector } from '../components/ToolSelector';
-import { ComparisonViewSelector } from '../components/ComparisonViewSelector';
-import { SummaryView } from '../components/SummaryView';
-import { TableView } from '../components/TableView';
-import { ChartView } from '../components/ChartView';
-import { ExportButtons } from '../components/ExportButtons';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ToolSelector } from '../../../components/hoc/ToolSelector';
+import { ComparisonViewSelector } from '../../../components/hoc/ComparisonViewSelector';
+import { SummaryView } from '../../../components/hoc/SummaryView';
+import { TableView } from '../../../components/hoc/TableView';
+import { ChartView } from '../../../components/hoc/ChartView';
+import { ExportButtons } from '../../../components/hoc/ExportButtons';
+import { LoadingSpinner } from '../../../components/hoc/LoadingSpinner';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';

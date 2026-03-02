@@ -1,0 +1,43 @@
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    container_name: nextjs-dev
+
+    working_dir: /app
+
+    volumes:
+      # project files
+      - ./:/app
+
+      # node_modules isolation
+      - /app/node_modules
+
+      # docker daemon forwarding
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: development
+      REDIS_HOST: redis
+
+    depends_on:
+      - redis
+    command: sh -c "npm install --force && npm run dev"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

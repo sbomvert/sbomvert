@@ -30,4 +30,8 @@ export interface ISbomService {
   listFiles(containerName: string): Promise<SbomFile[]>;
   getFileContent(containerName: string, fileName: string): Promise<string>;
   saveFile(fileName: string, content: string): Promise<void>;
+  /**
+   * Save an SBOM for a given image, type, and tool.
+   */
+  saveSBOM(image: string, type: string, tool: string, content: string): Promise<void>;
 }

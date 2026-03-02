@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/button/Button';
 
 test('renders primary button and handles click', () => {
   const onClick = jest.fn();
