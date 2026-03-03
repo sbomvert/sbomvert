@@ -60,7 +60,7 @@ test('getFileContent reads file content', async () => {
 })
 
 test('saveFile writes content correctly', async () => {
-  const fileName = 'saveTest.json'
+  const fileName = 'myImage/myTool.json'
   const content = '{"save":"ok"}'
 
   await service.saveFile(fileName, content)

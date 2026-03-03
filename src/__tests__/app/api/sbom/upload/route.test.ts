@@ -246,7 +246,7 @@ describe('POST /api/sbom/upload', () => {
       containerName: 'test-container',
     });
 
-    (SBOMService.saveFile as jest.Mock).mockRejectedValue(
+    (SBOMService.saveSBOM as jest.Mock).mockRejectedValue(
       new Error('Save failed')
     );
 
