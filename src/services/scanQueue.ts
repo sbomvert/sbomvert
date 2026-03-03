@@ -15,6 +15,7 @@ import {
 } from './storage';
 import { GenerateSPDXSBOMwithTool } from '@/lib/sbom/generator';
 import { SanitizeContainerImage } from '@/lib/utils';
+import { ScanSPDXwithTool } from '@/lib/vuln/scanner';
 
 const connection = new Redis({
   host: process.env.REDIS_HOST ?? '127.0.0.1',
@@ -178,9 +179,9 @@ export const scanWorker = new Worker(
 
     for (const tool of tools.producers) {
 
-      const cmd = GenerateSPDXSBOMwithTool(tool, image);
+      const spdxcmd = GenerateSPDXSBOMwithTool(tool, image);
 
-      if (!cmd) continue;
+      if (!spdxcmd) continue;
 
       try {
 
@@ -188,21 +189,21 @@ export const scanWorker = new Worker(
           10 + Math.floor((processed / tools.producers.length) * 70)
         );
 
-        const stdout = await runCommand(cmd);
+        const stdout = await runCommand(spdxcmd);
         await saveJobStatus(job.id, 'partial', {
           level: "info",
           message: `Tool ${tool} is computing sbom`,
         });
         let parsed
         try {
-        parsed = safeJsonParse(stdout);
+          parsed = safeJsonParse(stdout);
 
           // TODO: check that output is correct
           await SBOMService.saveSBOM(SanitizeContainerImage(image), 'spdx', tool, stdout);
 
           await saveJobStatus(job.id, 'partial', {
             level: "info",
-            message: `${tool} output has been saved`,
+            message: `${tool} SBOM has been saved`,
           });
         } catch (error) {
           console.error('Error processing SBOM:', error);
@@ -210,27 +211,45 @@ export const scanWorker = new Worker(
             level: "error",
             message: `Failed to process SBOM: ${error}`,
           });
-          throw error 
+          throw error
         }
 
 
         results[tool] = parsed;
 
-        await saveRawSbom(job.id, tool, parsed);
-        //SBOMService.saveFile()
+        const sbomPath = await saveRawSbom(job.id, tool, parsed);
 
         //
         // CVE Extraction
         //
-        const vulns = extractVulnerabilities(tool, parsed);
-
-        await saveToolCveReport(job.id, tool, vulns);
-
-        for (const v of vulns) {
-          if (!mergedCveMap.has(v.id)) {
-            mergedCveMap.set(v.id, v);
-          }
+        const cvecmd = ScanSPDXwithTool(tool, sbomPath)
+        if (cvecmd === null) {
+          await saveJobStatus(job.id, 'failed', {
+            level: "error",
+            message: `${tool} has no capabiilties to find CVEs`,
+          });
+          continue
         }
+
+
+        try {
+          const data = await runCommand(cvecmd)
+          const vulns = safeJsonParse(data)
+          await saveJobStatus(job.id, 'partial', {
+            level: "info",
+            message: `${tool} CVEs have been saved`,
+          });
+          await saveToolCveReport(job.id, tool, vulns);
+        } catch (error) {
+          await saveJobStatus(job.id, 'failed', {
+            level: "error",
+            message: `${tool} failed to get CVEs from SBOM: ${error}`,
+          });
+          throw error
+        }
+
+
+
 
       } catch (err) {
 
