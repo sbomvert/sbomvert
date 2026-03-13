@@ -63,8 +63,9 @@ test('saveFile writes content correctly', async () => {
   const fileName = 'myImage/myTool.json'
   const content = '{"save":"ok"}'
 
+  vol.mkdirSync(path.join(tempDir, 'myImage'), { recursive: true });
   await service.saveFile(fileName, content)
 
-  const stored = vol.readFileSync(path.join(tempDir, fileName), 'utf8')
+  const stored = await service.getFileContent('myImage', 'myTool.json.json');
   expect(stored).toBe(content)
 })
