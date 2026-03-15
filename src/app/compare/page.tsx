@@ -8,6 +8,7 @@ import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/button/Button';
+import { ComparisonTypeSelector } from '../../components/hoc/ComparisonTypeSelector';
 import { Upload } from 'lucide-react';
 import { SbomUploadForm } from '../../components/hoc/SbomUploadForm';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
@@ -141,6 +142,7 @@ const handleSearch = (value: string) => {
   };
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
 
       <div className="flex justify-end mb-4 gap-2">
         {FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
