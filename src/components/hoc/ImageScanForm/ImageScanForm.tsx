@@ -53,7 +53,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({
   };
 
   return (
-    <div className="p-6 border rounded-2xl shadow-xl bg-white max-w-md mx-auto mb-6 transition-all animate-in fade-in slide-in-from-top-4">
+    <div className="p-6 border rounded-2xl shadow-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 max-w-md mx-auto mb-6 transition-all animate-in fade-in slide-in-from-top-4">
       <h2 className="text-xl font-semibold mb-4">
         Scan Container Image
       </h2>
@@ -61,7 +61,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({
       <input
         type="text"
         placeholder="repo/app:tag"
-        className="w-full border p-2 mb-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="w-full border p-2 mb-4 rounded-lg border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-gray-600 focus:outline-none placeholder-gray-500 dark:placeholder-gray-400"
         value={image}
         onChange={e => setImage(e.target.value)}
       />
