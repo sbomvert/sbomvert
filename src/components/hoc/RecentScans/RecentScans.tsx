@@ -54,14 +54,14 @@ export function RecentScans() {
     }
 
     return (
-        <div className="mt-4 border rounded-lg p-4 bg-gray-50">
+        <div className="mt-4 border rounded-lg p-4 bg-gray-50 dark:bg-gray-600">
             <h3 className="text-lg font-semibold mb-3">Recent Scans</h3>
 
             <ul className="space-y-3">
                 {scans.map(scan => (
                     <li
                         key={scan.jobId}
-                        className="border rounded p-3 bg-white shadow-sm"
+                        className="border rounded p-3 bg-white dark:bg-gray-800 shadow-sm"
                     >
                         <div className="flex justify-between">
                             <span className="font-mono text-sm">{scan.jobId}</span>
