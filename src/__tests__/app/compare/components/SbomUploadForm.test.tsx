@@ -14,6 +14,7 @@ describe('SbomUploadForm', () => {
   const mockOnCancel = jest.fn();
 
   beforeEach(() => {
+    jest.spyOn(window, 'alert').mockImplementation(() => {});
     mockOnUpload.mockClear();
     mockOnCancel.mockClear();
   });

@@ -1,9 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() })
+}));
+
+
 import Home from '@/app/compare/page';
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn() }),
-}));
+import { render, screen, fireEvent } from '@testing-library/react';
+
 
 describe('Compare page scan button', () => {
   beforeEach(() => {

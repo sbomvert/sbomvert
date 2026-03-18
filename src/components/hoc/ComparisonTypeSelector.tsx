@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Shield } from 'lucide-react';
 import { Button } from '@/components/button/Button';
+import { useRouter } from 'next/navigation';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
@@ -13,6 +15,7 @@ interface ComparisonTypeSelectorProps {
 export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
   onComparisonTypeChange,
 }) => {
+  const router = useRouter();
   return (
     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
       <h2 className="text-lg font-semibold mb-4 dark:text-white">Select Comparison Type</h2>
@@ -21,10 +24,12 @@ export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
           <FileText size={20} />
           SBOM Comparison
         </Button>
-        <Button onClick={() => onComparisonTypeChange('CVE')} variant="disabled">
-          <Shield size={20} />
-          CVE Comparison (Coming Soon)
-        </Button>
+        {FEATURE_FLAGS.CVE_MAPPING_ENABLED && (
+          <Button onClick={() => { router.push('/compare/cve'); }} size="md">
+            <Shield size={20} />
+            CVE Comparison
+          </Button>
+        )}
       </div>
     </motion.div>
   );
