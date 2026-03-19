@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ToolSelector } from '../../../components/hoc/ToolSelector';
-import { SBOMComparisonViewSelector } from '../../../components/hoc/SBOMComparisonViewSelector';
 import { SummaryView } from '../../../components/hoc/SBOMSummaryView';
 import { TableView } from '../../../components/hoc/TableView';
 import { ChartView } from '../../../components/hoc/ChartView';
@@ -16,6 +15,7 @@ import { loadSbomsForImage } from '@/lib/sbomLoader';
 import { useRouter } from 'next/navigation';
 import { TOOL_COLORS } from '@/lib/utils';
 import { useArtifactStore } from '@/store/useArtifactStore';
+import { SBOMComparisonViewSelector } from '@/components/hoc/SBOMComparisonViewSelector';
 
 type ViewMode = 'summary' | 'table' | 'chart';
 
