@@ -15,7 +15,6 @@ interface ComparisonTypeSelectorProps {
 export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
   onComparisonTypeChange,
 }) => {
-  const router = useRouter();
   return (
     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
       <h2 className="text-lg font-semibold mb-4 dark:text-white">Select Comparison Type</h2>
@@ -25,7 +24,7 @@ export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
           SBOM Comparison
         </Button>
         {FEATURE_FLAGS.CVE_MAPPING_ENABLED && (
-          <Button onClick={() => { router.push('/compare/cve'); }} size="md">
+          <Button onClick={() => { onComparisonTypeChange('CVE') }} size="md">
             <Shield size={20} />
             CVE Comparison
           </Button>
