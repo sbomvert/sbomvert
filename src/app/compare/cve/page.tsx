@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { SanitizeContainerImage } from '@/lib/utils';
 
 interface CVE {
   id: string;
@@ -23,13 +24,13 @@ export default function CVEPage() {
     }
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/cve?image=${encodeURIComponent(selectedImage)}`);
+        const res = await fetch(`/api/cve?image=${SanitizeContainerImage(selectedImage)}`);
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         data.files.map(async (file: any) => {
           const parts = file.name.split('.')
           console.log(parts)
-          const res = await fetch(`/api/cve/${encodeURIComponent(selectedImage)}/${file.name}`); 
+          const res = await fetch(`/api/cve/${SanitizeContainerImage(selectedImage)}/${file.name}`); 
           console.log(await res.json())
         })
         setCves(Array.isArray(data) ? data : []);
