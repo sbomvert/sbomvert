@@ -21,7 +21,7 @@ export class S3CVEService implements CVEServiceType {
 
   constructor(
     bucketName: string,
-    prefix: string = 'sbom/',
+    prefix: string = 'cves/',
     itemsPerPage: number = 20,
     s3Client?: S3Client
   ) {
