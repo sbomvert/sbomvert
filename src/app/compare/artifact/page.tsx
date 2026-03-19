@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ToolSelector } from '../../../components/hoc/ToolSelector';
-import { ComparisonViewSelector } from '../../../components/hoc/ComparisonViewSelector';
-import { SummaryView } from '../../../components/hoc/SummaryView';
+import { SBOMComparisonViewSelector } from '../../../components/hoc/SBOMComparisonViewSelector';
+import { SummaryView } from '../../../components/hoc/SBOMSummaryView';
 import { TableView } from '../../../components/hoc/TableView';
 import { ChartView } from '../../../components/hoc/ChartView';
 import { ExportButtons } from '../../../components/hoc/ExportButtons';
@@ -133,7 +133,7 @@ export default function Home() {
                   </h2>
 
                   <div className="flex gap-3 flex-wrap">
-                    <ComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
+                    <SBOMComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
                     <ExportButtons comparison={comparison} />
                   </div>
                 </div>
