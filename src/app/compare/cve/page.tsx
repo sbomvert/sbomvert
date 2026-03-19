@@ -60,19 +60,19 @@ export default function CVEPage() {
         colors={TOOL_COLORS}
       />
       <AnimatePresence mode="wait">
-              <div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <h2 className="text-3xl font-bold text-foreground dark:text-white">
-                    Analysis: {selectedImage}
-                  </h2>
+        <div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h2 className="text-3xl font-bold text-foreground dark:text-white">
+              Analysis: {selectedImage}
+            </h2>
 
-                  <div className="flex gap-3 flex-wrap">
-                    <SBOMComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
-                    
-                  </div>
-                </div>
-              </div>
-            </AnimatePresence>
+            <div className="flex gap-3 flex-wrap">
+              <SBOMComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
+
+            </div>
+          </div>
+        </div>
+      </AnimatePresence>
     </main>
   );
 }
