@@ -13,7 +13,7 @@ export const ComparisonViewSelector: React.FC<ComparisonViewSelectorProps> = ({
   onViewModeChange,
 }) => {
   return (
-    <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm">
+    <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm">
       <Button
         onClick={() => onViewModeChange('summary')}
         size="sm"
@@ -21,6 +21,7 @@ export const ComparisonViewSelector: React.FC<ComparisonViewSelectorProps> = ({
       >
         Summary
       </Button>
+
       <Button
         onClick={() => onViewModeChange('table')}
         size="sm"
