@@ -79,7 +79,12 @@ export default function Home() {
 
   const handleImageSelect = (image: string) => {
     setSelectedImage(image);
-    router.push('/compare/artifact');
+    if (comparisonType === 'SBOM' ){
+      router.push('/compare/artifact');
+    } else {
+      router.push('/compare/cve');
+    }
+    
   };
 
   const handleSearch = (value: string) => setSearchInput(value);
