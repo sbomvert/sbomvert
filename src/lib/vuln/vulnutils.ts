@@ -219,7 +219,7 @@ export function extractTrivyVulnerabilities(
 
 export function extractAnchoreVulnerabilities(
   obj: Record<string, unknown>,
-  purlMapping: Record<string, string>
+   _: unknown
 ): VulnReport {
   const vuln_report = emptyReport();
   const vulns_by_package: Record<string, string[]> = {};
@@ -231,10 +231,9 @@ export function extractAnchoreVulnerabilities(
     const vuln = match["vulnerability"] as Record<string, string>;
     const vuln_id = vuln["id"];
     const purl = (match["artifact"] as Record<string, string>)["purl"];
-    if (isDebian(purl)) continue;
 
     const comparablePurl = toComparablePurl(purl);
-    if (!(comparablePurl in purlMapping)) continue;
+    vuln_report.purl_mapping[comparablePurl] = purl;
 
     if (!vulns_by_package[comparablePurl]) {
       vulns_by_package[comparablePurl] = [vuln_id];
@@ -260,7 +259,6 @@ export function extractAnchoreVulnerabilities(
 
   vuln_report.vulns_by_package = vulns_by_package;
   vuln_report.vulnpackagelist = vulns_by_package;
-  vuln_report.purl_mapping = purlMapping;
   return vuln_report;
 }
 /*
@@ -492,6 +490,7 @@ export const VULN_EXTRACTORS: Record<
 > = {
   trivy: extractTrivyVulnerabilities,
   grype: extractAnchoreVulnerabilities,
+  syft: extractAnchoreVulnerabilities,
   //scout: extractDockerVulnerabilities,
 };
 

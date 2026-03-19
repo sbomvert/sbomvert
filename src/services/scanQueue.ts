@@ -16,6 +16,8 @@ import {
 import { GenerateSPDXSBOMwithTool } from '@/lib/sbom/generator';
 import { SanitizeContainerImage } from '@/lib/utils';
 import { ScanSPDXwithTool } from '@/lib/vuln/scanner';
+import CVEService from './cveStorageService/cveStorageService';
+import { VULN_EXTRACTORS } from '@/lib/vuln/vulnutils';
 
 const connection = new Redis({
   host: process.env.REDIS_HOST ?? '127.0.0.1',
@@ -216,7 +218,7 @@ export const scanWorker = new Worker(
 
 
         results[tool] = parsed;
-
+        // FIXME: should be deleted
         const sbomPath = await saveRawSbom(job.id, tool, parsed);
 
         //
@@ -237,9 +239,21 @@ export const scanWorker = new Worker(
           const vulns = safeJsonParse(data)
           await saveJobStatus(job.id, 'partial', {
             level: "info",
-            message: `${tool} CVEs have been saved`,
+            message: `${tool} CVEs have been computed`,
           });
-          await saveToolCveReport(job.id, tool, vulns);
+          // TODO: unify format
+          const formatter = VULN_EXTRACTORS[tool]
+          const formattedCVEs = formatter(vulns,{})
+          await saveJobStatus(job.id, 'partial', {
+            level: "info",
+            message: `${tool} CVEs have been formatted to a common standard`,
+          }); 
+          await CVEService.saveCVEFile(SanitizeContainerImage(image), 'spdx', tool, JSON.stringify(formattedCVEs))
+          //await saveToolCveReport(job.id, tool, vulns);
+            await saveJobStatus(job.id, 'partial', {
+            level: "info",
+            message: `${tool} CVEs have been saved`,
+          }); 
         } catch (error) {
           await saveJobStatus(job.id, 'failed', {
             level: "error",
