@@ -1,5 +1,6 @@
 import { ISbom } from '@/models/ISbom';
 import { parseSpdxSbom, parseCycloneDxSbom } from './parseSbom';
+import { formatContainerName, reverseFormatContainerName } from './container/containerUtils';
 
 interface ContainerSboms {
   [containerName: string]: ISbom[];
@@ -20,14 +21,7 @@ interface PaginationInfo {
   itemsPerPage: number;
 }
 
-// --- Name format helpers ---
-const formatContainerName = (folderName: string): string => {
-  return folderName.replace(/-?twodots/g, ':').replace(/-?slash/g, '/');
-};
 
-const reverseFormatContainerName = (formattedName: string): string => {
-  return formattedName.replace(/:/g, 'twodots').replace(/\//g, 'slash');
-};
 
 // --- Description helper ---
 const getContainerDescription = (containerName: string): string => {

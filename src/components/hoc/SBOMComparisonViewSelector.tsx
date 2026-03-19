@@ -3,12 +3,12 @@ import React from 'react';
 
 type ViewMode = 'summary' | 'table' | 'chart';
 
-interface ComparisonViewSelectorProps {
+interface SBOMComparisonViewSelectorProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
 }
 
-export const ComparisonViewSelector: React.FC<ComparisonViewSelectorProps> = ({
+export const SBOMComparisonViewSelector: React.FC<SBOMComparisonViewSelectorProps> = ({
   viewMode,
   onViewModeChange,
 }) => {
