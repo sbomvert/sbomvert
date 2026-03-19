@@ -4,7 +4,7 @@ import type { CVEListResponse, CVEServiceType, CVEfile, Container  } from './cve
 /**
  * Local file system implementation of the SBOM service
  */
-export class LocalSbomService implements CVEServiceType {
+export class LocalCVEService implements CVEServiceType {
   private readonly sbomDir: string;
   private readonly itemsPerPage: number;
 

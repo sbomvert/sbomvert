@@ -26,6 +26,12 @@ export default function CVEPage() {
         const res = await fetch(`/api/cve?image=${encodeURIComponent(selectedImage)}`);
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
+        data.files.map(async (file: any) => {
+          const parts = file.name.split('.')
+          console.log(parts)
+          const res = await fetch(`/api/cve/${encodeURIComponent(selectedImage)}/${file.name}`); 
+          console.log(await res.json())
+        })
         setCves(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error(e);
