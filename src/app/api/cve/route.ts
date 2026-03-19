@@ -1,23 +1,26 @@
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import { join } from 'path';
+import CVEService from '@/services/cveStorageService/cveStorageService';
+
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const image = searchParams.get('image');
-  if (!image) {
-    return NextResponse.json({ error: 'image query param required' }, { status: 400 });
+  const container = searchParams.get('image');
+
+  if (!container) {
+    return NextResponse.json({ error: 'Container image name is required' }, { status: 400 });
   }
-  // Sanitize image name similar to other routes
-  const sanitized = image.replace(/\//g, 'slash').replace(/:/g, 'twodots');
-  const baseDir = join(process.cwd(), 'storage', 'cves', sanitized);
-  const mergedPath = join(baseDir, 'merged.json');
+
   try {
-    const data = await fs.readFile(mergedPath, 'utf-8');
-    const json = JSON.parse(data);
-    return NextResponse.json(json);
-  } catch (e) {
-    console.error('CVE fetch error', e);
-    return NextResponse.json({ error: 'CVE data not found' }, { status: 404 });
+    // Use shared interface method, works for BOTH S3 and Local
+    const files = await CVEService.listCVEFiles(container);
+
+    if (!files || files.length === 0) {
+      return NextResponse.json({ files: [] });
+    }
+
+    return NextResponse.json({ files });
+  } catch (error) {
+    console.error(`Error listing CVE files for ${container}:`, error);
+    return NextResponse.json({ error: 'Failed to retrieve CVE files' }, { status: 500 });
   }
 }
