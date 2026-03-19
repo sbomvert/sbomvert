@@ -13,6 +13,9 @@ import { SummaryView } from '@/components/hoc/SBOMSummaryView';
 import { TableView } from '@/components/hoc/TableView';
 import { AnimatePresence } from 'framer-motion';
 import { SBOMComparisonViewSelector } from '@/components/hoc/SBOMComparisonViewSelector';
+import { Card } from '@/components/card/Card';
+import { CardHeader } from '@/components/card/CardHeader';
+import { CardTitle } from '@/components/card/CardTitle';
 
 type ViewMode = 'summary' | 'table' | 'chart';
 
@@ -73,6 +76,23 @@ export default function CVEPage() {
           </div>
         </div>
       </AnimatePresence>
+      <div className="grid grid-cols-2 gap-4">
+        {
+
+          Array.from(selectedTools).map((tool) => <div key={tool}>
+            <Card>
+              <CardTitle>{tool}</CardTitle>
+              <CardHeader>
+                CVE analysis
+              </CardHeader>
+
+            </Card>
+
+
+          </div>)
+
+        }
+      </div>
     </main>
   );
 }
