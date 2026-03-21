@@ -1,71 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { artifactStorage } from '@/services/artifactStorageService/artifactStorage';
-import {
-  SubjectMetadata,
-  SubjectType,
-  SUBJECT_TYPES,
-  SubjectAlreadyExistsError,
-} from '@/services/artifactStorageService/artifactStorageService.types';
-import { isValidSubjectType, errorResponse } from '@/app/api/_lib/validation';
+import { z } from 'zod';
+import {SubjectMetadata,SubjectType} from '@/services/artifactStorageService/artifactStorageService.types';
+import artifactService from '@/services/artifactStorageService/artifactStorage';
 
-// ─── GET /api/subjects ────────────────────────────────────────────────────────
-// Query params: page (number), search (string)
 
-export async function GET(request: NextRequest) {
+
+const createSubjectSchema = z.object({
+  type: z.enum(SubjectType),
+  id: z.string().min(1),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = request.nextUrl;
-    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1);
-    const search = searchParams.get('search') ?? '';
+     const parsed = createSubjectSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid body', details: parsed.error }, { status: 400 });}
 
-    const result = await artifactStorage.listSubjects(page, search);
+    const { type, id, name, description, tags } = parsed.data;
+
+    const subject = { type, id };
+
+    const exists = await artifactService.getSubject(subject)
+
+    if (exists !== null) {
+      return NextResponse.json(
+        { error: 'Subject already exists' },
+        { status: 409 }
+      );
+    }
+
+
+    const now = new Date();
+
+  const subjectMeta: SubjectMetadata = {
+    id: subject.id,
+    name: name || subject.id,
+    type: subject.type,
+    createdAt: now,
+    updatedAt: now,
+    sboms: 0,
+    cves:  0,
+    description:description,
+    tags: tags,
+  };
+
+    const result = await artifactService.createSubject(subject,subjectMeta);
+
     return NextResponse.json(result);
-  } catch (err) {
-    return errorResponse(err, 'Failed to list subjects');
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      return NextResponse.json(
+        { error: 'Subject already exists' },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to create subject' },
+      { status: 500 }
+    );
   }
 }
 
-// ─── POST /api/subjects ───────────────────────────────────────────────────────
-// Body: { type, id, name?, description?, tags?, owner? }
 
-export async function POST(request: NextRequest) {
-  let body: unknown;
+/*const getSubjectSchema = z.object({
+  type: z.enum(SubjectType),
+  id: z.string().min(1),
+});*/
+
+const listSubjects = z.object({
+  page: z.number().optional(),
+  search: z.string().optional(),
+});
+
+export async function GET(request: NextRequest) {
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+    const url = request.nextUrl;
+    const pageRaw = url.searchParams.get('page');
+    const searchRaw = url.searchParams.get('search');
 
-  const { type, id, name, description, tags, owner } = body as Record<string, unknown>;
+    const page = pageRaw === null ? undefined : Number(pageRaw);
+    const search = searchRaw === null ? undefined : searchRaw;
 
-  if (!type || !isValidSubjectType(type)) {
-    return NextResponse.json(
-      { error: `Invalid type. Must be one of: ${SUBJECT_TYPES.join(', ')}` },
-      { status: 400 }
-    );
-  }
-  if (!id || typeof id !== 'string' || id.trim() === '') {
-    return NextResponse.json({ error: 'id must be a non-empty string' }, { status: 400 });
-  }
-
-  const subject = { type: type as SubjectType, id: id.trim() };
-  const now = new Date();
-
-  const metadata: Omit<SubjectMetadata, 'sboms' | 'cves' | 'createdAt' | 'updatedAt'> = {
-    id: subject.id,
-    type: subject.type,
-    name: typeof name === 'string' ? name : subject.id,
-    description: typeof description === 'string' ? description : undefined,
-    tags: Array.isArray(tags) ? (tags as string[]) : undefined,
-    owner: typeof owner === 'string' ? owner : undefined,
-  };
-
-  try {
-    const result = await artifactStorage.createSubject(subject, metadata);
-    return NextResponse.json(result, { status: 201 });
-  } catch (err) {
-    if (err instanceof SubjectAlreadyExistsError) {
-      return NextResponse.json({ error: err.message }, { status: 409 });
+    const parsed = listSubjects.safeParse({ page, search });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid params', details: parsed.error }, { status: 400 });
     }
-    return errorResponse(err, 'Failed to create subject');
+
+    const { page: parsedPage, search: parsedSearch } = parsed.data;
+    const result = await artifactService.listSubjects(parsedPage, parsedSearch);
+
+    return NextResponse.json(result);
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to list subjects' }, { status: 500 });
   }
 }

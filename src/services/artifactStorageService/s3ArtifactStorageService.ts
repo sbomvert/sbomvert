@@ -19,7 +19,6 @@ import {
   CveMetadata,
   ArtifactKind,
   SubjectListResponse,
-  SubjectType,
   ArtifactNotFoundError,
   DuplicateArtifactError,
   SubjectAlreadyExistsError,

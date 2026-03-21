@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { artifactService } from '@/services/artifactStorageService/artifactStorage';
+import artifactService from '@/services/artifactStorageService/artifactStorage';
 
 export async function GET(request: NextRequest) {
   try {
