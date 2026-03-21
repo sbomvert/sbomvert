@@ -14,11 +14,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav
-      className={`shadow-sm border-b transition-colors duration-300 ${
-        isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-      }`}
+      className="shadow-sm border-b transition-colors duration-300 bg-backgroundalt border-border mb-4"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 px-6">
         <div className="flex justify-between items-center h-16">
           <button
             onClick={onLogoClick}
