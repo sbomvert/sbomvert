@@ -8,12 +8,15 @@ import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/button/Button';
-import { ComparisonTypeSelector } from '../../components/hoc/ComparisonTypeSelector';
 import { Upload } from 'lucide-react';
-import { SbomUploadForm } from '../../components/hoc/SbomUploadForm';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
-import { ImageScanForm } from '../../components/hoc/ImageScanForm/ImageScanForm';
-import { RecentScans } from '../../components/hoc/RecentScans/RecentScans';
+import { ComparisonTypeSelector } from '@/components/hoc/ComparisonTypeSelector';
+import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
+import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
+import { SearchBar } from '@/components/searchbar/SearchBar';
+import { RecentScans } from '@/components/hoc/RecentScans/RecentScans';
+import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
