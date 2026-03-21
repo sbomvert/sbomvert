@@ -30,13 +30,13 @@ export const CVESummary: React.FC<CVESummaryProps> = ({ cves }) => {
       {/* Total unique CVEs */}
       <Card>
         <CardHeader>Total unique CVEs</CardHeader>
-        <div className="text-2xl font-bold">{totalUnique}</div>
+        <div className="text-2xl font-bold" data-testid="total-unique-cves">{totalUnique}</div>
       </Card>
 
       {/* Vulnerable packages */}
       <Card>
         <CardHeader>Vulnerable packages</CardHeader>
-        <div className="text-2xl font-bold">{vulnerablePkgs}</div>
+        <div className="text-2xl font-bold" data-testid="vulnerable-packages">{vulnerablePkgs}</div>
       </Card>
     </div>
   );

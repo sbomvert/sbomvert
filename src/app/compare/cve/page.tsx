@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
-import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { CVESummary } from '@/components/cve/CVESummary';
 import { CVEReport, loadCVEsForImage } from '@/lib/vuln/vulnLoader';
 import { ToolSelector } from '@/components/hoc/ToolSelector';
 import { TOOL_COLORS } from '@/lib/utils';
@@ -54,7 +54,8 @@ export default function CVEPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h2 className="text-2xl font-bold mb-4">CVE Comparison for {selectedImage}</h2>
+      <CVESummary cves={cves} />
+
       <ToolSelector
         tools={Array.from(tools).map((tool: string): IToolInfo => ({
           name: tool
