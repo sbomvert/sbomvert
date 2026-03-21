@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { artifactStorage } from '@/services/artifactStorageService/artifactStorage';
+import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 import { ArtifactNotFoundError } from '@/services/artifactStorageService/artifactStorageService.types';
 import { errorResponse } from '@/app/api/_lib/validation';
 
