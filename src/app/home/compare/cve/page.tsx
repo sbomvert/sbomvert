@@ -48,7 +48,7 @@ export default function CVEPage() {
 
     };
     fetchData();
-  }, [selectedImage]);
+  }, [selectedImage,router]);
 
   if (loading) return <LoadingSpinner message="Loading CVE data..." />;
 

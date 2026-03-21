@@ -335,15 +335,12 @@ export default function CVEPage() {
 
   useEffect(() => {
     if (!selectedImage) { router.replace('/compare'); return; }
-    setLoading(true);
-    loadCVEsForImage(selectedImage).then(({ cves: data }) => {
-      const tools = Object.keys(data);
-      setCves(data);
-      setAllTools(tools);
-      setSelectedTools(new Set(tools));
-      setLoading(false);
-    });
-  }, [selectedImage]);
+     loadCVEsForImage(selectedImage).then(({ cves: data }) => {
+    setCves(data);
+    setLoading(false);
+  }).catch(() => setLoading(false));
+  
+  }, [selectedImage,router]);
 
   // activeTools preserves the original order from allTools
   const activeTools = useMemo(
