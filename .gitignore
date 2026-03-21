@@ -17,6 +17,8 @@ coverage/
 .vercel
 
 public/sbom/
+public/cves/
+public/subjects/
 CLAUDE.md
 .worktrees
 .claude/
