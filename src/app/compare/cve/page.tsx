@@ -16,6 +16,7 @@ import { SBOMComparisonViewSelector } from '@/components/hoc/SBOMComparisonViewS
 import { Card } from '@/components/card/Card';
 import { CardHeader } from '@/components/card/CardHeader';
 import { CardTitle } from '@/components/card/CardTitle';
+import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 
 type ViewMode = 'summary' | 'table' | 'chart';
 
