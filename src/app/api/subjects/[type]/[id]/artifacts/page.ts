@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 import { parseSubjectParams, errorResponse } from '@/app/api/_lib/validation';
+import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 
-type Params = { params: { type: string; id: string } };
+type Params = { params: Promise<{ type: string; id: string }> };
 
 // ─── GET /api/subjects/[type]/[id]/artifacts ──────────────────────────────────
 // Returns all artifacts (SBOMs + CVE reports) for a subject, optionally
@@ -12,7 +12,8 @@ type Params = { params: { type: string; id: string } };
 //   kind – "sbom" | "cve"  (optional, returns both if omitted)
 
 export async function GET(request: NextRequest, { params }: Params) {
-  const parsed = parseSubjectParams(params.type, params.id);
+  const { type, id } = await params;
+  const parsed = parseSubjectParams(type, id);
   if (!parsed.ok) return parsed.response;
 
   try {

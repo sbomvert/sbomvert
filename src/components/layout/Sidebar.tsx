@@ -7,7 +7,8 @@ const navItems = [
   { icon: Scale, label: "SBOM Comparison", href: "/home/compare" },
   { icon: ShieldX, label: "CVE Comparison", href: "main" },
   { icon: SearchSlash, label: "Scan Image", href: "actions" },
-  { icon: Upload, label: "Upload SBOM", href: "actions" },
+  { icon: Upload, label: 'Upload SBOM', href: '/home/upload' },
+  { icon: Upload, label: 'Upload CVE report', href: '/home/upload-cve' },
   { icon: Clock, label: "Recent Scans", href: "history" },
 ];
 

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 import { parseSubjectParams, errorResponse } from '@/app/api/_lib/validation';
 import {
   DuplicateArtifactError,
   CveMetadata,
 } from '@/services/artifactStorageService/artifactStorageService.types';
 import { LocalArtifactStorage } from '@/services/artifactStorageService/localArtifactStorageService';
+import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 
-type Params = { params: { type: string; id: string } };
+type Params = { params: Promise<{ type: string; id: string }> };
 
 // ─── GET /api/subjects/[type]/[id]/cves ──────────────────────────────────────
 // Optional query params:
@@ -15,7 +15,8 @@ type Params = { params: { type: string; id: string } };
 //   scanner  – filter by CVE scanner name
 
 export async function GET(request: NextRequest, { params }: Params) {
-  const parsed = parseSubjectParams(params.type, params.id);
+  const { type, id } = await params;
+  const parsed = parseSubjectParams(type, id);
   if (!parsed.ok) return parsed.response;
 
   try {
@@ -120,7 +121,8 @@ async function parseCveBody(request: NextRequest): Promise<
 // Body: { sbomTool, scanner, content, sbomHash?, toolVersion?, format?, summary? }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const parsed = parseSubjectParams(params.type, params.id);
+  const { type, id } = await params;
+  const parsed = parseSubjectParams(type, id);
   if (!parsed.ok) return parsed.response;
 
   const bodyResult = await parseCveBody(request);
@@ -153,7 +155,8 @@ export async function POST(request: NextRequest, { params }: Params) {
 // Body: same as POST
 
 export async function PUT(request: NextRequest, { params }: Params) {
-  const parsed = parseSubjectParams(params.type, params.id);
+  const { type, id } = await params;
+  const parsed = parseSubjectParams(type, id);
   if (!parsed.ok) return parsed.response;
 
   const bodyResult = await parseCveBody(request);

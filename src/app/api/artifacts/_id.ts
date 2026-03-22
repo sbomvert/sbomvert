@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 import { ArtifactNotFoundError } from '@/services/artifactStorageService/artifactStorageService.types';
 import { errorResponse } from '@/app/api/_lib/validation';
+import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 // ─── GET /api/artifacts/[id] ─────────────────────────────────────────────────
 // Returns the artifact content (raw JSON string) by default.
@@ -11,7 +11,7 @@ type Params = { params: { id: string } };
 //   meta=true  – return only the metadata object, not the full content
 
 export async function GET(request: NextRequest, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
   if (!id) {
     return NextResponse.json({ error: 'Artifact id is required' }, { status: 400 });
   }
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 // Deletes the artifact and decrements the subject counter.
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
   if (!id) {
     return NextResponse.json({ error: 'Artifact id is required' }, { status: 400 });
   }

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 import { parseSubjectParams, errorResponse } from '@/app/api/_lib/validation';
 import { DuplicateArtifactError } from '@/services/artifactStorageService/artifactStorageService.types';
+import artifactStorage from '@/services/artifactStorageService/artifactStorage';
 
-type Params = { params: { type: string; id: string } };
+type Params = { params: Promise<{ type: string; id: string }> };
 
 // ─── GET /api/subjects/[type]/[id]/sboms ─────────────────────────────────────
 // Returns all SBOM metadata entries for this subject.
 
 export async function GET(_req: NextRequest, { params }: Params) {
-  const parsed = parseSubjectParams(params.type, params.id);
+  const { type, id } = await params;
+  const parsed = parseSubjectParams(type, id);
   if (!parsed.ok) return parsed.response;
 
   try {
@@ -39,7 +40,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
 //   { tool, content, toolVersion?, source?, format? }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const parsed = parseSubjectParams(params.type, params.id);
+  const { type, id } = await params;
+  const parsed = parseSubjectParams(type, id);
   if (!parsed.ok) return parsed.response;
 
   const contentType = request.headers.get('content-type') ?? '';
