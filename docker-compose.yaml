@@ -1,0 +1,29 @@
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Claude Code — Next.js Development Environment
+#
+#  Connects to your existing Ollama instance (e.g. on your host or a remote
+#  machine) via OLLAMA_HOST and runs Claude Code with `ollama launch claude`.
+#
+#  Usage:
+#    docker compose run --rm claude-code
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  claude-code:
+    build:
+      context: .
+      dockerfile: Dockerfile.claude
+    container_name: claude-code
+    volumes:
+      - .:/workspace   # current directory → /workspace inside the container
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    environment:
+      OLLAMA_HOST: ${OLLAMA_HOST:-100.95.102.112:11434}
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    command: ["ollama", "launch", "claude", "--model", "gpt-oss:120b"]
