@@ -5,7 +5,10 @@ import { z } from 'zod';
 // Payload schema – simple validation
 const ScanRequestSchema = z.object({
   image: z.string().min(1),
-  tools: z.array(z.string()).nonempty(),
+  tools: z.object({
+    producers: z.array(z.string()).nonempty(),
+    consumers: z.array(z.string()).nonempty(),
+  }),
 });
 
 export async function POST(request: Request) {

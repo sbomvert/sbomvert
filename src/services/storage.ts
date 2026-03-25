@@ -45,15 +45,51 @@ export async function saveMergedCveReport(jobId: string, report: unknown) {
   return path;
 }
 
+export interface JobLogEntry {
+  level: string;
+  message: string;
+}
+
+
 /** Retrieve a JSON file (raw) */
-export async function saveJobStatus(jobId: string, status: string, details?: unknown) {
+export async function saveJobStatus(
+  jobId: string,
+  status: string,
+  entry?: JobLogEntry
+) {
   const dir = join(STORAGE_ROOT, 'jobs');
   await ensureDir(dir);
   const path = join(dir, `${jobId}.json`);
-  const payload = { status, details };
+
+  let previousHistory: unknown[] = [];
+
+  try {
+    const existing = await fs.readFile(path, 'utf8');
+    const parsed = JSON.parse(existing);
+    previousHistory = Array.isArray(parsed?.history)
+      ? parsed.history
+      : [];
+  } catch (err: any) {
+    if (err.code !== 'ENOENT') {
+      console.error('Failed reading previous job file:', err);
+    }
+  }
+
+  const updatedHistory = entry
+    ? [...previousHistory, entry]
+    : previousHistory;
+
+  const payload = {
+    status,
+    updatedAt: new Date().toISOString(),
+    history: updatedHistory,
+  };
+
   await fs.writeFile(path, JSON.stringify(payload, null, 2));
+
   return path;
 }
+
 
 export async function getJobStatus(jobId: string) {
   const path = join(STORAGE_ROOT, 'jobs', `${jobId}.json`);
@@ -61,8 +97,4 @@ export async function getJobStatus(jobId: string) {
   return JSON.parse(content);
 }
 
-  // generic JSON reader – throws if file missing
 
-  const content = await fs.readFile(filePath, 'utf-8');
-  return JSON.parse(content);
-}

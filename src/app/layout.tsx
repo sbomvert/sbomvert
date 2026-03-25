@@ -13,13 +13,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-background text-foreground`}>
-        <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
+      <body className={`${inter.className}`}>
+        <div className="min-h-screen border-t-4 transition-colors duration-300">
           <Navbar />
           {children}
         </div>
         {/* Footer */}
-        <footer className="py-6 text-center opacity-70 text-sm">
+        <footer className="py-6 text-center text-sm">
           © {new Date().getFullYear()} Author jackops.dev - License Apache-2
           <div className="mt-2">
             <a

@@ -335,17 +335,15 @@ export default function CVEPage() {
 
   useEffect(() => {
     if (!selectedImage) { router.replace('/compare'); return; }
-    setLoading(true);
     loadCVEsForImage(selectedImage).then(({ cves: data }) => {
       const tools = Object.keys(data);
       setCves(data);
       setAllTools(tools);
       setSelectedTools(new Set(tools));
       setLoading(false);
-    });
-  }, [selectedImage]);
+    }).catch(() => setLoading(false));
+  }, [selectedImage, router]);
 
-  // activeTools preserves the original order from allTools
   const activeTools = useMemo(
     () => allTools.filter((t) => selectedTools.has(t)),
     [allTools, selectedTools]
@@ -356,7 +354,6 @@ export default function CVEPage() {
     [allTools]
   );
 
-  // All metrics scoped to activeTools only
   const globalUniqueCVEs = useMemo(() => getUniqueCVEs(cves, activeTools), [cves, activeTools]);
   const globalVulnPackages = useMemo(() => getVulnerablePackages(cves, activeTools), [cves, activeTools]);
 
@@ -396,12 +393,11 @@ export default function CVEPage() {
 
   const handleToolToggle = (tool: string) => {
     setSelectedTools((prev) => {
-      if (prev.size <= 2 && prev.has(tool)) return prev; // enforce minimum 2
+      if (prev.size <= 2 && prev.has(tool)) return prev;
       const next = new Set(prev);
       next.has(tool) ? next.delete(tool) : next.add(tool);
       return next;
     });
-    // Reset table state when tool selection changes
     setFilterExclusive(null);
     setExpandedRows(new Set());
   };
@@ -449,11 +445,15 @@ export default function CVEPage() {
 
       {!canCompare ? (
         <div className="text-center py-16 text-gray-400 text-sm">
-          Select at least 2 tools to see the comparison.
+          {allTools.length === 0
+            ? 'No CVE reports found for this subject.'
+            : allTools.length === 1
+            ? `Only 1 scanner found (${allTools[0]}). Upload a second CVE report to compare.`
+            : 'Select at least 2 tools to see the comparison.'}
         </div>
       ) : (
         <>
-          {/* ── Global strip — all numbers scoped to selectedTools ── */}
+          {/* ── Global strip ── */}
           <div className="grid grid-cols-3 gap-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
             <div className="text-center">
               <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Unique CVEs</p>
