@@ -68,8 +68,14 @@ export async function POST(request: Request) {
     }
 
     // Save the file using the existing storage service
-    const fileName = `${containerName}/${file.name}`;
-    await SBOMService.saveFile(fileName, content);
+    // Save the file using the new saveSBOM method
+    // Determine type and tool from filename (e.g., "trivy.spdx.json")
+    const parts = file.name.split('.');
+    // Expected pattern: <tool>.<type>.json
+    const tool = parts[0] ?? 'unknown';
+    const type = (parts[1] ?? 'unknown').toLowerCase();
+    await SBOMService.saveSBOM(containerName, type, tool, content);
+
 
     return NextResponse.json({
       message: 'SBOM file uploaded successfully',

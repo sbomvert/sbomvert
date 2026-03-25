@@ -78,3 +78,6 @@ export const computeJaccard = (
 
   return results;
 };
+
+
+export const SanitizeContainerImage = (imageName:string) => imageName.replace(/\//g, 'slash').replace(/:/g, 'twodots');

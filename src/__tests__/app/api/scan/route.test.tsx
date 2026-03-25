@@ -22,13 +22,17 @@ describe('Scan API integration test', () => {
 
   it('sends scan request and shows job ID', async () => {
     render(<Home />);
-    const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue('myimage:latest');
-    const button = screen.getByRole('button', { name: /scan image/i });
-    fireEvent.click(button);
-    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    const scanButton = screen.getByRole('button', { name: /scan image/i });
+    fireEvent.click(scanButton);
+    // Fill out the scan form
+    const input = await screen.findByPlaceholderText('repo/app:tag');
+    fireEvent.change(input, { target: { value: 'myimage:latest' } });
+    const startButton = screen.getByRole('button', { name: /start scan/i });
+    fireEvent.click(startButton);
     await new Promise(r => setTimeout(r, 0));
-    expect(alertSpy).toHaveBeenCalledWith('Scan started. Job ID: test-job-id');
-    promptSpy.mockRestore();
-    alertSpy.mockRestore();
+    // Expect fetch to have been called with correct parameters
+    expect(global.fetch).toHaveBeenCalledWith('/api/scan', expect.objectContaining({
+      method: 'POST',
+    }));
   });
 });

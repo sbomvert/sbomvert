@@ -20,9 +20,9 @@ export interface ISbomPackage {
 
 export interface IToolInfo {
   name: string;
-  version: string;
-  vendor: string;
-  format: 'SPDX' | 'CycloneDX';
+  version?: string;
+  vendor?: string;
+  format?: 'SPDX' | 'CycloneDX';
 }
 
 export interface ISbom {

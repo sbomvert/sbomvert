@@ -1,0 +1,37 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Base tools
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    docker-cli
+
+#
+# Install Trivy
+#
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+    | sh -s -- -b /usr/local/bin
+
+#
+# Install Syft
+#
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
+    | sh -s -- -b /usr/local/bin
+
+#
+# Install Grype
+#
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh \
+    | sh -s -- -b /usr/local/bin
+
+RUN mkdir /root/.docker
+#
+# Install Docker Scout (OFFICIAL INSTALLER)
+#
+RUN curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh \
+    | sh -s -- -b /usr/local/bin
+
+EXPOSE 3000

@@ -1,6 +1,6 @@
 import { composeStories } from '@storybook/react';
 import { render } from '@testing-library/react';
-import * as Stories from './ComparisonViewSelector.stories';
+import * as Stories from './SBOMComparisonViewSelector.stories';
 
 const { Default } = composeStories(Stories);
 

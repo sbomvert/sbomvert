@@ -15,6 +15,7 @@ module.exports = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
+        backgroundalt: 'var(--backgroundalt)',
         foreground: 'hsl(var(--foreground))',
       },
       animation: {

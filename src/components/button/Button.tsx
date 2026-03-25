@@ -21,11 +21,11 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-primary text-white focus:ring-indigo-500 shadow-lg ' +
+      'border-2 border-primary bg-primary text-white focus:ring-indigo-500 shadow-lg ' +
       (withHover ? 'hover:bg-indigo-700' : ''),
 
     secondary:
-      'bg-gray-200 text-gray-900 focus:ring-gray-400 shadow-lg ' +
+      'border-2 border-gray-200 bg-gray-200 text-gray-900 focus:ring-gray-400 shadow-lg ' +
       (withHover ? 'hover:bg-gray-300' : ''),
 
     outline:
@@ -33,7 +33,7 @@ export const Button: React.FC<ButtonProps> = ({
       (withHover ? 'hover:bg-indigo-50' : ''),
 
     unfocused:
-      'text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 ' +
+      'border-2 border-primary text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 ' +
       (withHover ? 'hover:text-gray-900' : ''),
 
     disabled:

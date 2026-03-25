@@ -1,9 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() })
+}));
+
+
 import Home from '@/app/compare/page';
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn() }),
-}));
+import { render, screen, fireEvent } from '@testing-library/react';
+
 
 describe('Compare page scan button', () => {
   beforeEach(() => {
@@ -24,13 +27,15 @@ describe('Compare page scan button', () => {
     render(<Home />);
     const button = screen.getByRole('button', { name: /scan image/i });
     expect(button).toBeInTheDocument();
-    // Mock prompt
-    const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue('myimage:latest');
     fireEvent.click(button);
-    // Wait for fetch to be called
+    // Fill and submit the scan form
+    const input = await screen.findByPlaceholderText('repo/app:tag');
+    fireEvent.change(input, { target: { value: 'myimage:latest' } });
+    const startButton = screen.getByRole('button', { name: /start scan/i });
+    fireEvent.click(startButton);
+    // Wait for fetch
     expect(global.fetch).toHaveBeenCalledWith('/api/scan', expect.objectContaining({
       method: 'POST',
     }));
-    promptSpy.mockRestore();
   });
 });
