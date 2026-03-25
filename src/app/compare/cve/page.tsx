@@ -335,7 +335,6 @@ export default function CVEPage() {
 
   useEffect(() => {
     if (!selectedImage) { router.replace('/compare'); return; }
-    setLoading(true);
     loadCVEsForImage(selectedImage).then(({ cves: data }) => {
       const tools = Object.keys(data);
       setCves(data);

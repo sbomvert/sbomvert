@@ -114,7 +114,6 @@ export default function HomePage() {
   // ── Load ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     fetchSubjects(currentPage, searchTerm).then((result) => {
       if (cancelled) return;
       setSubjects(result.subjects);
