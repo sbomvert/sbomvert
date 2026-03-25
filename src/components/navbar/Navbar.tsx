@@ -10,7 +10,7 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
 
-  const onLogoClick = () => router.push('/');
+  const onLogoClick = () => router.push('/compare');
 
   return (
     <nav
