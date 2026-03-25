@@ -1,6 +1,6 @@
 import { composeStories } from '@storybook/react';
 import { render } from '@testing-library/react';
-import * as Stories from './SummaryView.stories';
+import * as Stories from '@/components/hoc/SBOMSummaryView.stories';
 
 const { Default } = composeStories(Stories);
 
