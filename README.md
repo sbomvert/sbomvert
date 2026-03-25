@@ -1,19 +1,21 @@
-# SBOM Comparator
+# SBOMVert 
 
-A modern web application for comparing SBOM (Software Bill of Materials) tool outputs across multiple container images.
+SBOMVert is web app for comparing SBOM (Software Bill of Materials) and CVE reports across different tools.
+
+> [!CAUTION]
+> The tool is under active development and is intended for educational purposes
+
 
 ## Features
 
 - 🔄 Multi-tool SBOM comparison (Syft, Trivy, Docker Scout)
 - 📊 Interactive visualizations and charts
 - 🔍 Package-level analysis with pURL parsing
-- 🌓 Dark mode support
-- 📤 Export results as JSON or PDF
-- 🎨 Modern UI with Framer Motion animations
+- 🕷 CVE comparison package by package
 
 ## Prerequisites
 
-- Node.js >= 20.10.0 (managed via nvm)
+- Node.js >= 22 (managed via nvm)
 - npm >= 10.0.0
 
 ## Setup
@@ -51,48 +53,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `npm run build-storybook` - Build Storybook
 - `npm run format` - Format code with Prettier
 
-## Project Structure
-
-```
-sbom-comparator/
-├── src/
-│   ├── app/              # Next.js app router pages
-│   ├── components/       # Reusable UI components
-│   ├── lib/             # Utility functions
-│   ├── models/          # TypeScript interfaces
-│   ├── hooks/           # Custom React hooks
-│   └── __tests__/       # Test files
-├── public/              # Static assets
-├── stories/             # Storybook stories
-└── ...config files
-```
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js (App Router)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Animation**: Framer Motion
-- **Charts**: Recharts
-- **Testing**: Jest + React Testing Library
-- **Documentation**: Storybook
-
-## Adding New Features
-
-### Add a new component
-
-1. Create component in `src/components/`
-2. Add TypeScript interfaces
-3. Write tests in `src/__tests__/`
-4. Create Storybook story in `stories/`
-
-### Add new SBOM format support
-
-1. Update interfaces in `src/models/ISbom.ts`
-2. Add parser in `src/lib/parseSbom.ts`
-3. Write tests for the parser
-4. Update mock data in `src/lib/mockData.ts`
 
 ## Testing
 
@@ -115,20 +81,7 @@ npm test -- --coverage
 npm run build
 ```
 
-### Deploy to Vercel
-
-```bash
-vercel deploy
-```
-
 ## License
 
-MIT
+Apache 2.0
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
