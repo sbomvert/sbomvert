@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import SBOMService from '@/services/sbomStorageService/sbomStorageService';
-import CVEService from '@/services/cveStorageService/cveStorageService';
 
 // Initialize the SBOM service
 

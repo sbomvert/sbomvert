@@ -1,15 +1,19 @@
 import CVEService from '@/services/cveStorageService/cveStorageService';
-
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 interface Params {
   image: string;
   file: string;
 }
 
-export async function GET(_req: Request, { params }: { params: Params }) {
-  const { image, file } = await params;
+export async function GET(
+  _req: NextRequest,
+  context: { params: Promise<Params> }
+) {
+  const { image, file } = await context.params;
+
   const result = await CVEService.getFileContent(image, file);
-  // Example logic: return JSON
+
   return NextResponse.json(JSON.parse(result));
 }

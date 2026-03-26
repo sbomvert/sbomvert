@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import  { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ToolSelector } from '../../../components/hoc/ToolSelector';
 import { SummaryView } from '../../../components/hoc/SBOMSummaryView';

@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { FileJson, Download } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
-import { Button } from '@/components/button/Button';
 import { Selector } from '@/components/select/Selector';
 
 interface ExportButtonsProps {
@@ -9,38 +7,7 @@ interface ExportButtonsProps {
 }
 
 export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
-  const [selectedTool, setSelectedTool] = useState<string>('');
-
-  const handleExport = (format: 'pdf' | 'json') => {
-    if (format === 'json') {
-      const exportData = {
-        imageId: comparison.imageId,
-        tools: comparison.tools,
-        statistics: comparison.statistics,
-        packages: Array.from(comparison.allPackages.entries()).map(([key, value]) => ({
-          key,
-          name: value.name,
-          version: value.version,
-          packageType: value.packageType,
-          foundInTools: value.foundInTools,
-        })),
-      };
-
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sbom-comparison-${comparison.imageId}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } else {
-      alert(
-        'PDF export would use libraries like jsPDF or react-pdf to generate a formatted report'
-      );
-    }
-  };
+  const [_, setSelectedTool] = useState<string>('');
 
   const handleDownload = (toolName: string) => {
     try {

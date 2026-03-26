@@ -1,13 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import  { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { ToolSelector } from '../../../components/hoc/ToolSelector';
-import { SummaryView } from '../../../components/hoc/SBOMSummaryView';
-import { TableView } from '../../../components/hoc/TableView';
-import { ChartView } from '../../../components/hoc/ChartView';
-import { ExportButtons } from '../../../components/hoc/ExportButtons';
-import { LoadingSpinner } from '../../../components/hoc/LoadingSpinner';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
@@ -16,6 +10,12 @@ import { useRouter } from 'next/navigation';
 import { TOOL_COLORS } from '@/lib/utils';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { SBOMComparisonViewSelector } from '@/components/hoc/SBOMComparisonViewSelector';
+import { ToolSelector } from '@/components/hoc/ToolSelector';
+import { ChartView } from '@/components/hoc/ChartView';
+import { ExportButtons } from '@/components/hoc/ExportButtons';
+import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { SummaryView } from '@/components/hoc/SBOMSummaryView';
+import { TableView } from '@/components/hoc/TableView';
 
 type ViewMode = 'summary' | 'table' | 'chart';
 

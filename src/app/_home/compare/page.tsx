@@ -32,8 +32,8 @@ export default function Home() {
   const [showScanForm, setShowScanForm] = useState(false);
 
 
-  const [jobIdState, setJobIdState] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<string | null>(null);
+  const [_jobIdState, setJobIdState] = useState<string | null>(null);
+  const [_jobStatus, setJobStatus] = useState<string | null>(null);
 
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 

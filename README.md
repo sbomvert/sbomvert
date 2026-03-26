@@ -71,6 +71,19 @@ The application behavior can be configured via the following environment variabl
 
 A sample dataset for the app is available [here](https://box.roc.cnam.fr/index.php/s/XQRa9dXz7bpWGRf)
 
+### Replicating the dataset
+
+Use these variables: 
+
+```bash
+NODE_ENV='development'
+SBOM_DIR='public/sbom'
+CVE_DIR='public/cve'
+NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
+```
+
+Then copy the content of the zip file under `public` and then run `npm run dev`.
+Everything should be visible under `localhost:3000/compare`
 ## Tech Stack
 
 - **Framework**: Next.js (App Router)

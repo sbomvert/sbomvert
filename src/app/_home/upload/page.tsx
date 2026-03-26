@@ -371,7 +371,7 @@ export default function UploadPage() {
   // File
   const [file, setFile] = useState<File | null>(null);
   const [detected, setDetected] = useState<DetectedFormat | null>(null);
-  const [rawContent, setRawContent] = useState<string>('');
+  const [_rawContent, setRawContent] = useState<string>('');
 
   // Subject
   const [subjectType, setSubjectType] = useState<SubjectType>(SubjectType.Container);
