@@ -1,4 +1,4 @@
-name: CI – Test, Build & Publish Docker Image
+name: CI - Test, Build & Publish Docker Image
 
 on:
   pull_request:
