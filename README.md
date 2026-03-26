@@ -41,6 +41,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Environment Variables
+
+The application behavior can be configured via the following environment variables:
+
+- `NEXT_PUBLIC_ENABLE_SBOM_UPLOAD` (default: `false`) – Enables the SBOM upload UI.
+- `NEXT_PUBLIC_ENABLE_SCAN_API` (default: `false`) – Enables the scan API endpoints.
+- `NEXT_PUBLIC_CVE_MAPPING_ENABLED` (default: `false`) – Enables CVE mapping features.
+- `SBOM_DIR` – Directory path for local SBOM storage in development (defaults to `./public/sbom`).
+- `NODE_ENV` – `development` or `production`; determines storage implementation.
+- `AWS_REGION` – AWS region for S3 storage (default: `us-east-1`).
+- `S3_ENDPOINT` – Custom S3‑compatible endpoint (e.g., MinIO, DigitalOcean Spaces).
+- `S3_FORCE_PATH_STYLE` – Set to `true` to force path‑style URLs for S3.
+- `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` – Credentials for S3 when using a custom endpoint.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
@@ -53,6 +67,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `npm run build-storybook` - Build Storybook
 - `npm run format` - Format code with Prettier
 
+## Dataset
+
+A sample dataset for the app is available [here](https://box.roc.cnam.fr/index.php/s/XQRa9dXz7bpWGRf)
 
 ## Tech Stack
 
