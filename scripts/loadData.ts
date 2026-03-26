@@ -1,9 +1,6 @@
 
 import { promises as fs } from "fs";
-import { join, dirname, sep } from "path";
-import * as path from "path";
-import { exit } from "process";
-import * as readline from "readline";
+import { join } from "path";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -387,7 +384,6 @@ export function extractGcloudVulnerabilities(
   enrichedPurlMapping: Record<string, string>
 ): VulnReport {
   const report = emptyReport();
-  const db = new Database(DB_CVES, { readonly: true });
   const base_os = Object.keys(purlMapping)[0].split("/").slice(0, 2).join("/");
 
   for (const pkg of obj) {
@@ -450,7 +446,6 @@ export function extractGcloudVulnerabilities(
   }
 
   report.purl_mapping = purlMapping;
-  db.close();
   return report;
 }
 

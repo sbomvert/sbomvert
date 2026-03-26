@@ -1,4 +1,4 @@
-FROM node:20.19.5-alpine3.22 AS base
+FROM node:22.22.0-alpine3.22 AS base
 
 
 WORKDIR /app
@@ -11,7 +11,7 @@ RUN npm install
 RUN npm run build
 
 
-FROM node:20.19.5-alpine3.22 AS target
+FROM node:22.22.0-alpine3.22 AS target
 
 WORKDIR /app
 
