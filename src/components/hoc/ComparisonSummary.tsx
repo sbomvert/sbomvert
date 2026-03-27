@@ -18,6 +18,7 @@ import {
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import Heatmap from '@/components/heatmap/HeatMap';
 import { computeJaccard } from '@/lib/utils';
+import { HorizontalStrip } from '../horizontalStrip/HorizontalStrip';
 
 interface MultiToolSummaryProps {
   comparison: IMultiToolComparison;
@@ -44,24 +45,21 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
     };
   });
 
+  const comparisonMap = {
+   'Total packages': comparison.allPackages.size.toString(),
+   'Packages with conflicts': comparison.statistics.packagesWithConflicts.toString(),
+   'Common packages': comparison.statistics.commonToAll.toString()
+
+  }
   return (
+    <>
+    <HorizontalStrip entries={comparisonMap}/>
+     <div className="mb-6"></div>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6"
     >
-      <h2 className="text-2xl font-bold mb-4 dark:text-white">Comparison Summary</h2>
-
-      <div className="grid grid-cols-1 gap-3 mb-6">
-        <h3 className="text-lg font-semibold dark:text-white">Package info</h3>
-        <ol className="s ml-6 text-gray-700 dark:text-gray-200">
-          <li className="font-semibold">Total packages: {comparison.allPackages.size}</li>
-          <li className="font-semibold">
-            Packages with conflicts: {comparison.statistics.packagesWithConflicts}
-          </li>
-          <li className="font-semibold">Common packages: {comparison.statistics.commonToAll}</li>
-        </ol>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
@@ -144,5 +142,6 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
         </div>
       </div>
     </motion.div>
+    </>
   );
 };

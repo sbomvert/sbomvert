@@ -4,55 +4,17 @@ import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { CVEReport, loadCVEsForImage } from '@/lib/vuln/vulnLoader';
 import { TOOL_COLORS } from '@/lib/utils';
+import { PackageRow, getUniqueCVEs, getVulnerablePackages, buildPackageRows } from '@/lib/vuln/cveSummary';
+import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { CVEToolSelector } from '@/components/hoc/CVEToolSelector/CVEToolSelector';
+import { CVEStatCard } from '@/components/hoc/CVEStatCard/cveStatCard';
+import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ViewMode = 'summary' | 'table';
 
-interface PackageRow {
-  pkg: string;
-  byCve: Record<string, string[]>;
-  detectedBy: Set<string>;
-}
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function getUniqueCVEs(cves: CVEReport, tools: string[]): Set<string> {
-  const ids = new Set<string>();
-  for (const tool of tools) {
-    for (const id of cves[tool]?.cves ?? []) ids.add(id);
-  }
-  return ids;
-}
-
-function getVulnerablePackages(cves: CVEReport, tools: string[]): Set<string> {
-  const pkgs = new Set<string>();
-  for (const tool of tools) {
-    for (const [pkg, list] of Object.entries(cves[tool]?.vulns_by_package ?? {})) {
-      if (list.length > 0) pkgs.add(pkg);
-    }
-  }
-  return pkgs;
-}
-
-function buildPackageRows(cves: CVEReport, tools: string[]): PackageRow[] {
-  const pkgSet = new Set<string>();
-  for (const tool of tools) {
-    for (const pkg of Object.keys(cves[tool]?.vulns_by_package ?? {})) pkgSet.add(pkg);
-  }
-  return Array.from(pkgSet)
-    .map((pkg) => {
-      const byCve: Record<string, string[]> = {};
-      const detectedBy = new Set<string>();
-      for (const tool of tools) {
-        const list = cves[tool]?.vulns_by_package?.[pkg] ?? [];
-        byCve[tool] = list;
-        if (list.length > 0) detectedBy.add(tool);
-      }
-      return { pkg, byCve, detectedBy };
-    })
-    .sort((a, b) => b.detectedBy.size - a.detectedBy.size || a.pkg.localeCompare(b.pkg));
-}
 
 function cveLink(cveId: string) {
   return `https://nvd.nist.gov/vuln/detail/${cveId}`;
@@ -60,137 +22,6 @@ function cveLink(cveId: string) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function LoadingSpinner({ message }: { message: string }) {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
-      </div>
-    </div>
-  );
-}
-
-function ToolSelector({
-  allTools,
-  selectedTools,
-  toolColors,
-  onToggle,
-}: {
-  allTools: string[];
-  selectedTools: Set<string>;
-  toolColors: Record<string, string>;
-  onToggle: (tool: string) => void;
-}) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Tools being compared
-        </h2>
-        <span className="text-xs text-gray-400">
-          {selectedTools.size} / {allTools.length} selected
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {allTools.map((tool) => {
-          const active = selectedTools.has(tool);
-          const color = toolColors[tool];
-          return (
-            <button
-              key={tool}
-              onClick={() => onToggle(tool)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all capitalize
-                ${active ? 'shadow-sm' : 'opacity-40 hover:opacity-70'}`}
-              style={
-                active
-                  ? { borderColor: color, background: `${color}18`, color }
-                  : { borderColor: '#d1d5db', color: '#9ca3af' }
-              }
-            >
-              <span
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: active ? color : '#d1d5db' }}
-              />
-              {tool}
-              {active && (
-                <svg className="w-3.5 h-3.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              )}
-            </button>
-          );
-        })}
-      </div>
-      {selectedTools.size < 2 && (
-        <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
-          Select at least 2 tools to compare.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function StatCard({
-  tool,
-  color,
-  totalVulns,
-  uniqueVulns,
-  vulnerablePackages,
-  globalUnique,
-}: {
-  tool: string;
-  color: string;
-  totalVulns: number;
-  uniqueVulns: number;
-  vulnerablePackages: number;
-  globalUnique: number;
-}) {
-  const coverage = globalUnique > 0 ? Math.round((uniqueVulns / globalUnique) * 100) : 0;
-  return (
-    <div
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700"
-      style={{ borderTop: `4px solid ${color}` }}
-    >
-      <div className="px-6 pt-5 pb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-          <h3 className="font-semibold text-gray-900 dark:text-white tracking-tight capitalize">
-            {tool}
-          </h3>
-        </div>
-        <dl className="grid grid-cols-3 gap-3">
-          {[
-            { label: 'Total', value: totalVulns },
-            { label: 'Unique CVEs', value: uniqueVulns },
-            { label: 'Vuln Pkgs', value: vulnerablePackages },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex flex-col">
-              <dt className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">
-                {label}
-              </dt>
-              <dd className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
-                {value.toLocaleString()}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-      <div className="px-6 pb-5">
-        <div className="flex justify-between text-xs text-gray-400 mb-1">
-          <span>Coverage vs unique total</span>
-          <span>{coverage}%</span>
-        </div>
-        <div className="w-full h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${coverage}%`, background: color }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function CVEChip({ cveId }: { cveId: string }) {
   return (
@@ -405,6 +236,10 @@ export default function CVEPage() {
   if (loading) return <LoadingSpinner message="Loading CVE data…" />;
 
   const canCompare = selectedTools.size >= 2;
+  const stripMap = { 'Unique CVEs': globalUniqueCVEs.size.toString(),
+    'Tools compared' :activeTools.length.toString(),
+    'Vulnerable packages':globalVulnPackages.size.toString()
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -436,7 +271,7 @@ export default function CVEPage() {
       </div>
 
       {/* ── Tool selector ── */}
-      <ToolSelector
+      <CVEToolSelector
         allTools={allTools}
         selectedTools={selectedTools}
         toolColors={toolColors}
@@ -453,27 +288,7 @@ export default function CVEPage() {
         </div>
       ) : (
         <>
-          {/* ── Global strip ── */}
-          <div className="grid grid-cols-3 gap-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-            <div className="text-center">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Unique CVEs</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
-                {globalUniqueCVEs.size}
-              </p>
-            </div>
-            <div className="text-center border-x border-gray-100 dark:border-gray-700">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Tools compared</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
-                {activeTools.length}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Vulnerable packages</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
-                {globalVulnPackages.size}
-              </p>
-            </div>
-          </div>
+          <HorizontalStrip entries={stripMap}/>
 
           {/* ── Summary view ── */}
           {viewMode === 'summary' && (
@@ -486,7 +301,7 @@ export default function CVEPage() {
                 style={{ gridTemplateColumns: `repeat(${Math.min(activeTools.length, 3)}, 1fr)` }}
               >
                 {perToolStats.map(({ tool, totalVulns, uniqueVulns, vulnerablePackages }) => (
-                  <StatCard
+                  <CVEStatCard
                     key={tool}
                     tool={tool}
                     color={toolColors[tool]}
