@@ -168,12 +168,6 @@ export const parseSpdxSbom = (
 
     // Filter out container image and operating system packages
     const packages: ISbomPackage[] = data.packages
-      .filter(pkg => {
-        const isContainer = pkg.primaryPackagePurpose === 'CONTAINER';
-        const isOS = pkg.primaryPackagePurpose === 'OPERATING-SYSTEM';
-        const isApplication = pkg.primaryPackagePurpose === 'APPLICATION';
-        return !isContainer && !isOS && (pkg.versionInfo || isApplication);
-      })
       .map(pkg => {
         // Extract pURL from external refs
         const purlRef = pkg.externalRefs?.find(

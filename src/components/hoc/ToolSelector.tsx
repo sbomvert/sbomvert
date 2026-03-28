@@ -19,12 +19,12 @@ export const ToolSelector: React.FC<ToolSelectorProps> = ({
 }) => {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold dark:text-white">Tools Being Compared</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Click to toggle tools ({selectedTools.size}/{tools.length} selected)
-        </p>
-      </div>
+     <div className="flex justify-end">
+  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+    {selectedTools.size}/{tools.length} selected
+  </p>
+</div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
         {tools.map((tool, idx) => {
           const isSelected = selectedTools.has(tool.name);

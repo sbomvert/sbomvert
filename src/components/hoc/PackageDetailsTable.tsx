@@ -134,7 +134,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ compar
               })),
               4
             );
-
+            console.log(pkg)
             return (
               <React.Fragment key={key}>
                 <tr className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">

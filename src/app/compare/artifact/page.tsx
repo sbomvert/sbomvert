@@ -110,6 +110,19 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+               {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-1">
+            SBOM Comparison
+          </p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate max-w-xl">
+            {selectedImage}
+          </h1>
+        </div>
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 self-start sm:self-auto">
+        </div>
+      </div>
       {loading && <LoadingSpinner message="Loading SBOMs ..." />}
 
       {/* ------------------------------------------------------------
@@ -128,9 +141,7 @@ export default function Home() {
             <AnimatePresence mode="wait">
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <h2 className="text-3xl font-bold text-foreground dark:text-white">
-                    Analysis: {comparison.imageId}
-                  </h2>
+              
 
                   <div className="flex gap-3 flex-wrap">
                     <SBOMComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
