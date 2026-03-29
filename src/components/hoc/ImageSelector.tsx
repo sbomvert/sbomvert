@@ -9,6 +9,7 @@ export interface ImageInfo {
   description: string;
   toolCount?: number;
   sbomCount: number;
+  cveCount?: number;
 }
 
 interface ImageSelectorProps {
@@ -85,6 +86,12 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
                 <p className="text-xs text-gray-500 dark:text-gray-500">
                   {image.sbomCount} SBOMs available {image.sbomCount < 2 && '(minimum 2 required)'}
                 </p>
+                {image.cveCount !== undefined && (
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    {image.cveCount} CVE report{image.cveCount === 1 ? '' : 's'} available
+                  </p>
+                )}
+
               </div>
               {/* Optionally display the repository information */}
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">

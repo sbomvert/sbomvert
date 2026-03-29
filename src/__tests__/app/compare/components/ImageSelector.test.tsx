@@ -24,7 +24,7 @@ describe('ImageSelector', () => {
     const onImageSelect = jest.fn();
     render(
       <ImageSelector
-        images={[{ id: 'nginx:latest', name: 'nginx:latest', description: 'desc', sbomCount: 3 }]}
+        images={[{ id: 'nginx:latest', name: 'nginx:latest', description: 'desc', sbomCount: 3, cveCount: 2 }]}
         currentPage={0}
         totalPages={10}
         onPageChange={onImageSelect}

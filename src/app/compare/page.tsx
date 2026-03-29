@@ -207,7 +207,7 @@ export default function Home() {
           <SearchBar value={searchInput} onChange={handleSearch} />
 
           <ImageSelector
-            images={filteredImages}
+            images={filteredImages as any}
             onImageSelect={handleImageSelect}
             currentPage={currentPage}
             totalPages={totalPages}
