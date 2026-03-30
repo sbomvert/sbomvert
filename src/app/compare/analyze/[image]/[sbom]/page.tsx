@@ -546,7 +546,7 @@ export default function AnalyzeDetailPage() {
   const toolLabel = toolFile.replace('.json', '').replace('.', ' · ').toUpperCase();
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
     <div className="flex flex-col gap-6 pb-12">
 
       {/* ── Back + title ── */}
@@ -716,7 +716,7 @@ export default function AnalyzeDetailPage() {
         )}
       </AnimatePresence>
     </div>
-    </main>
+    </>
   );
   
 }

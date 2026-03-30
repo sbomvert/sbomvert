@@ -18,7 +18,7 @@ export default function Sidebar() {
       const router = useRouter()
 
   return (
-    <aside className="w-64 bg-background border-r-8 border-border flex flex-col">
+    <aside className="w-64 bg-background border-r-4 border-border flex flex-col">
       <nav className="flex flex-col p-2">
         {navItems.map((item, idx) => {
           const Icon = item.icon || Shield

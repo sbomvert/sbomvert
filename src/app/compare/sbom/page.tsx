@@ -86,7 +86,7 @@ export default function SbomComparePage() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
       {/* SBOM comparison page – comparison type fixed to SBOM */}
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
       {!loading && (
@@ -107,6 +107,6 @@ export default function SbomComparePage() {
           />
         </>
       )}
-    </main>
+    </>
   );
 }
