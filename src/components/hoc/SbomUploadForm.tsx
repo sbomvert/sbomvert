@@ -12,7 +12,7 @@ import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 interface SbomUploadFormProps {
   onUpload: (name: string, containerName: string, file: File) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
 export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCancel }) => {

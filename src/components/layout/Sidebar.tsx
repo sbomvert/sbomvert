@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { Shield,ShieldX,Scale,Home,FileChartColumnIncreasing } from 'lucide-react';
+import { Shield,ShieldX,Scale,Home,FileChartColumnIncreasing, Upload } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: "Home", href: "/compare" },
@@ -8,7 +8,7 @@ const navItems = [
   { icon: Scale, label: "SBOM Comparison", href: "/compare/sbom" },
   { icon: ShieldX, label: "CVE Comparison", href: "/compare/cve" },
   //{ icon: SearchSlash, label: "Scan Image", href: "actions" },
-  //{ icon: Upload, label: 'Upload SBOM', href: '/home/upload' },
+  { icon: Upload, label: 'Upload SBOM', href: '/compare/upload/sbom' },
   //{ icon: Upload, label: 'Upload CVE report', href: '/home/upload-cve' },
  // { icon: Clock, label: "Recent Scans", href: "history" },
 ];
