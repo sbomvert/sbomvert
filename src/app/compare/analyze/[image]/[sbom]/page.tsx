@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn, getPackageTypeColor } from '@/lib/utils';
 import { formatContainerName } from '@/lib/container/containerUtils';
+import { BackButton } from '@/components/button/BackButton';
 
 // ─── Raw SPDX types (richer than ISbom) ──────────────────────────────────────
 
@@ -551,12 +552,7 @@ export default function AnalyzeDetailPage() {
 
       {/* ── Back + title ── */}
       <div>
-        <button
-          onClick={() => router.push('/compare/analyze')}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 transition-colors"
-        >
-          <ArrowLeft size={14} /> All SBOMs
-        </button>
+       <BackButton/> 
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{imageName}</h1>

@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
+import { PageTitle } from '@/components/Title/Title';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
@@ -114,6 +115,7 @@ export default function Home() {
 
   return (
     <>
+            <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
         <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
 
 

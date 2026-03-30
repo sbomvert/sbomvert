@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
+import { PageTitle } from '@/components/Title/Title';
 
 export default function SbomComparePage() {
   const router = useRouter();
@@ -87,6 +88,7 @@ export default function SbomComparePage() {
 
   return (
     <>
+      <PageTitle title="Compare SBOMs" subtitle='Select an artifact to compare the SBOMs.'></PageTitle>
       {/* SBOM comparison page – comparison type fixed to SBOM */}
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
       {!loading && (

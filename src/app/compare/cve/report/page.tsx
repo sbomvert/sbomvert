@@ -10,6 +10,7 @@ import { CVEToolSelector } from '@/components/hoc/CVEToolSelector/CVEToolSelecto
 import { CVEStatCard } from '@/components/hoc/CVEStatCard/cveStatCard';
 import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
 import { ViewSwitch } from '@/components/hoc/ViewSwitch';
+import { BackButton } from '@/components/button/BackButton';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -244,7 +245,7 @@ export default function CVEPage() {
 
   return (
     <>
-
+    <BackButton/> 
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -257,7 +258,7 @@ export default function CVEPage() {
         </div>
         <ViewSwitch modes={['summary', 'table']} selected={viewMode} onChange={setViewMode} />
       </div>
-
+      <div className='mb-6'></div>
       {/* ── Tool selector ── */}
       <CVEToolSelector
         allTools={allTools}
@@ -265,6 +266,7 @@ export default function CVEPage() {
         toolColors={toolColors}
         onToggle={handleToolToggle}
       />
+       <div className='mb-6'></div>
 
       {!canCompare ? (
         <div className="text-center py-16 text-gray-400 text-sm">
@@ -277,6 +279,7 @@ export default function CVEPage() {
       ) : (
         <>
           <HorizontalStrip entries={stripMap}/>
+           <div className='mb-6'></div>
 
           {/* ── Summary view ── */}
           {viewMode === 'summary' && (

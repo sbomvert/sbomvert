@@ -1,6 +1,6 @@
 'use client';
 
-import  { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
@@ -16,6 +16,7 @@ import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 import { SummaryView } from '@/components/hoc/SBOMSummaryView';
 import { TableView } from '@/components/hoc/TableView';
 import { ToolSelector } from '@/components/hoc/ToolSelector';
+import { BackButton } from '@/components/button/BackButton';
 
 
 export default function Home() {
@@ -109,7 +110,7 @@ export default function Home() {
 
   return (
     <>
-
+      <BackButton />
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -140,7 +141,7 @@ export default function Home() {
             <AnimatePresence mode="wait">
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              
+
 
                   <div className="flex gap-3 flex-wrap">
                     <ExportButtons comparison={comparison} />

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FileText, Search, Package, ChevronRight, Loader2 } from 'lucide-react';
 import { formatContainerName, reverseFormatContainerName } from '@/lib/container/containerUtils';
+import { PageTitle } from '@/components/Title/Title';
 
 interface SbomFile { name: string; }
 interface Container { name: string; files: SbomFile[]; }
@@ -52,12 +53,9 @@ export default function AnalyzePage() {
 
   return (
         <>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Analyze SBOM</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Select an image and scanner to inspect its full package manifest.
-        </p>
-      </div>
+    
+        <PageTitle title="Analyze SBOM" subtitle='Select an image and scanner to inspect its full package manifest.'></PageTitle>
+      
 
       {/* Search */}
       <div className="relative mb-6 max-w-sm">
