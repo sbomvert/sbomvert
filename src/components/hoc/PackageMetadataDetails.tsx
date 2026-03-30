@@ -89,7 +89,10 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       </div>
     );
   };
-
+  const cpeToolsCount = tools.filter(tool => {
+        const meta = packageData.metadataByTool.get(tool.name);
+        return meta?.cpe;
+      }).length;
   return (
     <div className="space-y-6">
       {/* Tool Detection Status */}
@@ -192,21 +195,34 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
         )}
       </div>
 
-      {/* CPE Information */}
+    
       {packageData.uniqueCpes.length > 0 && (
         <div>
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             Common Platform Enumeration (CPE)
           </h4>
           {packageData.uniqueCpes.length === 1 ? (
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-              <p className="text-sm font-mono dark:text-white break-all">
-                {packageData.uniqueCpes[0]}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                Consistent across all tools
-              </p>
-            </div>
+            cpeToolsCount === 1 ? (
+              // Conflict: only one tool reported a CPE
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <p className="text-sm font-mono dark:text-white break-all">
+                  {packageData.uniqueCpes[0]}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Conflict detected (single CPE)
+                </p>
+              </div>
+            ) : (
+              // Consistent across multiple tools
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <p className="text-sm font-mono dark:text-white break-all">
+                  {packageData.uniqueCpes[0]}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Consistent across all tools
+                </p>
+              </div>
+            )
           ) : (
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
