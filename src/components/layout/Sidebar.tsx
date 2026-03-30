@@ -1,15 +1,16 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { Shield,ShieldX,Upload,Clock,SearchSlash,Scale,Home } from 'lucide-react';
+import { Shield,ShieldX,Scale,Home,FileChartColumnIncreasing } from 'lucide-react';
 
 const navItems = [
-  { icon: Home, label: "Home", href: "/home" },
-  { icon: Scale, label: "SBOM Comparison", href: "/home/compare" },
-  { icon: ShieldX, label: "CVE Comparison", href: "main" },
-  { icon: SearchSlash, label: "Scan Image", href: "actions" },
-  { icon: Upload, label: 'Upload SBOM', href: '/home/upload' },
-  { icon: Upload, label: 'Upload CVE report', href: '/home/upload-cve' },
-  { icon: Clock, label: "Recent Scans", href: "history" },
+  { icon: Home, label: "Home", href: "/compare" },
+  { icon: FileChartColumnIncreasing, label: "SBOM Analysis", href: "/compare/analyze" },
+  { icon: Scale, label: "SBOM Comparison", href: "/compare/sbom" },
+  { icon: ShieldX, label: "CVE Comparison", href: "/compare/cve" },
+  //{ icon: SearchSlash, label: "Scan Image", href: "actions" },
+  //{ icon: Upload, label: 'Upload SBOM', href: '/home/upload' },
+  //{ icon: Upload, label: 'Upload CVE report', href: '/home/upload-cve' },
+ // { icon: Clock, label: "Recent Scans", href: "history" },
 ];
 
 

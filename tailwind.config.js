@@ -11,25 +11,29 @@ module.exports = {
       colors: {
         primary: '#4F46E5',
         alt: '#EA580C',
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        backgroundalt: 'var(--backgroundalt)',
-        foreground: 'hsl(var(--foreground))',
+
+        /* semantic tokens (must match CSS variable names) */
+        background: 'var(--color-background)',
+        backgroundalt: 'var(--color-backgroundalt)',
+        foreground: 'var(--color-foreground)',
+        border: 'var(--color-border)',
+        input: 'var(--color-input)',
+        ring: 'var(--color-ring)',
       },
+
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
       },
+
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          from: { opacity: '0' },
+          to: { opacity: '1' },
         },
         slideUp: {
-          '0%': { transform: 'translateY(20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
+          from: { transform: 'translateY(20px)', opacity: '0' },
+          to: { transform: 'translateY(0)', opacity: '1' },
         },
       },
     },

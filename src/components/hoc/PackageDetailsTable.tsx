@@ -8,6 +8,7 @@ import { TOOL_COLORS, getPackageTypeColor } from '@/lib/utils';
 interface PackageDetailsTableProps {
   comparison: IMultiToolComparison;
   filter: string;
+  searchTerm?: string;
 }
 
 const getPackageTypeIcon = (type?: string) => {
@@ -35,23 +36,37 @@ const chunkArray = <T,>(array: T[], size: number): T[][] => {
   return chunks;
 };
 
-export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ comparison, filter }) => {
+export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({ comparison, filter, searchTerm }) => {
   const [expandedPackage, setExpandedPackage] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string>('name');
+
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const filteredPackages = useMemo(() => {
     const packages = Array.from(comparison.allPackages.entries());
 
+    // Apply filter (all/common/unique)
+    let filtered = packages;
     switch (filter) {
       case 'common':
-        return packages.filter(([, pkg]) => pkg.foundInTools.length === comparison.tools.length);
+        filtered = filtered.filter(([, pkg]) => pkg.foundInTools.length === comparison.tools.length);
+        break;
       case 'unique':
-        return packages.filter(([, pkg]) => pkg.foundInTools.length === 1);
+        filtered = filtered.filter(([, pkg]) => pkg.foundInTools.length === 1);
+        break;
       default:
-        return packages;
+        // 'all' - no additional filtering
+        break;
     }
-  }, [comparison, filter]);
+
+    // Apply search term if provided (case-insensitive)
+    if (searchTerm && searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(([, pkg]) => (pkg.name || '').toLowerCase().includes(term));
+    }
+
+    return filtered;
+  }, [comparison, filter, searchTerm]);
 
   const handleSort = (key: string) => {
     if (key === sortKey) {

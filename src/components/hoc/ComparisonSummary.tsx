@@ -39,8 +39,10 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
 
     return {
       tool: tool.name,
-      coverage: (common / comparison.allPackages.size) * 100,
-      uniqueness: (unique / total) * 100 || 0,
+      coverage: comparison.allPackages.size === 0
+    ? "0.00"
+    : ((common / comparison.allPackages.size) * 100).toFixed(2),
+      uniqueness: ((unique / total) * 100).toFixed(2) || 0,
       total: total,
     };
   });

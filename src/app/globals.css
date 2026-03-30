@@ -2,35 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --backgroundalt: 0 0% 100%;
-    --background: #f0efe7;
-    --foreground: 222.2 84% 4.9%;
-    --border: 210 16% 80%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-  }
+/* Design tokens mapped to Tailwind palette */
+@theme {
+  --color-background: theme(colors.stone.100);     /* was #f0efe7 */
+  --color-backgroundalt: theme(colors.white);
+  --color-foreground: theme(colors.gray.950);
 
-  .dark {
-    --background: #0f1724;
-    --backgroundalt: #1F2937;
-    --foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+  --color-border: theme(colors.gray.300);
+  --color-input: theme(colors.gray.200);
+  --color-ring: theme(colors.indigo.500);
 }
 
+.dark {
+  --color-background: theme(colors.gray.950);      /* was #0f1724 */
+  --color-backgroundalt: theme(colors.gray.800);   /* was #1F2937 */
+  --color-foreground: theme(colors.gray.100);
+
+  --color-border: theme(colors.gray.700);
+  --color-input: theme(colors.gray.700);
+  --color-ring: theme(colors.indigo.300);
+}
+
+/* Base styles */
 @layer base {
-  * {
-    @apply border-border;
+  *, ::before, ::after {
+    border-color: var(--color-border);
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
 }
 
+/* Utilities */
 @layer utilities {
   .text-balance {
     text-wrap: balance;

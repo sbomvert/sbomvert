@@ -9,7 +9,7 @@ import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
 
-export default function CveComparePage() {
+export default function SbomComparePage() {
   const router = useRouter();
   const setSelectedImage = useArtifactStore(s => s.setSelectedImage);
   const [searchInput, setSearchInput] = useState('');
@@ -58,7 +58,7 @@ export default function CveComparePage() {
 
   const handleImageSelect = (image: string) => {
     setSelectedImage(image);
-    router.push('/compare/cve/report');
+    router.push('/compare/sbom/artifact');
   };
 
   const handleSearch = (value: string) => setSearchInput(value);
