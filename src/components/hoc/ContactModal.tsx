@@ -9,27 +9,23 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ open, onClose }: ContactModalProps) {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm]       = useState({ name: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<'success' | 'error' | null>(null);
+  const [result, setResult]   = useState<'success' | 'error' | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async () => {
     setLoading(true);
     setResult(null);
-
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-
       if (!res.ok) throw new Error('Request failed');
-
       setResult('success');
       setForm({ name: '', email: '', message: '' });
     } catch {
@@ -38,6 +34,9 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
       setLoading(false);
     }
   };
+
+  const fieldClass =
+    'p-3 rounded-input bg-input border border-border text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring';
 
   return (
     <AnimatePresence>
@@ -49,55 +48,35 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-background text-foreground p-6 rounded-xl shadow-xl w-full max-w-md border border-border"
+            className="bg-background text-foreground p-6 rounded-card shadow-xl w-full max-w-md border border-border"
             initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1,   opacity: 1 }}
+            exit={{ scale: 0.9,    opacity: 0 }}
           >
-            <h2 className="text-2xl font-bold mb-4">Talk to an expert</h2>
+            <h2 className="text-heading font-bold mb-4">Talk to an expert</h2>
 
             <div className="flex flex-col gap-3">
-              <input
-                name="name"
-                placeholder="Your name"
-                value={form.name}
-                onChange={handleChange}
-                className="p-3 rounded-lg bg-input border border-border"
-              />
-              <input
-                name="email"
-                placeholder="Your email"
-                value={form.email}
-                onChange={handleChange}
-                className="p-3 rounded-lg bg-input border border-border"
-              />
-              <textarea
-                name="message"
-                placeholder="How can we help?"
-                rows={4}
-                value={form.message}
-                onChange={handleChange}
-                className="p-3 rounded-lg bg-input border border-border"
-              />
+              <input    name="name"    placeholder="Your name"       value={form.name}    onChange={handleChange} className={fieldClass} />
+              <input    name="email"   placeholder="Your email"      value={form.email}   onChange={handleChange} className={fieldClass} />
+              <textarea name="message" placeholder="How can we help?" rows={4} value={form.message} onChange={handleChange} className={fieldClass} />
             </div>
 
-            {result === 'success' && <p className="text-green-500 mt-3">Message sent!</p>}
-            {result === 'error' && <p className="text-red-500 mt-3">Something went wrong.</p>}
+            {result === 'success' && <p className="text-success mt-3 text-body-sm">Message sent!</p>}
+            {result === 'error'   && <p className="text-error   mt-3 text-body-sm">Something went wrong.</p>}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg bg-input text-foreground border border-border hover:bg-ring/10"
+                className="px-4 py-2 rounded-button bg-input text-foreground border border-border hover:bg-border transition-colors"
               >
                 Cancel
               </button>
-
               <button
                 disabled={loading}
                 onClick={handleSubmit}
-                className="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-90"
+                className="px-4 py-2 rounded-button bg-primary text-white hover:bg-primary-hover transition-colors disabled:opacity-60"
               >
-                {loading ? 'Sending...' : 'Send'}
+                {loading ? 'Sending…' : 'Send'}
               </button>
             </div>
           </motion.div>

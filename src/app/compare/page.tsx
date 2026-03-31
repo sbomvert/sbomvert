@@ -3,23 +3,19 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/button/Button';
-import { Upload } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { ComparisonTypeSelector } from '@/components/hoc/ComparisonTypeSelector';
 import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
-import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
 import { SearchBar } from '@/components/searchbar/SearchBar';
-import { RecentScans } from '@/components/hoc/RecentScans/RecentScans';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
+import { PageTitle } from '@/components/Title/Title';
 
 type ComparisonType = 'SBOM' | 'CVE';
 
 export default function Home() {
   const router = useRouter();
   const setSelectedImage = useArtifactStore(s => s.setSelectedImage);
-  const [showRecentScans, setShowRecentScans] = useState(false);
   const [comparisonType, setComparisonType] = useState<ComparisonType>('SBOM');
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +24,6 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [showUploadForm, setShowUploadForm] = useState(false);
   const [showScanForm, setShowScanForm] = useState(false);
 
 
@@ -80,37 +75,14 @@ export default function Home() {
   const handleImageSelect = (image: string) => {
     setSelectedImage(image);
     if (comparisonType === 'SBOM' ){
-      router.push('/compare/artifact');
+      router.push('/compare/sbom/artifact');
     } else {
-      router.push('/compare/cve');
+      router.push('/compare/cve/report');
     }
     
   };
 
   const handleSearch = (value: string) => setSearchInput(value);
-
-  const handleUpload = async (name: string, containerName: string, file: File) => {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('containerName', containerName);
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/sbom/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok)
-        throw new Error((await response.json()).error || 'Upload failed');
-
-      alert(`SBOM "${name}" uploaded successfully`);
-    } catch (error) {
-      alert(`Failed to upload SBOM: ${(error as Error).message}`);
-    } finally {
-      setShowUploadForm(false);
-    }
-  };
 
   const handleScanSubmit = async (image: string, tools: { producers: string[], consumers: string[] }) => {
     const payload = { image, tools };
@@ -142,41 +114,10 @@ export default function Home() {
   /* ------------------ UI ------------------ */
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+            <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
         <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
 
-      <div className="flex justify-end mb-4 gap-2">
-        {FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => setShowUploadForm(prev => !prev)}
-          >
-            <Upload size={20} />
-            Upload SBOM
-          </Button>
-        )}
-
-        {FEATURE_FLAGS.ENABLE_SCAN_API && (
-          <>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => setShowScanForm(true)}
-            >
-              Scan Image
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setShowRecentScans(prev => !prev)}
-            >
-              Recent Scans
-            </Button>
-          </>
-        )}
-      </div>
 
 
 
@@ -184,13 +125,7 @@ export default function Home() {
 
       {!loading && (
         <>
-          {showUploadForm && FEATURE_FLAGS.ENABLE_SBOM_UPLOAD && (
-            <SbomUploadForm
-              onUpload={handleUpload}
-              onCancel={() => setShowUploadForm(false)}
-            />
-          )}
-
+        
           {showScanForm && FEATURE_FLAGS.ENABLE_SCAN_API && (
             <ImageScanForm
               onSubmit={handleScanSubmit}
@@ -198,16 +133,10 @@ export default function Home() {
             />
           )}
 
-          {showRecentScans && (
-            <div className="mt-6">
-              <RecentScans />
-            </div>
-          )}
-
           <SearchBar value={searchInput} onChange={handleSearch} />
 
           <ImageSelector
-            images={filteredImages}
+            images={filteredImages as any}
             onImageSelect={handleImageSelect}
             currentPage={currentPage}
             totalPages={totalPages}
@@ -215,6 +144,6 @@ export default function Home() {
           />
         </>
       )}
-    </main>
+    </>
   );
 }

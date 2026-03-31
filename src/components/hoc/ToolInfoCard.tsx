@@ -10,67 +10,47 @@ interface ToolInfoCardProps {
 
 export const ToolInfoCard: React.FC<ToolInfoCardProps> = ({ toolInfo, color }) => {
   const name = toolInfo.name ?? 'Unknown';
-  const shortName =
-    name.length <= 22 ? name : name.slice(0, 22) + '...';
+
+  const formatBadge =
+    toolInfo.format === 'SPDX'
+      ? 'bg-info-subtle text-info-fg'
+      : 'bg-success-subtle text-success-fg';
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border-l-8"
+      className="bg-surface rounded-card px-4 py-3 shadow-panel border-l-4"
       style={{ borderLeftColor: color }}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="p-2 rounded-lg"
-            style={{ backgroundColor: `${color}20` }}
-          >
-            <Package size={24} style={{ color }} />
-          </div>
-
-          <div className="text-left overflow-hidden">
-            <h3 className="text-xl font-bold dark:text-white h-6">
-              {shortName}
-            </h3>
-
-            {toolInfo.version && (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {toolInfo.version}
-              </p>
-            )}
-          </div>
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-1 min-w-0">
+        <div className="p-1.5 rounded-md shrink-0" style={{ backgroundColor: `${color}20` }}>
+          <Package size={18} style={{ color }} />
         </div>
+        <h3 className="text-body-sm font-semibold text-foreground truncate">{name}</h3>
       </div>
 
-      <div className="space-y-2">
-        {toolInfo.vendor && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-600 dark:text-gray-400">
-              Vendor:
-            </span>
-            <span className="font-medium dark:text-white">
-              {toolInfo.vendor}
-            </span>
+      {/* Metadata grid */}
+      <div className="grid grid-cols-3 gap-3 text-caption items-center">
+        <div className="min-w-0">
+          <span className="text-foreground-subtle">Vendor</span>
+          <div className="font-medium text-foreground truncate">{toolInfo.vendor ?? '—'}</div>
+        </div>
+        <div>
+          <span className="text-foreground-subtle">Version</span>
+          <div className="font-medium text-foreground">{toolInfo.version ?? '—'}</div>
+        </div>
+        <div>
+          <span className="text-foreground-subtle">Format</span>
+          <div>
+            {toolInfo.format ? (
+              <span className={`px-2 py-0.5 rounded-pill text-caption font-medium ${formatBadge}`}>
+                {toolInfo.format}
+              </span>
+            ) : '—'}
           </div>
-        )}
-
-        {toolInfo.format && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-600 dark:text-gray-400">
-              Format:
-            </span>
-            <span
-              className={`px-2 py-1 rounded-3xl text-xs font-medium ${
-                toolInfo.format === 'SPDX'
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                  : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-              }`}
-            >
-              {toolInfo.format}
-            </span>
-          </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );

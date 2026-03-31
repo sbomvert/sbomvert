@@ -8,14 +8,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Input: React.FC<InputProps> = ({ className, variant = 'default', ...props }) => {
   const baseStyles =
-    'block w-full rounded-md border-0 py-1.5 pl-3 text-gray-900 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset';
+    'block w-full rounded-input border-0 py-1.5 pl-3 text-foreground bg-surface shadow-panel ring-1 ring-inset focus:ring-2 focus:ring-inset';
 
   const variantStyles = {
-    default: 'ring-gray-300 focus:ring-indigo-600',
-    error: 'ring-red-500 focus:ring-red-600',
+    default: 'ring-border focus:ring-ring',
+    error:   'ring-error focus:ring-error',
   };
 
-  const classes = cn(baseStyles, variantStyles[variant], className);
-
-  return <input className={classes} {...props} />;
+  return <input className={cn(baseStyles, variantStyles[variant], className)} {...props} />;
 };

@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
     const result = await artifactService.listSubjects(parsedPage, parsedSearch);
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: 'Failed to list subjects' }, { status: 500 });
   }
 }

@@ -7,6 +7,7 @@ interface ContainerSboms {
 }
 
 interface ImageInfo {
+  cveCount: number;
   id: string;
   name: string;
   description: string;
@@ -59,16 +60,21 @@ export const loadSbomImagesFromPublic = async (
 
     const { containers, pagination } = await response.json();
 
-    const images: ImageInfo[] = containers.map((container: any) => {
+    const images: ImageInfo[] = await Promise.all(containers.map(async (container: any) => {
       const containerName = formatContainerName(container.name);
+      // Fetch CVE files for this container
+      const cveResponse = await fetch(`/api/cve?image=${encodeURIComponent(container.name)}`);
+      const cveData = cveResponse.ok ? await cveResponse.json() : { files: [] };
+      const cveCount = Array.isArray(cveData.files) ? cveData.files.length : 0;
       return {
         id: containerName,
         name: containerName,
         description: getContainerDescription(containerName),
         toolsScanned: container.files.length,
         sbomCount: container.files.length,
+        cveCount,
       };
-    });
+    }));
 
     return { images, pagination };
   } catch (error) {

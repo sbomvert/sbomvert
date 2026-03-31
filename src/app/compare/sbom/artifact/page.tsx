@@ -1,13 +1,7 @@
 'use client';
 
-import  { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { ToolSelector } from '../../../components/hoc/ToolSelector';
-import { SummaryView } from '../../../components/hoc/SBOMSummaryView';
-import { TableView } from '../../../components/hoc/TableView';
-import { ChartView } from '../../../components/hoc/ChartView';
-import { ExportButtons } from '../../../components/hoc/ExportButtons';
-import { LoadingSpinner } from '../../../components/hoc/LoadingSpinner';
 import { compareMultipleTools } from '@/lib/diffReports';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
@@ -15,15 +9,21 @@ import { loadSbomsForImage } from '@/lib/sbomLoader';
 import { useRouter } from 'next/navigation';
 import { TOOL_COLORS } from '@/lib/utils';
 import { useArtifactStore } from '@/store/useArtifactStore';
-import { SBOMComparisonViewSelector } from '@/components/hoc/SBOMComparisonViewSelector';
+import { ViewSwitch } from '@/components/hoc/ViewSwitch';
+import { ChartView } from '@/components/hoc/ChartView';
+import { ExportButtons } from '@/components/hoc/ExportButtons';
+import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { SummaryView } from '@/components/hoc/SBOMSummaryView';
+import { TableView } from '@/components/hoc/TableView';
+import { ToolSelector } from '@/components/hoc/ToolSelector';
+import { BackButton } from '@/components/button/BackButton';
 
-type ViewMode = 'summary' | 'table' | 'chart';
 
 export default function Home() {
   const router = useRouter();
   const selectedImage = useArtifactStore(s => s.selectedImage);
 
-  const [viewMode, setViewMode] = useState<ViewMode>('summary');
+  const [viewMode, setViewMode] = useState<string>('summary');
   const [sboms, setSboms] = useState<Record<string, ISbom[]>>({});
   const [selectedTools, setSelectedTools] = useState<Set<string>>(new Set());
 
@@ -109,7 +109,20 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <BackButton />
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-label font-semibold uppercase tracking-widest text-primary mb-1">
+            SBOM Comparison
+          </p>
+          <h1 className="text-heading-lg font-bold text-foreground truncate max-w-xl">
+            {selectedImage}
+          </h1>
+        </div>
+        <ViewSwitch modes={['summary', 'table']} selected={viewMode} onChange={setViewMode} />
+      </div>
       {loading && <LoadingSpinner message="Loading SBOMs ..." />}
 
       {/* ------------------------------------------------------------
@@ -128,12 +141,9 @@ export default function Home() {
             <AnimatePresence mode="wait">
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <h2 className="text-3xl font-bold text-foreground dark:text-white">
-                    Analysis: {comparison.imageId}
-                  </h2>
+
 
                   <div className="flex gap-3 flex-wrap">
-                    <SBOMComparisonViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
                     <ExportButtons comparison={comparison} />
                   </div>
                 </div>
@@ -147,13 +157,13 @@ export default function Home() {
 
           {!comparison && selectedTools.size >= 2 && (
             <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-foreground-muted">
                 Please select at least 2 tools to compare
               </p>
             </div>
           )}
         </>
       )}
-    </main>
+    </>
   );
 }

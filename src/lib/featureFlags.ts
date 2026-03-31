@@ -12,3 +12,5 @@ export const FEATURE_FLAGS = {
     return process.env.NEXT_PUBLIC_CVE_MAPPING_ENABLED === 'true';
   }
 };
+
+// Feature flags defined: ENABLE_SBOM_UPLOAD, ENABLE_SCAN_API, CVE_MAPPING_ENABLED

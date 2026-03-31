@@ -1,0 +1,1 @@
+export type PkgType = 'os' | 'npm' | 'python' | 'maven' | 'binary' | 'library' | '.net' | 'rust' | 'generic';

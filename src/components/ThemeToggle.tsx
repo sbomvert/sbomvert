@@ -6,17 +6,12 @@ interface ThemeToggleProps {
   toggle: () => void;
 }
 
-// Isomorphic layout effect (no SSR warning)
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const useIsMounted = () => {
   const [mounted, setMounted] = useState(false);
-
-  useIsomorphicLayoutEffect(() => {
-    setMounted(true);
-  }, []);
-
+  useIsomorphicLayoutEffect(() => { setMounted(true); }, []);
   return mounted;
 };
 
@@ -27,7 +22,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ isDark, toggle }) => {
     return (
       <button
         aria-label="Toggle theme"
-        className="p-2 rounded-lg"
+        className="p-2 rounded-button"
         style={{ width: 36, height: 36 }}
       />
     );
@@ -36,14 +31,14 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ isDark, toggle }) => {
   return (
     <button
       onClick={toggle}
-      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      className="p-2 rounded-button hover:bg-surface-alt transition-colors"
       aria-label="Toggle theme"
       style={{ width: 36, height: 36 }}
     >
       {isDark ? (
-        <Sun size={20} className="text-yellow-400" />
+        <Sun size={20} className="text-warning" />
       ) : (
-        <Moon size={20} className="text-gray-700 dark:text-gray-300" />
+        <Moon size={20} className="text-foreground-muted" />
       )}
     </button>
   );

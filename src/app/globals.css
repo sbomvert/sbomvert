@@ -2,35 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --backgroundalt: 0 0% 100%;
-    --background: #f0efe7;
-    --foreground: 222.2 84% 4.9%;
-    --border: 210 16% 80%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-  }
+/*
+ * ─── Design tokens (runtime only) ───────────────────────────────────────────
+ * No Tailwind `theme()` calls here — only resolved values.
+ */
 
-  .dark {
-    --background: #0f1724;
-    --backgroundalt: #1F2937;
-    --foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Default theme (light) */
+/* ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Surfaces (clear hierarchy) ── */
+  --color-background:     #f8fafc; /* slate-50 */
+  --color-background-alt: #f1f5f9; /* slate-100 */
+  --color-surface:        #ffffff; /* cards */
+  --color-surface-alt:    #f8fafc; /* hover / inputs */
+
+  /* ── Text (unchanged, already good) ── */
+  --color-foreground:        #334155; /* slate-900 */
+  --color-foreground-muted:  #475569; /* slate-600 */
+  --color-foreground-subtle: #94a3b8; /* slate-400 */
+
+  /* ── Borders (key improvement) ── */
+  --color-border:        #cbd5f5; /* slightly indigo-tinted */
+  --color-border-subtle: #e2e8f0;
+  --color-input:         #e2e8f0;
+  --color-ring:          #6366f1;
+
+  /* ── Status (unchanged) ── */
+  --color-success:        #16a34a;
+  --color-success-subtle: #dcfce7;
+  --color-success-fg:     #166534;
+
+  --color-warning:        #f59e0b;
+  --color-warning-subtle: #fef3c7;
+  --color-warning-fg:     #92400e;
+
+  --color-error:          #ef4444;
+  --color-error-subtle:   #fee2e2;
+  --color-error-fg:       #991b1b;
+
+  --color-info:           #6366f1;
+  --color-info-subtle:    #e0e7ff;
+  --color-info-fg:        #3730a3;
 }
 
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Dark mode */
+/* ────────────────────────────────────────────────────────────────────────── */
+.dark {
+  --color-background:     #020617; /* slate-950 */
+  --color-background-alt: #020617;
+  --color-surface:        #0f172a; /* slate-900 */
+  --color-surface-alt:    #1e293b; /* slate-800 */
+
+  --color-foreground:        #f8fafc;
+  --color-foreground-muted:  #94a3b8;
+  --color-foreground-subtle: #64748b;
+
+  --color-border:        #1e293b;
+  --color-border-subtle: rgba(148, 163, 184, 0.3);
+  --color-input:         #1e293b;
+  --color-ring:          #818cf8;
+
+  --color-success:        #4ade80;
+  --color-success-subtle: rgba(22, 101, 52, 0.3);
+  --color-success-fg:     #bbf7d0;
+
+  --color-warning:        #fbbf24;
+  --color-warning-subtle: rgba(146, 64, 14, 0.3);
+  --color-warning-fg:     #fde68a;
+
+  --color-error:          #f87171;
+  --color-error-subtle:   rgba(153, 27, 27, 0.3);
+  --color-error-fg:       #fecaca;
+
+  --color-info:           #818cf8;
+  --color-info-subtle:    rgba(55, 48, 163, 0.3);
+  --color-info-fg:        #c7d2fe;
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Base layer */
+/* ────────────────────────────────────────────────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border;
+  *, ::before, ::after {
+    border-color: var(--color-border);
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
 }
 
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Utilities */
+/* ────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
   .text-balance {
     text-wrap: balance;

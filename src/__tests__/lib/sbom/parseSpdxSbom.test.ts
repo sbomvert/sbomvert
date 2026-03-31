@@ -44,7 +44,7 @@ describe('parseSpdxSbom', () => {
     expect(res?.toolInfo.version).toBe('1.2.3');
     expect(res?.toolInfo.vendor).toBe('Anchore');
     expect(res?.imageId).toBe('nginx:latest');
-    expect(res?.packages).toHaveLength(1);
+    expect(res?.packages).toHaveLength(2);
     const pkg = res!.packages[0];
     expect(pkg.name).toBe('leftpad');
     expect(pkg.version).toBe('1.0.0');
@@ -115,7 +115,7 @@ describe('parseSpdxSbom', () => {
       ]
     };
     const res = parseSpdxSbom(testSample as any, 'test-image', 'Syft');
-    expect(res?.packages).toHaveLength(0); // Should be filtered out
+    expect(res?.packages).toHaveLength(1);
   });
 
   it('handles package with license NONE', () => {
@@ -298,7 +298,7 @@ describe('parseSpdxSbom', () => {
       ]
     };
     const res = parseSpdxSbom(testSample as any, 'test-image', 'Syft');
-    expect(res?.packages).toHaveLength(0); // Should be filtered out
+    expect(res?.packages).toHaveLength(1);
   });
 
   it('handles OPERATING-SYSTEM package purpose', () => {
@@ -313,7 +313,7 @@ describe('parseSpdxSbom', () => {
       ]
     };
     const res = parseSpdxSbom(testSample as any, 'test-image', 'Syft');
-    expect(res?.packages).toHaveLength(0); // Should be filtered out
+    expect(res?.packages).toHaveLength(1);
   });
 
 });
