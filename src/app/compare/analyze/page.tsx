@@ -2,13 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { FileText, Search, Package, ChevronRight, Loader2 } from 'lucide-react';
+import { Package, ChevronRight, Loader2 } from 'lucide-react';
 import { formatContainerName, reverseFormatContainerName } from '@/lib/container/containerUtils';
 import { PageTitle } from '@/components/Title/Title';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { Card } from '@/components/card/Card';
 import { List } from '@/components/list/List';
-import { CardContent } from '@/components/card/CardContent';
 
 interface SbomFile { name: string; }
 interface Container { name: string; files: SbomFile[]; }

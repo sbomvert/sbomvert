@@ -1,5 +1,4 @@
 import { POST } from '@/app/api/contact/route';
-import { NextResponse } from 'next/server';
 
 // Mock the console.log to avoid test output pollution
 const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();

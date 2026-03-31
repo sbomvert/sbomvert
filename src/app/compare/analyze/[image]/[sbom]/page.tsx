@@ -3,20 +3,19 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, X, ExternalLink, FileText,
-  Shield, Hash, Tag, Package, Info, ChevronRight, Copy, Check,
+  Search, X, ChevronRight,
 } from 'lucide-react';
 import { cn, getPackageTypeColor } from '@/lib/utils';
 import { formatContainerName } from '@/lib/container/containerUtils';
 import { BackButton } from '@/components/button/BackButton';
 import { Card } from '@/components/card/Card';
-import { SbomInfo, RichPackage, RichFile, cleanLicense, AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
+import { SbomInfo, RichPackage, AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
 import { SpdxDocument } from '@/lib/sbom/spdx/types';
 import { CopyButton } from '@/components/button/CopyButton';
-import { Badge, MetaRow, PackageDrawer } from './components';
+import { PackageDrawer } from './components';
 import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 import { PageTitle } from '@/components/Title/Title';
-import { ResponsiveContainer, Pie, Legend, Tooltip, PieChart } from 'recharts';
+import { ResponsiveContainer, Pie, Tooltip, PieChart } from 'recharts';
 
 
 
