@@ -2,28 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens mapped to Tailwind palette */
+/*
+ * ─── Design tokens ───────────────────────────────────────────────────────────
+ *
+ * All colour values live here and are referenced by tailwind.config.js via
+ * CSS variables.  To restyle the entire app, edit ONLY this block.
+ *
+ * Naming convention:
+ *   --color-<role>          base token
+ *   --color-<role>-subtle   tinted background (e.g. status banners)
+ *   --color-<role>-fg       foreground on top of the subtle background
+ */
+
+/* Light mode */
 @theme {
-  --color-background: theme(colors.stone.100);     /* was #f0efe7 */
-  --color-backgroundalt: theme(colors.white);
-  --color-foreground: theme(colors.gray.950);
+  /* ── Surfaces ── */
+  --color-background:     theme(colors.stone.100);   /* page bg */
+  --color-background-alt: theme(colors.white);       /* navbar bg */
+  --color-surface:        theme(colors.white);       /* card / panel bg */
+  --color-surface-alt:    theme(colors.gray.50);     /* hover rows, code blocks */
 
-  --color-border: theme(colors.gray.300);
-  --color-input: theme(colors.gray.200);
-  --color-ring: theme(colors.indigo.500);
+  /* ── Text ── */
+  --color-foreground:        theme(colors.gray.950); /* primary text */
+  --color-foreground-muted:  theme(colors.gray.500); /* secondary / help text */
+  --color-foreground-subtle: theme(colors.gray.400); /* placeholders, disabled */
+
+  /* ── Borders & controls ── */
+  --color-border:        theme(colors.gray.200);
+  --color-border-subtle: theme(colors.gray.100);
+  --color-input:         theme(colors.gray.200);
+  --color-ring:          theme(colors.indigo.500);
+
+  /* ── Status: success ── */
+  --color-success:        theme(colors.green.600);
+  --color-success-subtle: theme(colors.green.50);
+  --color-success-fg:     theme(colors.green.800);
+
+  /* ── Status: warning ── */
+  --color-warning:        theme(colors.amber.500);
+  --color-warning-subtle: theme(colors.amber.50);
+  --color-warning-fg:     theme(colors.amber.900);
+
+  /* ── Status: error ── */
+  --color-error:          theme(colors.red.500);
+  --color-error-subtle:   theme(colors.red.50);
+  --color-error-fg:       theme(colors.red.800);
+
+  /* ── Status: info ── */
+  --color-info:           theme(colors.indigo.500);
+  --color-info-subtle:    theme(colors.indigo.50);
+  --color-info-fg:        theme(colors.indigo.800);
 }
 
+/* Dark mode overrides */
 .dark {
-  --color-background: theme(colors.gray.950);      /* was #0f1724 */
-  --color-backgroundalt: theme(colors.gray.800);   /* was #1F2937 */
-  --color-foreground: theme(colors.gray.100);
+  /* ── Surfaces ── */
+  --color-background:     theme(colors.gray.950);
+  --color-background-alt: theme(colors.gray.900);
+  --color-surface:        theme(colors.gray.800);
+  --color-surface-alt:    theme(colors.gray.700);
 
-  --color-border: theme(colors.gray.700);
-  --color-input: theme(colors.gray.700);
-  --color-ring: theme(colors.indigo.300);
+  /* ── Text ── */
+  --color-foreground:        theme(colors.gray.100);
+  --color-foreground-muted:  theme(colors.gray.400);
+  --color-foreground-subtle: theme(colors.gray.500);
+
+  /* ── Borders & controls ── */
+  --color-border:        theme(colors.gray.700);
+  --color-border-subtle: theme(colors.gray.700 / 60%);
+  --color-input:         theme(colors.gray.700);
+  --color-ring:          theme(colors.indigo.400);
+
+  /* ── Status: success ── */
+  --color-success:        theme(colors.green.400);
+  --color-success-subtle: theme(colors.green.900 / 30%);
+  --color-success-fg:     theme(colors.green.300);
+
+  /* ── Status: warning ── */
+  --color-warning:        theme(colors.amber.400);
+  --color-warning-subtle: theme(colors.amber.900 / 20%);
+  --color-warning-fg:     theme(colors.amber.300);
+
+  /* ── Status: error ── */
+  --color-error:          theme(colors.red.400);
+  --color-error-subtle:   theme(colors.red.900 / 20%);
+  --color-error-fg:       theme(colors.red.300);
+
+  /* ── Status: info ── */
+  --color-info:           theme(colors.indigo.400);
+  --color-info-subtle:    theme(colors.indigo.900 / 30%);
+  --color-info-fg:        theme(colors.indigo.300);
 }
 
-/* Base styles */
 @layer base {
   *, ::before, ::after {
     border-color: var(--color-border);
@@ -35,9 +105,7 @@
   }
 }
 
-/* Utilities */
+/* ─── Utilities ───────────────────────────────────────────────────────────── */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }
