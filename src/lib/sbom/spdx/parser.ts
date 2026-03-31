@@ -31,6 +31,16 @@ export interface RichFile {
     layerId?: string; // extracted from comment "layerID: sha256:..."
 }
 
+export interface LicenseInfo {
+    declared: number;
+    deducted: number;
+    unknown: number;
+}
+
+export interface PackageInfo {
+  [key: string]: number;
+}
+
 export interface SbomInfo {
     tool: string;
     toolVersion: string;
@@ -41,15 +51,19 @@ export interface SbomInfo {
     spdxVersion: string;
     documentNamespace?: string;
     totalPackages: number;
+    licenseInfo: LicenseInfo;
+    packageInfo:PackageInfo;
+
 }
 
+ const skip = new Set(['CONTAINER', 'OPERATING-SYSTEM']);
 
-function cleanLicense(l?: string): string | undefined {
+export function cleanLicense(l?: string): string | undefined {
     if (!l || l === 'NOASSERTION' || l === 'NONE') return undefined;
     return l;
 }
 
-function parseCreator(creators: string[]): { tool: string; toolVersion: string; vendor: string } {
+export function parseCreator(creators: string[]): { tool: string; toolVersion: string; vendor: string } {
     const toolEntry = creators.find(c => c.startsWith('Tool:'))?.replace('Tool:', '').trim() ?? '';
     const parts = toolEntry.split('-');
     const toolVersion = parts.length > 1 ? (parts.at(-1) ?? '') : '';
@@ -57,6 +71,53 @@ function parseCreator(creators: string[]): { tool: string; toolVersion: string; 
     const vendor = creators.find(c => c.startsWith('Organization:'))?.replace('Organization:', '').trim() ?? '';
     return { tool, toolVersion, vendor };
 }
+
+
+const GetLicenses = (doc: SpdxDocument) => (doc.packages
+        .filter(p => !skip.has(p.primaryPackagePurpose ?? '') && (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION'))
+        .reduce((prev: LicenseInfo, curr: SpdxPackage, _idx) => {
+
+            if (cleanLicense(curr.licenseDeclared))
+                return {
+                    ...prev,
+                    declared: prev.declared + 1
+                }
+            else if (cleanLicense(curr.licenseConcluded)) {
+                return {
+                    ...prev,
+                    deducted: prev.deducted + 1
+                }
+            }
+            else {
+                return { ...prev, unknown: prev.unknown + 1 }
+            }
+
+        }, {
+            declared: 0,
+            deducted: 0,
+            unknown: 0
+        }))
+
+
+const GroupPackages = (doc: SpdxDocument): PackageInfo => {
+  return doc.packages
+    .filter(p =>
+      !skip.has(p.primaryPackagePurpose ?? '') &&
+      (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION')
+    )
+    .reduce((prev: PackageInfo, curr: SpdxPackage) => {
+      const ptype = InferPkgTypeFromPurl(
+        curr.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? ''
+      );
+
+      return {
+        ...prev,
+        [ptype]: Object.hasOwn(prev, ptype)
+          ? prev[ptype] + 1
+          : 1,
+      };
+    }, {} as PackageInfo);
+};
 
 export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInfo; packages: RichPackage[] } {
 
@@ -72,7 +133,10 @@ export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInf
         spdxVersion: doc.spdxVersion,
         documentNamespace: doc.documentNamespace,
         totalPackages: 0,
+        licenseInfo: GetLicenses(doc),
+        packageInfo: GroupPackages(doc),
     };
+    
 
     // Build file map: SPDXID → RichFile
     const fileMap = new Map<string, RichFile>();
@@ -99,7 +163,7 @@ export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInf
         pkgFiles.set(rel.spdxElementId, existing);
     }
 
-    const skip = new Set(['CONTAINER', 'OPERATING-SYSTEM']);
+   
     const packages: RichPackage[] = doc.packages
         .filter(p => !skip.has(p.primaryPackagePurpose ?? '') && (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION'))
         .map(p => {
