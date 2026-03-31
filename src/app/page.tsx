@@ -17,10 +17,9 @@ export default function HomePage() {
       </Head>
       <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-      {/* Hero Section */}
-      <main className="flex-grow flex flex-col items-center justify-center text-center px-6 py-16">
+      <main className="flex-grow flex flex-col items-center justify-center text-center px-inset-lg py-16">
         <motion.h1
-          className="text-5xl sm:text-6xl font-extrabold mb-4"
+          className="text-display-lg font-extrabold mb-4 text-foreground"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -30,7 +29,7 @@ export default function HomePage() {
         </motion.h1>
 
         <motion.p
-          className="text-lg sm:text-xl opacity-80 max-w-2xl mb-10"
+          className="text-body sm:text-heading opacity-80 max-w-2xl mb-10 text-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -45,23 +44,21 @@ export default function HomePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.8 }}
         >
-          {/* Neutral button */}
           <button
             onClick={() => setModalOpen(true)}
-            className="px-6 py-3 text-lg font-medium rounded-xl 
-                       bg-input text-foreground 
+            className="px-6 py-3 text-body font-medium rounded-button
+                       bg-input text-foreground
                        border border-border
-                       hover:bg-ring/20 transition-all shadow"
+                       hover:bg-border transition-all shadow"
           >
             Talk to us
           </button>
 
-          {/* Primary button */}
           <button
             onClick={() => router.push('/compare')}
-            className="px-6 py-3 text-lg font-medium rounded-xl 
-                       bg-primary text-white 
-                       hover:opacity-90 transition-all shadow-lg"
+            className="px-6 py-3 text-body font-medium rounded-button
+                       bg-primary text-white
+                       hover:bg-primary-hover transition-all shadow-button"
           >
             Try it! It&apos;s FOSS
           </button>
