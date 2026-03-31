@@ -10,35 +10,31 @@ export function CVEToolSelector({
   onToggle: (tool: string) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+    <div className="bg-surface rounded-card-lg border border-border-subtle shadow-panel p-card-p">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Tools being compared
-        </h2>
-        <span className="text-xs text-gray-400">
+        <h2 className="text-body-sm font-semibold text-foreground-muted">Tools being compared</h2>
+        <span className="text-caption text-foreground-subtle">
           {selectedTools.size} / {allTools.length} selected
         </span>
       </div>
+
       <div className="flex flex-wrap gap-2">
-        {allTools.map((tool) => {
+        {allTools.map(tool => {
           const active = selectedTools.has(tool);
-          const color = toolColors[tool];
+          const color  = toolColors[tool];
           return (
             <button
               key={tool}
               onClick={() => onToggle(tool)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all capitalize
-                ${active ? 'shadow-sm' : 'opacity-40 hover:opacity-70'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-card text-body-sm font-medium border transition-all capitalize
+                ${active ? 'shadow-panel' : 'opacity-40 hover:opacity-70'}`}
               style={
                 active
                   ? { borderColor: color, background: `${color}18`, color }
-                  : { borderColor: '#d1d5db', color: '#9ca3af' }
+                  : { borderColor: 'var(--color-border)', color: 'var(--color-foreground-subtle)' }
               }
             >
-              <span
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: active ? color : '#d1d5db' }}
-              />
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: active ? color : 'var(--color-border)' }} />
               {tool}
               {active && (
                 <svg className="w-3.5 h-3.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -49,10 +45,9 @@ export function CVEToolSelector({
           );
         })}
       </div>
+
       {selectedTools.size < 2 && (
-        <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
-          Select at least 2 tools to compare.
-        </p>
+        <p className="mt-3 text-caption text-warning-fg">Select at least 2 tools to compare.</p>
       )}
     </div>
   );
