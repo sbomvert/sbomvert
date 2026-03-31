@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, X, ChevronRight,
 } from 'lucide-react';
-import { cn, getPackageTypeColor } from '@/lib/utils';
+import { cn, getPackageTypeColor, TOOL_COLORS } from '@/lib/utils';
 import { formatContainerName } from '@/lib/container/containerUtils';
 import { BackButton } from '@/components/button/BackButton';
 import { Card } from '@/components/card/Card';
@@ -119,73 +119,78 @@ export default function AnalyzeDetailPage() {
                 </p>
               </Card>
             ))}
-            <Card title='License information'>
-            <ResponsiveContainer
-            height={200}
-  width="100%">
-              <PieChart>
-                <Pie
-                  cx="50%"
-                  cy="50%"
-                  data={[
-                    {
-                      fill: '#0088FE',
-                      name: 'License declared',
-                      value: info.licenseInfo.declared
-                    },
-                    {
-                      fill: '#00C49F',
-                      name: 'License deducted',
-                      value: info.licenseInfo.deducted
-                    },
-                    {
-                      fill: '#FFBB28',
-                      name: 'Unknown License',
-                      value: info.licenseInfo.unknown
-                    },
-                  ]}
-                  dataKey="value"
-                  fill="#8884d8"
-                  innerRadius={60}
-                  nameKey="name"
-                  outerRadius={80}
-                />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            </Card>
 
-
-            <Card title='Package Info'>
-            <ResponsiveContainer
-            height={200}
-  width="100%">
-
-              <PieChart>
-                <Pie
-                  cx="50%"
-                  cy="50%"
-                  data={Object.entries(info.packageInfo).map((key,_v) => {
-                   return {
-                      fill: '#FFBB28',
-                      name: key[0],
-                      value: key[1]
-                    }
-                  })}
-                  dataKey="value"
-                  fill="#8884d8"
-                  innerRadius={60}
-                  nameKey="name"
-                  outerRadius={80}
-                />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            </Card>
           </div>
 
 
         )}
+
+        {info && <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+            <Card className="px-4 py-3 dark:bg-gray-800">
+              <div>License information</div>
+              <ResponsiveContainer
+                height={200}
+                width="100%">
+                <PieChart>
+                  <Pie
+                    cx="50%"
+                    cy="50%"
+                    data={[
+                      {
+                        fill: '#0088FE',
+                        name: 'License declared',
+                        value: info.licenseInfo.declared
+                      },
+                      {
+                        fill: '#00C49F',
+                        name: 'License deducted',
+                        value: info.licenseInfo.deducted
+                      },
+                      {
+                        fill: '#FFBB28',
+                        name: 'Unknown License',
+                        value: info.licenseInfo.unknown
+                      },
+                    ]}
+                    dataKey="value"
+                    fill="#8884d8"
+                    innerRadius={60}
+                    nameKey="name"
+                    outerRadius={80}
+                  />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+
+
+            <Card className="px-4 py-3 dark:bg-gray-800">
+              <div>Package Information</div>
+              <ResponsiveContainer
+                height={200}
+                width="100%">
+
+                <PieChart>
+                  <Pie
+                    data={Object.entries(info.packageInfo).map((key, v) => {
+                      return {
+                        fill: TOOL_COLORS[v],
+                        name: key[0],
+                        value: key[1]
+                      }
+                    })}
+                    dataKey="value"
+                    fill="#8884d8"
+                    innerRadius={60}
+                    nameKey="name"
+                    outerRadius={80}
+                  />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+            </div>
+            }
         {info?.documentNamespace && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3 flex items-center gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 shrink-0">Namespace</span>
