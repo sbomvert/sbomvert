@@ -114,10 +114,10 @@ export default function Home() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-1">
+          <p className="text-label font-semibold uppercase tracking-widest text-primary mb-1">
             SBOM Comparison
           </p>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate max-w-xl">
+          <h1 className="text-heading-lg font-bold text-foreground truncate max-w-xl">
             {selectedImage}
           </h1>
         </div>
@@ -157,7 +157,7 @@ export default function Home() {
 
           {!comparison && selectedTools.size >= 2 && (
             <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-foreground-muted">
                 Please select at least 2 tools to compare
               </p>
             </div>

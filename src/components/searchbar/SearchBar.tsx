@@ -18,11 +18,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="mb-8"
+      className="mb-section"
     >
       <div className="relative">
         <Search
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground-subtle"
           size={20}
         />
         <input
@@ -30,7 +30,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+          className="w-full pl-12 pr-4 py-3 rounded-input border border-border bg-surface text-foreground focus:ring-2 focus:ring-ring focus:border-transparent outline-none placeholder:text-foreground-subtle"
         />
       </div>
     </motion.div>

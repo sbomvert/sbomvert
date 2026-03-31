@@ -3,14 +3,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, X, ExternalLink, FileText,
+  ArrowLeft, Search, X, ExternalLink, FileText,
   Shield, Hash, Tag, Package, Info, ChevronRight, Copy, Check,
 } from 'lucide-react';
 import { cn, getPackageTypeColor } from '@/lib/utils';
 import { formatContainerName } from '@/lib/container/containerUtils';
 import { BackButton } from '@/components/button/BackButton';
-import { PkgType } from '@/lib/sbom/purl/types';
-import { InferPkgTypeFromPurl } from '@/lib/sbom/purl/converter';
 
 // ─── Raw SPDX types (richer than ISbom) ──────────────────────────────────────
 
@@ -70,7 +68,7 @@ interface SpdxDocument {
 
 // ─── Derived types ────────────────────────────────────────────────────────────
 
-
+type PkgType = 'os' | 'npm' | 'python' | 'maven' | 'binary' | 'library' | '.net' | 'rust' | 'generic';
 
 interface RichPackage {
   raw: SpdxPackage;
@@ -114,6 +112,25 @@ interface SbomInfo {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function inferPkgType(pkg: SpdxPackage): PkgType {
+  const purl = pkg.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? '';
+  if (purl.includes('pkg:apk') || purl.includes('pkg:deb') || purl.includes('pkg:dpkg') || purl.includes('pkg:rpm')) return 'os';
+  if (purl.includes('pkg:npm')) return 'npm';
+  if (purl.includes('pkg:pypi')) return 'python';
+  if (purl.includes('pkg:maven')) return 'maven';
+  if (purl.includes('pkg:nuget')) return '.net';
+  if (purl.includes('pkg:cargo')) return 'rust';
+  const attr = pkg.attributionTexts?.find(a => a.startsWith('PkgType:'))?.replace('PkgType:', '').trim().toLowerCase();
+  if (attr === 'apk' || attr === 'alpine') return 'os';
+  if (attr === 'npm') return 'npm';
+  if (attr === 'python' || attr === 'pypi') return 'python';
+  if (attr === 'maven') return 'maven';
+  if (attr === 'gobinary') return 'binary';
+  if (pkg.primaryPackagePurpose === 'APPLICATION') return 'binary';
+  if (pkg.primaryPackagePurpose === 'LIBRARY') return 'library';
+  return 'library';
+}
 
 function cleanLicense(l?: string): string | undefined {
   if (!l || l === 'NOASSERTION' || l === 'NONE') return undefined;
@@ -181,7 +198,7 @@ function parseDocument(doc: SpdxDocument, imageId: string): { info: SbomInfo; pa
         spdxId: p.SPDXID,
         name: p.name,
         version: p.versionInfo ?? 'unknown',
-        pkgType: InferPkgTypeFromPurl(p.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? ''),
+        pkgType: inferPkgType(p),
         purl,
         cpes,
         license: cleanLicense(p.licenseDeclared) ?? cleanLicense(p.licenseConcluded),

@@ -21,32 +21,23 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If feature flag is disabled, return null
-  if (!FEATURE_FLAGS.ENABLE_SBOM_UPLOAD) {
-    return null;
-  }
+  if (!FEATURE_FLAGS.ENABLE_SBOM_UPLOAD) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!name || !containerName) {
       alert('Please fill all fields and select a file');
       return;
     }
-
     let fileToUpload = file;
     if (!fileToUpload) {
       const input = document.getElementById('file-input') as HTMLInputElement | null;
-      if (input && input.files && input.files[0]) {
-        fileToUpload = input.files[0];
-      }
+      if (input?.files?.[0]) fileToUpload = input.files[0];
     }
-
     if (!fileToUpload) {
       alert('Please fill all fields and select a file');
       return;
     }
-
     setIsSubmitting(true);
     try {
       onUpload(name, containerName, fileToUpload);
@@ -59,10 +50,10 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
+    if (e.target.files?.[0]) setFile(e.target.files[0]);
   };
+
+  const labelClass = 'block text-body-sm font-medium text-foreground-muted mb-1';
 
   return (
     <Card className="mb-6">
@@ -75,12 +66,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="ml-2">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              SBOM Name
-            </label>
+            <label htmlFor="name" className={labelClass}>SBOM Name</label>
             <Input
               id="name"
               type="text"
@@ -92,12 +78,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
           </div>
 
           <div className="ml-2">
-            <label
-              htmlFor="containerName"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              Container Name
-            </label>
+            <label htmlFor="containerName" className={labelClass}>Container Name</label>
             <Input
               id="containerName"
               type="text"
@@ -109,12 +90,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
           </div>
 
           <div className="ml-2">
-            <label
-              htmlFor="file-input"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              SBOM File (JSON)
-            </label>
+            <label htmlFor="file-input" className={labelClass}>SBOM File (JSON)</label>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -132,7 +108,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
                 className="hidden"
               />
               {file && (
-                <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                <span className="text-body-sm text-foreground-muted truncate max-w-xs">
                   {file.name}
                 </span>
               )}
@@ -140,13 +116,9 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 rounded font-medium transition-all bg-primary text-white focus:ring-indigo-500 shadow-lg px-6 py-3 text-base"
-            >
-              {isSubmitting ? 'Uploading...' : 'Upload SBOM'}
-            </button>
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Uploading…' : 'Upload SBOM'}
+            </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>

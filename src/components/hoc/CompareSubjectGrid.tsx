@@ -5,8 +5,6 @@ import { FileText, Shield, Container, GitBranch, Box, Clock, ChevronRight, Packa
 import { SubjectMetadata, SubjectType } from '@/services/artifactStorageService/artifactStorageService.types';
 import { cn } from '@/lib/utils';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export type CompareMode = 'SBOM' | 'CVE';
 
 export interface CompareSubjectGridProps {
@@ -18,19 +16,17 @@ export interface CompareSubjectGridProps {
   onPageChange: (page: number) => void;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function formatRelativeTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  const diffMs = Date.now() - d.getTime();
+  const diffMs  = Date.now() - d.getTime();
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHr  = Math.floor(diffMin / 60);
-  const diffDay  = Math.floor(diffHr / 24);
+  const diffDay = Math.floor(diffHr  / 24);
   if (diffSec < 60)  return 'just now';
   if (diffMin < 60)  return `${diffMin}m ago`;
   if (diffHr  < 24)  return `${diffHr}h ago`;
-  if (diffDay <  7)  return `${diffDay}d ago`;
+  if (diffDay < 7)   return `${diffDay}d ago`;
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -40,24 +36,23 @@ function splitName(name: string): { label: string; prefix: string | null } {
   return { label, prefix: parts.length > 0 ? parts.join('/') : null };
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
 const TYPE_ICON: Record<SubjectType, React.ReactNode> = {
   [SubjectType.Container]:  <Container  size={12} strokeWidth={1.75} />,
   [SubjectType.Repository]: <GitBranch  size={12} strokeWidth={1.75} />,
   [SubjectType.Other]:      <Box        size={12} strokeWidth={1.75} />,
 };
 
+// Semantic token classes for subject type badges
 const TYPE_STYLE: Record<SubjectType, string> = {
-  [SubjectType.Container]:  'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-  [SubjectType.Repository]: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
-  [SubjectType.Other]:      'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
+  [SubjectType.Container]:  'bg-info-subtle text-info-fg',
+  [SubjectType.Repository]: 'bg-info-subtle text-info-fg',
+  [SubjectType.Other]:      'bg-surface-alt text-foreground-muted',
 };
 
 function TypeBadge({ type }: { type: SubjectType }) {
   return (
     <span className={cn(
-      'inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-md',
+      'inline-flex items-center gap-1 text-label font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-badge',
       TYPE_STYLE[type]
     )}>
       {TYPE_ICON[type]}
@@ -71,14 +66,14 @@ interface CountPillProps {
   count: number;
   label: string;
   active: boolean;
-  colorActive: string;
+  activeClass: string;
 }
 
-function CountPill({ icon, count, label, active, colorActive }: CountPillProps) {
+function CountPill({ icon, count, label, active, activeClass }: CountPillProps) {
   return (
     <div className={cn(
-      'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium',
-      active ? colorActive : 'bg-gray-100 dark:bg-gray-700/60 text-gray-400 dark:text-gray-500'
+      'flex items-center gap-1.5 px-2.5 py-1.5 rounded-panel text-caption font-medium',
+      active ? activeClass : 'bg-surface-alt text-foreground-subtle'
     )}>
       {icon}
       <span className="tabular-nums font-bold">{count}</span>
@@ -86,8 +81,6 @@ function CountPill({ icon, count, label, active, colorActive }: CountPillProps) 
     </div>
   );
 }
-
-// ─── Card ─────────────────────────────────────────────────────────────────────
 
 interface CompareCardProps {
   subject: SubjectMetadata;
@@ -105,10 +98,13 @@ function CompareCard({ subject, mode, index, onSelect }: CompareCardProps) {
   const isSelectable  = mode === 'SBOM' ? canSelectSbom : canSelectCve;
 
   const disabledReason = !isSelectable
-    ? mode === 'SBOM'
-      ? `Need at least 2 SBOMs (has ${subject.sboms})`
-      : `No CVE reports yet`
+    ? mode === 'SBOM' ? `Need at least 2 SBOMs (has ${subject.sboms})` : 'No CVE reports yet'
     : null;
+
+  // Accent bar colour token based on mode and availability
+  const accentBar = mode === 'SBOM'
+    ? canSelectSbom ? 'bg-primary'  : 'bg-border'
+    : canSelectCve  ? 'bg-success'  : 'bg-border';
 
   return (
     <motion.div
@@ -122,20 +118,14 @@ function CompareCard({ subject, mode, index, onSelect }: CompareCardProps) {
         disabled={!isSelectable}
         title={disabledReason ?? `Compare ${mode === 'SBOM' ? 'SBOMs' : 'CVE reports'} for ${label}`}
         className={cn(
-          'w-full text-left rounded-2xl border overflow-hidden transition-all duration-150',
-          'bg-white dark:bg-gray-800',
+          'w-full text-left rounded-card-lg border overflow-hidden transition-all duration-150 bg-surface',
           isSelectable
-            ? 'border-gray-100 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700/50 cursor-pointer group'
-            : 'border-gray-100 dark:border-gray-700/40 opacity-50 cursor-not-allowed'
+            ? 'border-border-subtle shadow-card hover:shadow-card-hover hover:border-border cursor-pointer group'
+            : 'border-border-subtle opacity-50 cursor-not-allowed'
         )}
       >
         {/* Accent bar */}
-        <div className={cn(
-          'h-0.5 w-full',
-          mode === 'SBOM'
-            ? canSelectSbom ? 'bg-indigo-500' : 'bg-gray-200 dark:bg-gray-700'
-            : canSelectCve  ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'
-        )} />
+        <div className={cn('h-0.5 w-full', accentBar)} />
 
         <div className="p-4 flex flex-col gap-3">
           {/* Header */}
@@ -145,51 +135,31 @@ function CompareCard({ subject, mode, index, onSelect }: CompareCardProps) {
                 <TypeBadge type={subject.type} />
               </div>
               {prefix && (
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate leading-none mb-0.5">
-                  {prefix}
-                </p>
+                <p className="text-label text-foreground-subtle truncate leading-none mb-0.5">{prefix}</p>
               )}
-              <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate leading-tight">
-                {label}
-              </h3>
+              <h3 className="font-semibold text-body-sm text-foreground truncate leading-tight">{label}</h3>
               {subject.description && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
-                  {subject.description}
-                </p>
+                <p className="text-caption text-foreground-muted mt-0.5 line-clamp-1">{subject.description}</p>
               )}
             </div>
-
-            {/* Arrow shown on hover when selectable */}
             {isSelectable && (
               <ChevronRight
                 size={16}
-                className="shrink-0 mt-1 text-gray-300 dark:text-gray-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"
+                className="shrink-0 mt-1 text-foreground-subtle group-hover:text-primary transition-colors"
               />
             )}
           </div>
 
-          {/* Counts */}
+          {/* Count pills */}
           <div className="flex gap-2">
-            <CountPill
-              icon={<FileText size={11} />}
-              count={subject.sboms}
-              label="SBOMs"
-              active={subject.sboms >= 2}
-              colorActive="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-            />
-            <CountPill
-              icon={<Shield size={11} />}
-              count={subject.cves}
-              label="CVEs"
-              active={subject.cves >= 1}
-              colorActive="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
-            />
+            <CountPill icon={<FileText size={11} />} count={subject.sboms} label="SBOMs" active={subject.sboms >= 2} activeClass="bg-info-subtle text-info-fg" />
+            <CountPill icon={<Shield   size={11} />} count={subject.cves}  label="CVEs"  active={subject.cves  >= 1} activeClass="bg-success-subtle text-success-fg" />
           </div>
 
-          {/* Disabled reason or footer */}
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500">
+          {/* Footer */}
+          <div className="flex items-center gap-1.5 text-label text-foreground-subtle">
             {disabledReason ? (
-              <span className="text-amber-500 dark:text-amber-400">{disabledReason}</span>
+              <span className="text-warning-fg">{disabledReason}</span>
             ) : (
               <>
                 <Clock size={10} className="shrink-0" />
@@ -203,78 +173,56 @@ function CompareCard({ subject, mode, index, onSelect }: CompareCardProps) {
   );
 }
 
-// ─── Grid ─────────────────────────────────────────────────────────────────────
-
 export function CompareSubjectGrid({
-  subjects,
-  mode,
-  onSelect,
-  currentPage,
-  totalPages,
-  onPageChange,
+  subjects, mode, onSelect, currentPage, totalPages, onPageChange,
 }: CompareSubjectGridProps) {
   if (subjects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <Package size={24} className="text-gray-400" />
+        <div className="w-14 h-14 rounded-card-lg bg-surface-alt flex items-center justify-center mb-4">
+          <Package size={24} className="text-foreground-subtle" />
         </div>
-        <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">No subjects found</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500">
-          Upload an SBOM or CVE report to get started.
-        </p>
+        <p className="text-foreground font-medium mb-1">No subjects found</p>
+        <p className="text-body-sm text-foreground-muted">Upload an SBOM or CVE report to get started.</p>
       </div>
     );
   }
 
-  const selectable = subjects.filter((s) =>
-    mode === 'SBOM' ? s.sboms >= 2 : s.cves >= 1
-  ).length;
+  const selectable = subjects.filter(s => mode === 'SBOM' ? s.sboms >= 2 : s.cves >= 1).length;
+  const modeColour = mode === 'SBOM' ? 'text-primary' : 'text-success';
+  const modeLabel  = mode === 'SBOM' ? 'SBOM comparison' : 'CVE comparison';
+  const needMore   = mode === 'SBOM' ? 'SBOMs' : 'CVE reports';
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Mode hint */}
-      <p className="text-xs text-gray-400 dark:text-gray-500">
+      <p className="text-caption text-foreground-muted">
         {selectable} of {subjects.length} subject{subjects.length !== 1 ? 's' : ''} available for{' '}
-        <span className={mode === 'SBOM' ? 'text-indigo-500' : 'text-emerald-500'}>
-          {mode === 'SBOM' ? 'SBOM comparison' : 'CVE comparison'}
-        </span>
+        <span className={modeColour}>{modeLabel}</span>
         {selectable < subjects.length && (
-          <span className="ml-1 text-gray-400">
-            · dimmed subjects need more {mode === 'SBOM' ? 'SBOMs' : 'CVE reports'}
-          </span>
+          <span className="ml-1 text-foreground-subtle">· dimmed subjects need more {needMore}</span>
         )}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {subjects.map((s, i) => (
-          <CompareCard
-            key={`${s.type}/${s.id}`}
-            subject={s}
-            mode={mode}
-            index={i}
-            onSelect={onSelect}
-          />
+          <CompareCard key={`${s.type}/${s.id}`} subject={s} mode={mode} index={i} onSelect={onSelect} />
         ))}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 mt-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1.5 text-body-sm rounded-panel border border-border text-foreground-muted hover:bg-surface-alt disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             ← Prev
           </button>
-          <span className="text-sm text-gray-500 tabular-nums">
-            {currentPage} / {totalPages}
-          </span>
+          <span className="text-body-sm text-foreground-muted tabular-nums">{currentPage} / {totalPages}</span>
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1.5 text-body-sm rounded-panel border border-border text-foreground-muted hover:bg-surface-alt disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Next →
           </button>
