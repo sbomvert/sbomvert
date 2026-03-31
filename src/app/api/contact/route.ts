@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     console.log('New contact message:', { name, email, message });
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

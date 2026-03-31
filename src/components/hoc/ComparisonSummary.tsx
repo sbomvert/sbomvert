@@ -47,8 +47,6 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
     'Common packages':         comparison.statistics.commonToAll.toString(),
   };
 
-  const axisStyle = { stroke: 'var(--color-foreground-subtle)' } as React.CSSProperties;
-
   return (
     <>
       <HorizontalStrip entries={comparisonMap} />

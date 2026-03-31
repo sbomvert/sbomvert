@@ -42,7 +42,6 @@ export default function AnalyzePage() {
   }, [search]);
 
   useEffect(() => {
-    setLoading(true);
     fetchContainers(1, debouncedSearch)
       .then(d => setContainers(d.containers ?? []))
       .catch(() => setContainers([]))

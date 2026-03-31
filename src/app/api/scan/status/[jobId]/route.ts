@@ -12,7 +12,7 @@ export async function GET(
     const status = await getJobStatus(jobId);
 
     return NextResponse.json(status);
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: 'Job not found' },
       { status: 404 }

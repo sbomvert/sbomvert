@@ -13,7 +13,7 @@ export function detectSbomFormatDetailed(sbomString: string): SbomFormat {
     }
 
     return 'unknown';
-  } catch (error: any) {
+  } catch {
     return 'unknown';
   }
 }

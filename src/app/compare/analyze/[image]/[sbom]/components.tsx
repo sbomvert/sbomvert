@@ -35,7 +35,6 @@ export function Badge({ children, className }: { children: React.ReactNode; clas
 
 
 export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () => void }) {
-  const purlHref = pkg.purl ? `https://github.com/package-url/purl-spec` : undefined;
   const nvdHref = pkg.cpes[0] ? `https://nvd.nist.gov/products/cpe/search/results?keyword=${encodeURIComponent(pkg.name)}` : undefined;
 
   // Group CPEs to avoid listing all of them

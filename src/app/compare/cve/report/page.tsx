@@ -12,8 +12,6 @@ import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
 import { ViewSwitch } from '@/components/hoc/ViewSwitch';
 import { BackButton } from '@/components/button/BackButton';
 
-type ViewMode = 'summary' | 'table';
-
 function cveLink(cveId: string) {
   return `https://nvd.nist.gov/vuln/detail/${cveId}`;
 }

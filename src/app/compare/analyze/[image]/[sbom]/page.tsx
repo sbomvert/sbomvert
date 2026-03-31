@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, X, ChevronRight,
@@ -28,7 +28,6 @@ import { ResponsiveContainer, Pie, Tooltip, PieChart } from 'recharts';
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AnalyzeDetailPage() {
-  const router = useRouter();
   const params = useParams<{ image: string; sbom: string }>();
 
   const imageSlug = decodeURIComponent(params.image ?? '');
@@ -36,7 +35,7 @@ export default function AnalyzeDetailPage() {
   const imageName = formatContainerName(imageSlug);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [_error, setError] = useState('');
   const [info, setInfo] = useState<SbomInfo | null>(null);
   const [packages, setPackages] = useState<RichPackage[]>([]);
   const [search, setSearch] = useState('');
@@ -46,18 +45,16 @@ export default function AnalyzeDetailPage() {
 
   useEffect(() => {
     if (!imageSlug || !toolFile) return;
-    setLoading(true);
     fetch(`/api/sbom/${imageSlug}/${toolFile}`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then((doc: SpdxDocument) => {
         const parsed = AnalyzeSPDX(doc, imageName);
-        console.log(info?.packageInfo)
         setInfo(parsed.info);
         setPackages(parsed.packages);
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [imageSlug, toolFile]);
+  }, [imageSlug, toolFile,imageName]);
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const typeOptions = useMemo(() => {

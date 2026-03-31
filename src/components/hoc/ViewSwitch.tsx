@@ -1,5 +1,3 @@
-import React from 'react';
-
 type ViewSwitchProps = {
   modes: string[];
   selected: string;

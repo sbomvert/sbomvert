@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       else {
         return NextResponse.json({ error: 'Unknown SBOM format. Expected SPDX or CycloneDX format' }, { status: 400 });
       }
-    } catch (parseError) {
+    } catch {
       return NextResponse.json({ error: 'Invalid JSON format. Please provide a valid SBOM file' }, { status: 400 });
     }
 

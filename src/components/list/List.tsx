@@ -3,11 +3,6 @@
 
 import { FileText, ChevronRight } from 'lucide-react';
 
-interface ListItem {
-  id: string;
-  label: string;
-  meta?: React.ReactNode;
-}
 
 interface ListProps<T> {
   items: T[];
