@@ -10,7 +10,7 @@ export const Card: React.FC<CardProps> = ({ children, className }) => {
   return (
     <div
       className={cn(
-        'bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors',
+        'bg-surface rounded-card-lg shadow-card p-card-p-lg transition-colors',
         className
       )}
     >
