@@ -1,3 +1,5 @@
+import { Card } from "@/components/card/Card";
+
 export function CVEToolSelector({
   allTools,
   selectedTools,
@@ -10,7 +12,7 @@ export function CVEToolSelector({
   onToggle: (tool: string) => void;
 }) {
   return (
-    <div className="bg-surface rounded-card-lg border border-border-subtle shadow-panel p-card-p">
+    <Card className="border border-border-subtle shadow-panel">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-body-sm font-semibold text-foreground-muted">Tools being compared</h2>
         <span className="text-caption text-foreground-subtle">
@@ -49,6 +51,6 @@ export function CVEToolSelector({
       {selectedTools.size < 2 && (
         <p className="mt-3 text-caption text-warning-fg">Select at least 2 tools to compare.</p>
       )}
-    </div>
+        </Card>
   );
 }
