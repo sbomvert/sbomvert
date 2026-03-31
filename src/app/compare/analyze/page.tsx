@@ -5,6 +5,10 @@ import { motion } from 'framer-motion';
 import { FileText, Search, Package, ChevronRight, Loader2 } from 'lucide-react';
 import { formatContainerName, reverseFormatContainerName } from '@/lib/container/containerUtils';
 import { PageTitle } from '@/components/Title/Title';
+import { SearchBar } from '@/components/searchbar/SearchBar';
+import { Card } from '@/components/card/Card';
+import { List } from '@/components/list/List';
+import { CardContent } from '@/components/card/CardContent';
 
 interface SbomFile { name: string; }
 interface Container { name: string; files: SbomFile[]; }
@@ -18,16 +22,18 @@ async function fetchContainers(page: number, search: string) {
 function toolLabel(filename: string): string {
   const parts = filename.replace('.json', '').split('.');
   const tool = parts[0] ?? filename;
-  const fmt  = parts[1]?.toUpperCase();
+  const fmt = parts[1]?.toUpperCase();
   return fmt ? `${tool} · ${fmt}` : tool;
 }
 
 export default function AnalyzePage() {
   const router = useRouter();
-  const [search, setSearch]             = useState('');
+  const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [containers, setContainers]     = useState<Container[]>([]);
-  const [loading, setLoading]           = useState(true);
+  const [containers, setContainers] = useState<Container[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [openContainer, setOpenContainer] = useState<string | null>(null);
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -46,7 +52,7 @@ export default function AnalyzePage() {
 
   const handleSelect = (container: Container, file: SbomFile) => {
     const imageSlug = reverseFormatContainerName(formatContainerName(container.name));
-    const toolSlug  = encodeURIComponent(file.name);
+    const toolSlug = encodeURIComponent(file.name);
     router.push(`/compare/analyze/${encodeURIComponent(imageSlug)}/${toolSlug}`);
   };
 
@@ -54,16 +60,8 @@ export default function AnalyzePage() {
     <>
       <PageTitle title="Analyze SBOM" subtitle="Select an image and scanner to inspect its full package manifest." />
 
-      {/* Search */}
       <div className="relative mb-6 max-w-sm">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle" />
-        <input
-          type="text"
-          placeholder="Filter images…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 text-body-sm rounded-input border border-border bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
-        />
+        <SearchBar value={search} onChange={e => setSearch(e)} placeholder='Filter artifacts…' classname="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle" size={15} />
       </div>
 
       {loading ? (
@@ -77,47 +75,61 @@ export default function AnalyzePage() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {containers.map((container, ci) => (
-            <motion.div
-              key={container.name}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: ci * 0.04 }}
-              className="bg-surface rounded-card-lg border border-border shadow-card overflow-hidden"
-            >
-              {/* Image header */}
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-border-subtle">
-                <div className="w-8 h-8 rounded-panel bg-info-subtle flex items-center justify-center shrink-0">
-                  <Package size={16} className="text-info" />
-                </div>
-                <div>
-                  <p className="font-semibold text-body-sm text-foreground">{formatContainerName(container.name)}</p>
-                  <p className="text-caption text-foreground-muted">
-                    {container.files.length} SBOM{container.files.length !== 1 ? 's' : ''} available
-                  </p>
-                </div>
-              </div>
+          {containers.map((container, ci) => {
+            const isOpen = openContainer === container.name;
 
-              {/* Tool list */}
-              <div className="divide-y divide-border-subtle">
-                {container.files.map(file => (
-                  <button
-                    key={file.name}
-                    onClick={() => handleSelect(container, file)}
-                    className="w-full flex items-center justify-between px-5 py-3 hover:bg-info-subtle transition-colors group text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText size={14} className="text-foreground-subtle group-hover:text-info transition-colors" />
-                      <span className="text-body-sm text-foreground font-medium capitalize">
-                        {toolLabel(file.name)}
-                      </span>
+            return (
+              <motion.div
+                key={container.name}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: ci * 0.04 }}
+                className="relative bg-surface rounded-card-lg border border-border shadow-card overflow-visible"
+              >
+                {/* Header (clickable toggle) */}
+                <Card
+                  className="cursor-pointer flex items-center justify-between gap-3 px-5 py-4 border-b border-border-subtle"
+                  onClick={() =>
+                    setOpenContainer(isOpen ? null : container.name)
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <Package size={16} className="text-info" />
+                    <p className="font-semibold text-body-sm text-foreground">
+                      {formatContainerName(container.name)}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <p className="text-caption text-foreground-muted">
+                      {container.files.length} SBOM
+                      {container.files.length !== 1 ? 's' : ''} available
+                    </p>
+                    <ChevronRight
+                      size={16}
+                      className={`transition-transform ${
+                        isOpen ? 'rotate-90' : ''
+                      }`}
+                    />
+                  </div>
+                </Card>
+
+                {/* Dropdown */}
+                {isOpen && (
+                  <div className="absolute z-50 mt-2 w-full bg-surface border border-border rounded-card-lg shadow-lg overflow-hidden">
+                    <div className="max-h-64 overflow-y-auto">
+                      <List
+                        items={container.files}
+                        getId={(file) => file.name}
+                        getLabel={(file) => toolLabel(file.name)}
+                        onSelect={(file) => handleSelect(container, file)}
+                      />
                     </div>
-                    <ChevronRight size={14} className="text-foreground-subtle group-hover:text-info transition-colors" />
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </>
