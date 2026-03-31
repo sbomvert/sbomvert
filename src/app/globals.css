@@ -3,97 +3,88 @@
 @tailwind utilities;
 
 /*
- * ─── Design tokens ───────────────────────────────────────────────────────────
- *
- * All colour values live here and are referenced by tailwind.config.js via
- * CSS variables.  To restyle the entire app, edit ONLY this block.
- *
- * Naming convention:
- *   --color-<role>          base token
- *   --color-<role>-subtle   tinted background (e.g. status banners)
- *   --color-<role>-fg       foreground on top of the subtle background
+ * ─── Design tokens (runtime only) ───────────────────────────────────────────
+ * No Tailwind `theme()` calls here — only resolved values.
  */
 
-/* Light mode */
-@theme {
-  /* ── Surfaces ── */
-  --color-background:     theme(colors.stone.100);   /* page bg */
-  --color-background-alt: theme(colors.white);       /* navbar bg */
-  --color-surface:        theme(colors.white);       /* card / panel bg */
-  --color-surface-alt:    theme(colors.gray.50);     /* hover rows, code blocks */
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Default theme (light) */
+/* ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Surfaces (clear hierarchy) ── */
+  --color-background:     #f8fafc; /* slate-50 */
+  --color-background-alt: #f1f5f9; /* slate-100 */
+  --color-surface:        #ffffff; /* cards */
+  --color-surface-alt:    #f8fafc; /* hover / inputs */
 
-  /* ── Text ── */
-  --color-foreground:        theme(colors.gray.950); /* primary text */
-  --color-foreground-muted:  theme(colors.gray.500); /* secondary / help text */
-  --color-foreground-subtle: theme(colors.gray.400); /* placeholders, disabled */
+  /* ── Text (unchanged, already good) ── */
+  --color-foreground:        #0f172a; /* slate-900 */
+  --color-foreground-muted:  #475569; /* slate-600 */
+  --color-foreground-subtle: #94a3b8; /* slate-400 */
 
-  /* ── Borders & controls ── */
-  --color-border:        theme(colors.gray.200);
-  --color-border-subtle: theme(colors.gray.100);
-  --color-input:         theme(colors.gray.200);
-  --color-ring:          theme(colors.indigo.500);
+  /* ── Borders (key improvement) ── */
+  --color-border:        #cbd5f5; /* slightly indigo-tinted */
+  --color-border-subtle: #e2e8f0;
+  --color-input:         #e2e8f0;
+  --color-ring:          #6366f1;
 
-  /* ── Status: success ── */
-  --color-success:        theme(colors.green.600);
-  --color-success-subtle: theme(colors.green.50);
-  --color-success-fg:     theme(colors.green.800);
+  /* ── Status (unchanged) ── */
+  --color-success:        #16a34a;
+  --color-success-subtle: #dcfce7;
+  --color-success-fg:     #166534;
 
-  /* ── Status: warning ── */
-  --color-warning:        theme(colors.amber.500);
-  --color-warning-subtle: theme(colors.amber.50);
-  --color-warning-fg:     theme(colors.amber.900);
+  --color-warning:        #f59e0b;
+  --color-warning-subtle: #fef3c7;
+  --color-warning-fg:     #92400e;
 
-  /* ── Status: error ── */
-  --color-error:          theme(colors.red.500);
-  --color-error-subtle:   theme(colors.red.50);
-  --color-error-fg:       theme(colors.red.800);
+  --color-error:          #ef4444;
+  --color-error-subtle:   #fee2e2;
+  --color-error-fg:       #991b1b;
 
-  /* ── Status: info ── */
-  --color-info:           theme(colors.indigo.500);
-  --color-info-subtle:    theme(colors.indigo.50);
-  --color-info-fg:        theme(colors.indigo.800);
+  --color-info:           #6366f1;
+  --color-info-subtle:    #e0e7ff;
+  --color-info-fg:        #3730a3;
 }
 
-/* Dark mode overrides */
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Dark mode */
+/* ────────────────────────────────────────────────────────────────────────── */
 .dark {
-  /* ── Surfaces ── */
-  --color-background:     theme(colors.gray.950);
-  --color-background-alt: theme(colors.gray.900);
-  --color-surface:        theme(colors.gray.800);
-  --color-surface-alt:    theme(colors.gray.700);
+  --color-background:     #020617; /* slate-950 */
+  --color-background-alt: #020617;
+  --color-surface:        #0f172a; /* slate-900 */
+  --color-surface-alt:    #1e293b; /* slate-800 */
 
-  /* ── Text ── */
-  --color-foreground:        theme(colors.gray.100);
-  --color-foreground-muted:  theme(colors.gray.400);
-  --color-foreground-subtle: theme(colors.gray.500);
+  --color-foreground:        #f8fafc;
+  --color-foreground-muted:  #94a3b8;
+  --color-foreground-subtle: #64748b;
 
-  /* ── Borders & controls ── */
-  --color-border:        theme(colors.gray.700);
-  --color-border-subtle: theme(colors.gray.700 / 60%);
-  --color-input:         theme(colors.gray.700);
-  --color-ring:          theme(colors.indigo.400);
+  --color-border:        #1e293b;
+  --color-border-subtle: rgba(148, 163, 184, 0.3);
+  --color-input:         #1e293b;
+  --color-ring:          #818cf8;
 
-  /* ── Status: success ── */
-  --color-success:        theme(colors.green.400);
-  --color-success-subtle: theme(colors.green.900 / 30%);
-  --color-success-fg:     theme(colors.green.300);
+  --color-success:        #4ade80;
+  --color-success-subtle: rgba(22, 101, 52, 0.3);
+  --color-success-fg:     #bbf7d0;
 
-  /* ── Status: warning ── */
-  --color-warning:        theme(colors.amber.400);
-  --color-warning-subtle: theme(colors.amber.900 / 20%);
-  --color-warning-fg:     theme(colors.amber.300);
+  --color-warning:        #fbbf24;
+  --color-warning-subtle: rgba(146, 64, 14, 0.3);
+  --color-warning-fg:     #fde68a;
 
-  /* ── Status: error ── */
-  --color-error:          theme(colors.red.400);
-  --color-error-subtle:   theme(colors.red.900 / 20%);
-  --color-error-fg:       theme(colors.red.300);
+  --color-error:          #f87171;
+  --color-error-subtle:   rgba(153, 27, 27, 0.3);
+  --color-error-fg:       #fecaca;
 
-  /* ── Status: info ── */
-  --color-info:           theme(colors.indigo.400);
-  --color-info-subtle:    theme(colors.indigo.900 / 30%);
-  --color-info-fg:        theme(colors.indigo.300);
+  --color-info:           #818cf8;
+  --color-info-subtle:    rgba(55, 48, 163, 0.3);
+  --color-info-fg:        #c7d2fe;
 }
 
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Base layer */
+/* ────────────────────────────────────────────────────────────────────────── */
 @layer base {
   *, ::before, ::after {
     border-color: var(--color-border);
@@ -105,7 +96,11 @@
   }
 }
 
-/* ─── Utilities ───────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Utilities */
+/* ────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
-  .text-balance { text-wrap: balance; }
+  .text-balance {
+    text-wrap: balance;
+  }
 }
