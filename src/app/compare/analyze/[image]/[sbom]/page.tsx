@@ -3,134 +3,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Search, X, ExternalLink, FileText,
+  Search, X, ExternalLink, FileText,
   Shield, Hash, Tag, Package, Info, ChevronRight, Copy, Check,
 } from 'lucide-react';
 import { cn, getPackageTypeColor } from '@/lib/utils';
 import { formatContainerName } from '@/lib/container/containerUtils';
 import { BackButton } from '@/components/button/BackButton';
+import { InferPkgTypeFromPurl } from '@/lib/sbom/purl/converter';
+import { Card } from '@/components/card/Card';
+import { SbomInfo, RichPackage, RichFile } from '@/lib/sbom/spdx/parser';
+import { SpdxDocument } from '@/lib/sbom/spdx/types'; 
+import { CopyButton } from '@/components/button/CopyButton';
 
-// ─── Raw SPDX types (richer than ISbom) ──────────────────────────────────────
-
-interface SpdxChecksum { algorithm: string; checksumValue: string; }
-interface SpdxExternalRef { referenceCategory: string; referenceType: string; referenceLocator: string; }
-
-interface SpdxPackage {
-  name: string;
-  SPDXID: string;
-  versionInfo?: string;
-  supplier?: string;
-  originator?: string;
-  downloadLocation?: string;
-  homepage?: string;
-  sourceInfo?: string;
-  description?: string;
-  comment?: string;
-  copyrightText?: string;
-  licenseConcluded?: string;
-  licenseDeclared?: string;
-  filesAnalyzed?: boolean;
-  primaryPackagePurpose?: string;
-  packageVerificationCode?: { packageVerificationCodeValue: string };
-  checksums?: SpdxChecksum[];
-  externalRefs?: SpdxExternalRef[];
-  attributionTexts?: string[];
-  annotations?: Array<{ annotator: string; comment: string }>;
-}
-
-interface SpdxFile {
-  fileName: string;
-  SPDXID: string;
-  fileTypes?: string[];
-  checksums?: SpdxChecksum[];
-  licenseConcluded?: string;
-  licenseInfoInFiles?: string[];
-  copyrightText?: string;
-  comment?: string; // contains layerID
-}
-
-interface SpdxRelationship {
-  spdxElementId: string;
-  relatedSpdxElement: string;
-  relationshipType: string;
-}
-
-interface SpdxDocument {
-  spdxVersion: string;
-  name: string;
-  documentNamespace?: string;
-  dataLicense?: string;
-  creationInfo: { creators: string[]; created: string; licenseListVersion?: string; };
-  packages: SpdxPackage[];
-  files?: SpdxFile[];
-  relationships?: SpdxRelationship[];
-}
-
-// ─── Derived types ────────────────────────────────────────────────────────────
-
-type PkgType = 'os' | 'npm' | 'python' | 'maven' | 'binary' | 'library' | '.net' | 'rust' | 'generic';
-
-interface RichPackage {
-  raw: SpdxPackage;
-  spdxId: string;
-  name: string;
-  version: string;
-  pkgType: PkgType;
-  purl?: string;
-  cpes: string[];
-  license?: string;
-  supplier?: string;
-  originator?: string;
-  downloadLocation?: string;
-  homepage?: string;
-  description?: string;
-  sourceInfo?: string;
-  copyrightText?: string;
-  hash?: string;
-  files: RichFile[];
-}
-
-interface RichFile {
-  fileName: string;
-  spdxId: string;
-  fileTypes?: string[];
-  sha256?: string;
-  sha1?: string;
-  layerId?: string; // extracted from comment "layerID: sha256:..."
-}
-
-interface SbomInfo {
-  tool: string;
-  toolVersion: string;
-  vendor: string;
-  format: string;
-  created: string;
-  imageId: string;
-  spdxVersion: string;
-  documentNamespace?: string;
-  totalPackages: number;
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function inferPkgType(pkg: SpdxPackage): PkgType {
-  const purl = pkg.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? '';
-  if (purl.includes('pkg:apk') || purl.includes('pkg:deb') || purl.includes('pkg:dpkg') || purl.includes('pkg:rpm')) return 'os';
-  if (purl.includes('pkg:npm')) return 'npm';
-  if (purl.includes('pkg:pypi')) return 'python';
-  if (purl.includes('pkg:maven')) return 'maven';
-  if (purl.includes('pkg:nuget')) return '.net';
-  if (purl.includes('pkg:cargo')) return 'rust';
-  const attr = pkg.attributionTexts?.find(a => a.startsWith('PkgType:'))?.replace('PkgType:', '').trim().toLowerCase();
-  if (attr === 'apk' || attr === 'alpine') return 'os';
-  if (attr === 'npm') return 'npm';
-  if (attr === 'python' || attr === 'pypi') return 'python';
-  if (attr === 'maven') return 'maven';
-  if (attr === 'gobinary') return 'binary';
-  if (pkg.primaryPackagePurpose === 'APPLICATION') return 'binary';
-  if (pkg.primaryPackagePurpose === 'LIBRARY') return 'library';
-  return 'library';
-}
 
 function cleanLicense(l?: string): string | undefined {
   if (!l || l === 'NOASSERTION' || l === 'NONE') return undefined;
@@ -198,7 +82,7 @@ function parseDocument(doc: SpdxDocument, imageId: string): { info: SbomInfo; pa
         spdxId: p.SPDXID,
         name: p.name,
         version: p.versionInfo ?? 'unknown',
-        pkgType: inferPkgType(p),
+        pkgType: InferPkgTypeFromPurl(p.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? ''),
         purl,
         cpes,
         license: cleanLicense(p.licenseDeclared) ?? cleanLicense(p.licenseConcluded),
@@ -220,18 +104,7 @@ function parseDocument(doc: SpdxDocument, imageId: string): { info: SbomInfo; pa
 
 // ─── Small UI primitives ──────────────────────────────────────────────────────
 
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(value).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}
-      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-      title="Copy"
-    >
-      {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-    </button>
-  );
-}
+
 
 function MetaRow({ label, value, mono, href }: { label: string; value?: string | null; mono?: boolean; href?: string }) {
   if (!value) return null;
@@ -562,28 +435,33 @@ export default function AnalyzeDetailPage() {
       </div>
 
       {/* ── SBOM info strip ── */}
-      {info && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Tool', value: `${info.tool}${info.toolVersion ? ` ${info.toolVersion}` : ''}` },
-            { label: 'Format', value: `${info.format} ${info.spdxVersion}` },
-            { label: 'Created', value: new Date(info.created).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) },
-            { label: 'Packages', value: info.totalPackages.toLocaleString() },
-          ].map(({ label, value }) => (
-            <div key={label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">{label}</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{value}</p>
-            </div>
-          ))}
-        </div>
-      )}
-      {info?.documentNamespace && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3 flex items-center gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 shrink-0">Namespace</span>
-          <code className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">{info.documentNamespace}</code>
-          <CopyButton value={info.documentNamespace} />
-        </div>
-      )}
+        {info && (
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Tool & Version', value: `${info.tool}${info.toolVersion ? ` ${info.toolVersion}` : ''}` },
+              { label: 'Format', value: `${info.format} ${info.spdxVersion}` },
+              { label: 'Created', value: new Date(info.created).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) },
+              { label: 'Packages', value: info.totalPackages.toLocaleString() },
+            ].map(({ label, value }) => (
+              <Card key={label} className="px-4 py-3 dark:bg-gray-800">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
+                  {label}
+                </p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  {value}
+                </p>
+              </Card>
+            ))}
+          </div>
+        )}
+        {info?.documentNamespace && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3 flex items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 shrink-0">Namespace</span>
+            <code className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">{info.documentNamespace}</code>
+            <CopyButton value={info.documentNamespace} />
+          </div>
+        )}
 
       {/* ── Filters ── */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
