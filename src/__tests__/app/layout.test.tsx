@@ -7,7 +7,7 @@ jest.mock('@/components/navbar/Navbar', () => ({
   Navbar: jest.fn(() => <nav data-testid="navbar">Navbar</nav>),
 }));
 
-describe.skip('RootLayout', () => {
+describe('RootLayout', () => {
   const childrenText = 'Hello, World!';
 
   it('renders children inside layout', () => {
@@ -48,7 +48,7 @@ it('applies Inter font class and background/foreground classes to top div', () =
 
 });
 
-describe.skip('metadata', () => {
+describe('metadata', () => {
   it('has correct title and description', () => {
     expect(metadata.title).toBe('SBOMVert');
     expect(metadata.description).toBe(
