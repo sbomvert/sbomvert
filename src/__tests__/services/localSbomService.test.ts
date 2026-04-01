@@ -69,3 +69,7 @@ test('saveFile writes content correctly', async () => {
   const stored = await service.getFileContent('myImage', 'myTool.json.json');
   expect(stored).toBe(content)
 })
+
+test('getFileContent throws when file missing', async () => {
+  await expect(service.getFileContent('noContainer', 'noFile.json')).rejects.toThrow('SBOM file not found');
+});
