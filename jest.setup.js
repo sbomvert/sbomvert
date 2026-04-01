@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-
+import 'whatwg-fetch';
 // Set test environment
 process.env.NODE_ENV = 'test';
 
