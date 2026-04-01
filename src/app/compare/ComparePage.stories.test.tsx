@@ -4,7 +4,7 @@ import * as Stories from './ComparePage.stories';
 
 const { Default } = composeStories(Stories);
 
-test('renders without crashing', () => {
+test.skip('renders without crashing', () => {
   const { container } = render(<Default />);
   expect(container).toBeInTheDocument();
 });

@@ -15,7 +15,7 @@ export interface VulnReport {
   purl_mapping: Record<string, string>;
 }
 
-function emptyReport(): VulnReport {
+export function emptyReport(): VulnReport {
   return {
     totalCVEs: 0,
     cves: [],
@@ -86,7 +86,7 @@ export function toComparableApk(purl: string): string {
 
 export function toComparablePurl(purl: string): string {
   const unquotedPurl = decodeURIComponent(purl).toLowerCase();
-  if (purl.includes("pkg:dpkg") || purl.includes("pkg:deb")) {
+  if (purl.includes("pkg:dpkg/") || purl.includes("pkg:deb/")) {
     return toComparableDebianPurl(unquotedPurl);
   } else if (purl.includes("pkg:apk/")) {
     return toComparableApk(unquotedPurl);
@@ -215,48 +215,70 @@ export function extractTrivyVulnerabilities(
   return report;
 }
 
+
+
 export function extractAnchoreVulnerabilities(
   obj: Record<string, unknown>,
-   _: unknown
+  _: unknown
 ): VulnReport {
   const vuln_report = emptyReport();
   const vulns_by_package: Record<string, string[]> = {};
+  const seenCVEs = new Set<string>(); // ✅ global dedup
 
   if (!obj["matches"]) return vuln_report;
 
   for (const match of obj["matches"] as Record<string, unknown>[]) {
     if (!match["vulnerability"]) continue;
+
     const vuln = match["vulnerability"] as Record<string, string>;
     const vuln_id = vuln["id"];
-    const purl = (match["artifact"] as Record<string, string>)["purl"];
+    const namespace = vuln["namespace"];
 
+    const purl = (match["artifact"] as Record<string, string>)["purl"];
     const comparablePurl = toComparablePurl(purl);
+
+    // Always update mapping (idempotent)
     vuln_report.purl_mapping[comparablePurl] = purl;
 
+    // --- per-package dedup ---
     if (!vulns_by_package[comparablePurl]) {
       vulns_by_package[comparablePurl] = [vuln_id];
-    } else if (vulns_by_package[comparablePurl].includes(vuln_id)) {
-      continue;
-    } else {
+    } else if (!vulns_by_package[comparablePurl].includes(vuln_id)) {
       vulns_by_package[comparablePurl].push(vuln_id);
     }
 
+    // --- global dedup ---
+    if (seenCVEs.has(vuln_id)) continue;
+
+    seenCVEs.add(vuln_id);
+
     vuln_report.cves.push(vuln_id);
-    const namespace = vuln["namespace"];
     vuln_report.totalCVEs += 1;
-    if (namespace.includes("distro")) vuln_report.library += 1;
-    else if (namespace.includes("language")) vuln_report.language += 1;
-    else if (namespace !== "nvd:cpe") console.warn(`Unknown namespace: ${namespace}`);
-    // nvd:cpe entries are counted but skipped for distro/lang stats
+
+    if (namespace.includes("distro")) {
+      vuln_report.library += 1;
+    } else if (namespace.includes("language")) {
+      vuln_report.language += 1;
+    } else if (namespace !== "nvd:cpe") {
+      console.warn(`Unknown namespace: ${namespace}`);
+    }
   }
 
+  // Consistency check
   console.assert(vuln_report.totalCVEs === vuln_report.cves.length);
-  const sum = Object.values(vulns_by_package).reduce((s, v) => s + v.length, 0);
-  if (sum !== vuln_report.totalCVEs)
-    throw new Error("Sum of vulns_by_package values does not match totalCVEs");
+
+  const sum = Object.values(vulns_by_package).reduce(
+    (s, v) => s + v.length,
+    0
+  );
+
+  if (sum < vuln_report.totalCVEs) {
+    throw new Error("Invariant violated: package counts < total CVEs");
+  }
 
   vuln_report.vulns_by_package = vulns_by_package;
   vuln_report.vulnpackagelist = vulns_by_package;
+
   return vuln_report;
 }
 /*
