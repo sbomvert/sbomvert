@@ -27,6 +27,7 @@
     "react-dom": "^19.0.0",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.4.0",
+    "whatwg-fetch": "^3.6.20",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -44,23 +45,23 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.19",
+    "aws-sdk-client-mock": "^2.0.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
+    "mock-fs": "^5.2.0",
     "msw": "^2.12.10",
     "postcss": "^8.4.40",
     "prettier": "^3.3.3",
     "storybook": "^8.6.14",
     "tailwindcss": "^3.4.7",
-    "typescript": "^5.5.4",
-    "vite": "^6.0.0",
+    "tmp": "^0.2.1",
     "ts-jest": "^29.2.5",
-    "mock-fs": "^5.2.0",
-    "aws-sdk-client-mock": "^2.0.0",
-    "tmp": "^0.2.1"
+    "typescript": "^5.5.4",
+    "vite": "^6.0.0"
   },
   "engines": {
     "node": ">=22.10.0",
