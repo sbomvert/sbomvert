@@ -11,7 +11,7 @@ const meta: Meta<typeof Selector> = {
 export default meta;
 type Story = StoryObj<typeof Selector>;
 
-export const Primary: Story = {
+export const Default: Story = {
   args: {
     variant: 'primary',
     size: 'md',

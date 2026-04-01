@@ -23,6 +23,26 @@ jest.mock('fs', () => {
   };
 });
 
+jest.mock('recharts', () => {
+  const React = require('react');
+  return {
+    BarChart:          ({ children }) => <div data-testid="bar-chart">{children}</div>,
+    Bar:               () => null,
+    XAxis:             () => null,
+    YAxis:             () => null,
+    CartesianGrid:     () => null,
+    Tooltip:           () => null,
+    Legend:            () => null,
+    ResponsiveContainer: ({ children }) => <div>{children}</div>,
+    LineChart:         ({ children }) => <div>{children}</div>,
+    Line:              () => null,
+    PieChart:          ({ children }) => <div>{children}</div>,
+    Pie:               () => null,
+    Cell:              () => null,
+  };
+});
+
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),

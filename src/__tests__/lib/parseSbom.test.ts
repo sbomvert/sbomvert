@@ -2,7 +2,7 @@ let fc: any;
 try {
   fc = require('fast-check');
 } catch (e) {
-  test.skip('fast-check not installed, skipping property‑based tests', () => {});
+  test('fast-check not installed, skipping property‑based tests', () => {});
 }
 
 if (fc) {
