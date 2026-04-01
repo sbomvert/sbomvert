@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ContactModal } from '@/components/hoc/ContactModal';
+import { ContactModal } from '@/components/hoc/ContactModal/ContactModal';
 
 const meta: Meta<typeof ContactModal> = {
   title: 'UI/ContactModal',

@@ -7,7 +7,7 @@ import {
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import Heatmap from '@/components/heatmap/HeatMap';
 import { computeJaccard } from '@/lib/utils';
-import { HorizontalStrip } from '../horizontalStrip/HorizontalStrip';
+import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
 
 interface MultiToolSummaryProps {
   comparison: IMultiToolComparison;

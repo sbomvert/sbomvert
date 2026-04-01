@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { ContactModal } from '../components/hoc/ContactModal';
+import { ContactModal } from '../components/hoc/ContactModal/ContactModal';
 import Head from 'next/head';
 
 export default function HomePage() {
