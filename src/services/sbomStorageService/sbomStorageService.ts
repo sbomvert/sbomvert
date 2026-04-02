@@ -4,7 +4,7 @@ import { S3SbomService } from './sbomServiceS3';
 
 let SBOMService: ISbomService;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.ARTIFACT_BACKEND_TYPE === 's3') {
   SBOMService = new S3SbomService('sbomvert', 'sbom/', 20);
 } else {
   SBOMService = new LocalSbomService(process.env.SBOM_DIR || './public/sbom', 20);
