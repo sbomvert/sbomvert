@@ -2,15 +2,39 @@ name: CI - Test, Build & Publish Docker Image
 
 on:
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
   push:
-    tags: [ "*" ]
+    tags: ["*"]
+    branches: ["main"]
 
 jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
   test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,9 +43,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit summary 
+        run: |
+          npm audit --json > audit.json || true
+          cat audit.json
 
       - name: Lint
         run: npm run lint
@@ -30,12 +60,13 @@ jobs:
         run: npm test
 
   build:
-    needs: test
+    needs: [test, codeql]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,6 +75,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -60,8 +92,7 @@ jobs:
 
       - name: Extract image tag
         id: meta
-        run: |
-          echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: |
