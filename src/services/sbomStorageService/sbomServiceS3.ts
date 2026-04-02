@@ -193,7 +193,7 @@ export class S3SbomService implements ISbomService {
       // Return the files for that container (or empty array)
       return containerMap.get(containerName) || [];
     } catch (error) {
-      console.error(`Error listing files for container ${containerName} from S3:`, error);
+      console.error(`Error listing files for container %s from S3:`,containerName, error);
       return [];
     }
   }
@@ -223,7 +223,7 @@ export class S3SbomService implements ISbomService {
 
       return Buffer.concat(chunks).toString('utf8');
     } catch (err) {
-      console.error(`Error reading SBOM from S3: ${key}`, err);
+      console.error(`Error reading SBOM from S3: %s`,key, err);
       throw new Error('SBOM file not found');
     }
   }

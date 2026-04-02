@@ -15,15 +15,16 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       const imageName = comparison.imageId;
 
       // Sanitize container name for API URL: replace slashes and colons with placeholders
-      const sanitizedContainer = imageName.replace(/\//g, 'slash').replace(/:/g, 'twodots');
+      const sanitizedContainer = encodeURIComponent(imageName.replace(/\//g, 'slash').replace(/:/g, 'twodots'));
 
       // Find the tool format to determine file extension
       const tool = comparison.tools.find(t => t.name === toolName);
       const fileExtension = tool?.format === 'CycloneDX' ? 'cyclonedx.json' : 'spdx.json';
 
       // Sanitize tool name: replace slashes and uppercase
-      const sanitizedTool = toolName.replace(/[\\/]/g, '-').toLowerCase();
+      const sanitizedTool = encodeURIComponent(toolName.replace(/[\\/]/g, '-').toLowerCase());
 
+      
       // Construct the download URL
       const downloadUrl = `/api/sbom/${sanitizedContainer}/${sanitizedTool}.${fileExtension}`;
 

@@ -67,7 +67,7 @@ export class LocalCVEService implements CVEServiceType {
       });
       return files;
     } catch (error) {
-      console.error(`Error reading container ${containerName}:`, error);
+      console.error(`Error reading container %s:`,containerName, error);
       return [];
     }
   }
@@ -109,7 +109,7 @@ export class LocalCVEService implements CVEServiceType {
     return new Promise((resolve, reject) => {
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
-          console.error(`Failed to read SBOM file: ${filePath}`, err);
+          console.error(`Failed to read SBOM file:`,filePath, err);
           return reject(new Error('SBOM file not found'));
         }
         resolve(data);

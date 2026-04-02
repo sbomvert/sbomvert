@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ files });
   } catch (error) {
-    console.error(`Error listing CVE files for ${container}:`, error);
+    console.error(`Error listing CVE files for %s:`, container,error);
     return NextResponse.json({ error: 'Failed to retrieve CVE files' }, { status: 500 });
   }
 }

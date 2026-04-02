@@ -1,7 +1,7 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import SBOMService from '@/services/sbomStorageService/sbomStorageService';
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 import { Queue, Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
@@ -44,10 +44,10 @@ export function createScanQueue() {
 }
 
 /**
- * Safely execute shell commands
+ * Safely execute external commands without invoking a shell
  */
-async function runCommand(cmd: string, timeout = 60000) {
-  const { stdout, stderr } = await execAsync(cmd, {
+async function runCommand(cmd: string, args: string[], timeout = 60000) {
+  const { stdout, stderr } = await execFileAsync(cmd, args, {
     timeout,
     maxBuffer: 50 * 1024 * 1024,
   });
@@ -104,7 +104,7 @@ export function createScanWorker() {
       try {
         await job.updateProgress(5);
 
-        await runCommand(`docker pull ${image}`, 3 * 60 * 1000);
+        await runCommand(`docker`,[ 'pull', image], 3 * 60 * 1000);
       } catch (err) {
         await saveJobStatus(job.id, 'failed', {
           level: 'error',
@@ -128,7 +128,7 @@ export function createScanWorker() {
             10 + Math.floor((processed / tools.producers.length) * 70)
           );
 
-          const stdout = await runCommand(spdxcmd);
+          const stdout = await runCommand(spdxcmd.cmd, spdxcmd.args);
 
           await saveJobStatus(job.id, 'partial', {
             level: 'info',
@@ -174,7 +174,7 @@ export function createScanWorker() {
           }
 
           try {
-            const data = await runCommand(cvecmd);
+            const data = await runCommand(cvecmd.cmd, cvecmd.args);
             const vulns = safeJsonParse(data);
 
             await saveJobStatus(job.id, 'partial', {
@@ -228,7 +228,7 @@ export function createScanWorker() {
       );
 
       try {
-        await runCommand(`docker image rm ${image}`);
+        await runCommand('docker', ['image','rm',image]);
       } catch {
         // ignore
       }

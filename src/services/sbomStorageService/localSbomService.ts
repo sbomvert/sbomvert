@@ -68,7 +68,7 @@ export class LocalSbomService implements ISbomService {
       });
       return files;
     } catch (error) {
-      console.error(`Error reading container ${containerName}:`, error);
+      console.error(`Error reading container %s:`,containerName, error);
       return [];
     }
   }
@@ -110,7 +110,7 @@ export class LocalSbomService implements ISbomService {
     return new Promise((resolve, reject) => {
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
-          console.error(`Failed to read SBOM file: ${filePath}`, err);
+          console.error(`Failed to read SBOM file: %s`,filePath, err);
           return reject(new Error('SBOM file not found'));
         }
         resolve(data);
