@@ -29,5 +29,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build sbomvert container
-        run: docker buildx build --platform linux/amd64,linux/arm64 ghcr.io/sbomvert/sbomvert:${{ steps.tag.outputs.TAG }} --push .
+      - name: Build and push image
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t ghcr.io/sbomvert/sbomvert:${{ steps.tag.outputs.TAG }} \
+            --push \
+            .
