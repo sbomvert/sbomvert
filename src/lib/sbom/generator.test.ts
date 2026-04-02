@@ -2,15 +2,15 @@ import { GenerateSPDXSBOMwithTool } from './generator';
 
 describe('GenerateSPDXSBOMwithTool', () => {
   test('returns correct command for trivy', () => {
-    expect(GenerateSPDXSBOMwithTool('trivy', 'myimage')).toBe('trivy image --format spdx-json myimage');
+    expect(GenerateSPDXSBOMwithTool('trivy', 'myimage')).toStrictEqual({"args": ["image", "--format spdx-json", "myimage"], "cmd": "trivy"});
   });
 
   test('returns correct command for syft', () => {
-    expect(GenerateSPDXSBOMwithTool('syft', 'myimage')).toBe('syft myimage -o=spdx-json');
+    expect(GenerateSPDXSBOMwithTool('syft', 'myimage')).toStrictEqual({"args": ["myimage", "-o=spdx-json"], "cmd": "syft"});
   });
 
   test('returns correct command for scout', () => {
-    expect(GenerateSPDXSBOMwithTool('scout', 'myimage')).toBe('docker scout sbom myimage --format=spdx');
+    expect(GenerateSPDXSBOMwithTool('scout', 'myimage')).toStrictEqual({"args": ["scout", "sbom", "myimage", "--format=spdx"], "cmd": "docker"});
   });
 
   test('returns null for unknown tool', () => {

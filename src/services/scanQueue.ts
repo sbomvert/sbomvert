@@ -104,7 +104,7 @@ export function createScanWorker() {
       try {
         await job.updateProgress(5);
 
-        await runCommand(`docker pull ${image}`, 3 * 60 * 1000);
+        await runCommand(`docker`,[ 'pull', image], 3 * 60 * 1000);
       } catch (err) {
         await saveJobStatus(job.id, 'failed', {
           level: 'error',
@@ -228,7 +228,7 @@ export function createScanWorker() {
       );
 
       try {
-        await runCommand(`docker image rm ${image}`);
+        await runCommand('docker', ['image','rm',image]);
       } catch {
         // ignore
       }

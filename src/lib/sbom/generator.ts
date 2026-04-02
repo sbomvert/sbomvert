@@ -1,14 +1,14 @@
 
-export function GenerateSPDXSBOMwithTool(tool: string, image: string) {
+export function GenerateSPDXSBOMwithTool(tool: string, image: string): { cmd: string; args: string[] } | null {
   switch (tool) {
     case 'trivy':
-      return `trivy image --format spdx-json ${image}`;
+      return {cmd: 'trivy',args: ['image','--format spdx-json',image]}
 
     case 'syft':
-      return `syft ${image} -o=spdx-json`;
+      return {cmd: 'syft',args: [image,'-o=spdx-json']}
 
     case 'scout':
-      return `docker scout sbom ${image} --format=spdx`;
+      return  {cmd: 'docker',args: ['scout','sbom',image,'--format=spdx']}
 
     default:
       return null;
