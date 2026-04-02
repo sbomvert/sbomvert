@@ -2,20 +2,16 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { ContactModal } from '../components/hoc/ContactModal/ContactModal';
 import Head from 'next/head';
 
 export default function HomePage() {
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <>
       <Head>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
       <main className="flex-grow flex flex-col items-center justify-center text-center px-inset-lg py-16">
         <motion.h1
@@ -45,7 +41,6 @@ export default function HomePage() {
           transition={{ delay: 0.5, duration: 0.8 }}
         >
           <button
-            onClick={() => setModalOpen(true)}
             className="px-6 py-3 text-body font-medium rounded-button
                        bg-input text-foreground
                        border border-border
