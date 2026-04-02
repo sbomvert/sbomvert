@@ -32,32 +32,7 @@ export default function HomePage() {
         >
           Compare SBOMs of the container images you use to bring clarity and eliminate false
           positives.
-        </motion.p>
-
-        <motion.div
-          className="flex flex-col sm:flex-row gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          <button
-            className="px-6 py-3 text-body font-medium rounded-button
-                       bg-input text-foreground
-                       border border-border
-                       hover:bg-border transition-all shadow"
-          >
-            Talk to us
-          </button>
-
-          <button
-            onClick={() => router.push('/compare')}
-            className="px-6 py-3 text-body font-medium rounded-button
-                       bg-primary text-white
-                       hover:bg-primary-hover transition-all shadow-button"
-          >
-            Try it! It&apos;s FOSS
-          </button>
-        </motion.div>
+        </motion.p> 
       </main>
     </>
   );
