@@ -5,6 +5,7 @@ SBOMVert is web app for comparing SBOM (Software Bill of Materials) and CVE repo
 > [!CAUTION]
 > The tool is under active development and is intended for educational purposes
 
+Read the associated research: [https://arxiv.org/abs/2510.05798](https://arxiv.org/abs/2510.05798).
 
 ## Features
 
