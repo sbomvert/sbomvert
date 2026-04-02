@@ -1,11 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Head from 'next/head';
 
 export default function HomePage() {
-  const router = useRouter();
 
   return (
     <>

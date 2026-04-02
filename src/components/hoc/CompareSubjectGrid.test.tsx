@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CompareSubjectGrid, CompareMode } from '@/components/hoc/CompareSubjectGrid';
+import { CompareSubjectGrid } from '@/components/hoc/CompareSubjectGrid';
 
 // Mock framer-motion to avoid animation warnings in test environment
 jest.mock('framer-motion', () => ({
