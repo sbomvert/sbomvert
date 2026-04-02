@@ -1,9 +1,11 @@
-import React from 'react';
-import Title from './Title';
+import {PageTitle} from './Title';
 
-export default {
+
+
+export const Default = () => <PageTitle title='Sample Title'></PageTitle>;
+export const meta = {
   title: 'Misc/Title',
-  component: Title,
+  component: PageTitle,
 };
 
-export const Default = () => <Title>Sample Title</Title>;
+export default meta;

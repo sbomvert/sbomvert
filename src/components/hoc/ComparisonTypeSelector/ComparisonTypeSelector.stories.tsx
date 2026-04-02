@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ComparisonTypeSelector } from '@/components/hoc/ComparisonTypeSelector';
+import { ComparisonTypeSelector } from './ComparisonTypeSelector';
 
 const meta: Meta<typeof ComparisonTypeSelector> = {
   title: 'Compare/ComparisonTypeSelector',

@@ -1,21 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { ContactModal } from '../components/hoc/ContactModal/ContactModal';
 import Head from 'next/head';
 
 export default function HomePage() {
-  const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <>
       <Head>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
       <main className="flex-grow flex flex-col items-center justify-center text-center px-inset-lg py-16">
         <motion.h1
@@ -36,33 +30,7 @@ export default function HomePage() {
         >
           Compare SBOMs of the container images you use to bring clarity and eliminate false
           positives.
-        </motion.p>
-
-        <motion.div
-          className="flex flex-col sm:flex-row gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          <button
-            onClick={() => setModalOpen(true)}
-            className="px-6 py-3 text-body font-medium rounded-button
-                       bg-input text-foreground
-                       border border-border
-                       hover:bg-border transition-all shadow"
-          >
-            Talk to us
-          </button>
-
-          <button
-            onClick={() => router.push('/compare')}
-            className="px-6 py-3 text-body font-medium rounded-button
-                       bg-primary text-white
-                       hover:bg-primary-hover transition-all shadow-button"
-          >
-            Try it! It&apos;s FOSS
-          </button>
-        </motion.div>
+        </motion.p> 
       </main>
     </>
   );

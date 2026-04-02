@@ -43,17 +43,33 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Environment Variables
 
-The application behavior can be configured via the following environment variables:
+Here is a (non comprehensive) lilst of environment variables:
 
-- `NEXT_PUBLIC_ENABLE_SBOM_UPLOAD` (default: `false`) – Enables the SBOM upload UI.
-- `NEXT_PUBLIC_ENABLE_SCAN_API` (default: `false`) – Enables the scan API endpoints.
-- `NEXT_PUBLIC_CVE_MAPPING_ENABLED` (default: `false`) – Enables CVE mapping features.
-- `SBOM_DIR` – Directory path for local SBOM storage in development (defaults to `./public/sbom`).
-- `NODE_ENV` – `development` or `production`; determines storage implementation.
-- `AWS_REGION` – AWS region for S3 storage (default: `us-east-1`).
-- `S3_ENDPOINT` – Custom S3‑compatible endpoint (e.g., MinIO, DigitalOcean Spaces).
-- `S3_FORCE_PATH_STYLE` – Set to `true` to force path‑style URLs for S3.
-- `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` – Credentials for S3 when using a custom endpoint.
+```bash
+
+
+NODE_ENV='development'
+
+ARTIFACT_BACKEND_TYPE='local'
+SBOM_DIR='public/sbom'
+CVE_DIR='public/cve'
+
+##### S3 configuration #####
+# ARTIFACT_BACKEND_TYPE='s3'
+# SBOM_S3_BUCKET=sbom-files
+# S3_ENDPOINT=https://mys3.com
+# S3_FORCE_PATH_STYLE=true
+# S3_ACCESS_KEY_ID=KEY_ID
+# S3_SECRET_ACCESS_KEY=ACCES_KEY
+# AWS_REGION=us-east-1
+
+NEXT_PUBLIC_ENABLE_SBOM_UPLOAD='false'
+NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
+
+#_NEXT_PUBLIC_ENABLE_SCAN_API='true' # Still under development
+
+
+```
 
 ## Available Scripts
 
@@ -67,6 +83,13 @@ The application behavior can be configured via the following environment variabl
 - `npm run build-storybook` - Build Storybook
 - `npm run format` - Format code with Prettier
 
+## Add you own SBOMs and CVE reports
+
+The format and location of the SBOMs and CVE reports are as follows:
+
+- `sbom/<container_name>/tool.spdx.json`
+- `cve/<container_name>/tool.spdx.json`
+
 ## Dataset
 
 A sample dataset for the app is available [here](https://box.roc.cnam.fr/index.php/s/XQRa9dXz7bpWGRf)
@@ -76,7 +99,7 @@ A sample dataset for the app is available [here](https://box.roc.cnam.fr/index.p
 Use these variables: 
 
 ```bash
-NODE_ENV='development'
+ARTIFACT_BACKEND_TYPE='local'
 SBOM_DIR='public/sbom'
 CVE_DIR='public/cve'
 NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'

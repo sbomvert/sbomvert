@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MultiToolSummary } from '@/components/hoc/ComparisonSummary';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
+import { MultiToolSummary } from './ComparisonSummary';
 
 const mockComparison: IMultiToolComparison = {
   imageId: 'nginx:1.21',

@@ -1,9 +1,13 @@
-import React from 'react';
-import CopyButton from './CopyButton';
+import {CopyButton} from './CopyButton';
 
-export default {
+
+
+export const Default = () => <CopyButton value='Copy me'/>;
+
+export const meta = {
   title: 'Button/CopyButton',
   component: CopyButton,
 };
 
-export const Default = () => <CopyButton text='Copy me' onCopy={() => alert('Copied')}>Copy</CopyButton>;
+
+export default meta

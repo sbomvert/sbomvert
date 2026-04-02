@@ -10,7 +10,7 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
 
-  const onLogoClick = () => router.push('/compare');
+  const onLogoClick = () => router.push('/');
 
   return (
     <nav className="shadow-panel border-b border-border transition-colors duration-300 bg-background-alt mb-4">

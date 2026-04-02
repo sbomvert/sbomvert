@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Navbar } from '@/components/navbar/Navbar';
+import Sidebar from '@/components/layout/Sidebar';
 
 
 export const metadata: Metadata = {
@@ -14,7 +15,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="min-h-screen transition-colors duration-300">
           <Navbar />
-          {children}
+          <div className="flex h-screen bg-background">
+            <Sidebar />
+
+            <main className="flex-1 overflow-y-auto">
+              <main className="p-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {children}
+              </main>
+            </main>
+          </div>
         </div>
         <footer className="py-6 text-center text-body-sm text-foreground-muted">
           © {new Date().getFullYear()} Author jackops.dev - License Apache-2
