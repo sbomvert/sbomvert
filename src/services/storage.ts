@@ -2,7 +2,9 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 
 // Base directory for persisted artifacts – ignored via .gitignore (ensure it exists at runtime)
-const STORAGE_ROOT = join(process.cwd(), 'storage');
+function getStorageRoot() {
+  return join(process.cwd(), 'storage');
+}
 
 /** Ensure a directory exists (recursive) */
 async function ensureDir(dir: string) {
@@ -11,7 +13,7 @@ async function ensureDir(dir: string) {
 
 /** Save raw SBOM JSON for a given job and tool */
 export async function saveRawSbom(jobId: string, tool: string, data: unknown) {
-  const dir = join(STORAGE_ROOT, 'sboms', jobId);
+  const dir = join(getStorageRoot(), 'sboms', jobId);
   await ensureDir(dir);
   const path = join(dir, `${tool}.json`);
   await fs.writeFile(path, JSON.stringify(data, null, 2));
@@ -20,7 +22,7 @@ export async function saveRawSbom(jobId: string, tool: string, data: unknown) {
 
 /** Save combined SBOM (merged) */
 export async function saveCombinedSbom(jobId: string, data: unknown) {
-  const dir = join(STORAGE_ROOT, 'sboms', jobId);
+  const dir = join(getStorageRoot(), 'sboms', jobId);
   await ensureDir(dir);
   const path = join(dir, 'combined.json');
   await fs.writeFile(path, JSON.stringify(data, null, 2));
@@ -29,7 +31,7 @@ export async function saveCombinedSbom(jobId: string, data: unknown) {
 
 /** Save CVE report for a tool */
 export async function saveToolCveReport(jobId: string, tool: string, report: unknown) {
-  const dir = join(STORAGE_ROOT, 'cves', jobId);
+  const dir = join(getStorageRoot(), 'cves', jobId);
   await ensureDir(dir);
   const path = join(dir, `${tool}.json`);
   await fs.writeFile(path, JSON.stringify(report, null, 2));
@@ -38,7 +40,7 @@ export async function saveToolCveReport(jobId: string, tool: string, report: unk
 
 /** Save merged CVE report */
 export async function saveMergedCveReport(jobId: string, report: unknown) {
-  const dir = join(STORAGE_ROOT, 'cves', jobId);
+  const dir = join(getStorageRoot(), 'cves', jobId);
   await ensureDir(dir);
   const path = join(dir, 'merged.json');
   await fs.writeFile(path, JSON.stringify(report, null, 2));
@@ -57,7 +59,7 @@ export async function saveJobStatus(
   status: string,
   entry?: JobLogEntry
 ) {
-  const dir = join(STORAGE_ROOT, 'jobs');
+  const dir = join(getStorageRoot(), 'jobs');
   await ensureDir(dir);
   const path = join(dir, `${jobId}.json`);
 
@@ -92,7 +94,7 @@ export async function saveJobStatus(
 
 
 export async function getJobStatus(jobId: string) {
-  const path = join(STORAGE_ROOT, 'jobs', `${jobId}.json`);
+  const path = join(getStorageRoot(), 'jobs', `${jobId}.json`);
   const content = await fs.readFile(path, 'utf-8');
   return JSON.parse(content);
 }

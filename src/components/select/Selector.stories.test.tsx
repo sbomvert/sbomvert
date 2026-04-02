@@ -4,7 +4,7 @@ import * as Stories from './Selector.stories';
 
 const { Default } = composeStories(Stories);
 
-test.skip('renders without crashing', () => {
+test('renders without crashing', () => {
   const { container } = render(<Default />);
   expect(container).toBeInTheDocument();
 });

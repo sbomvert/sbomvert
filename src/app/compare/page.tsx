@@ -4,12 +4,12 @@ import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
-import { ComparisonTypeSelector } from '@/components/hoc/ComparisonTypeSelector';
 import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
 import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
 import { PageTitle } from '@/components/Title/Title';
+import { ComparisonTypeSelector } from '@/components/hoc/ComparisonTypeSelector/ComparisonTypeSelector';
 
 type ComparisonType = 'SBOM' | 'CVE';
 

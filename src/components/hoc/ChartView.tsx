@@ -1,6 +1,6 @@
 import React from 'react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
-import { MultiToolSummary } from './ComparisonSummary';
+import { MultiToolSummary } from './ComparisonSummary/ComparisonSummary';
 
 interface ChartViewProps {
   comparison: IMultiToolComparison;

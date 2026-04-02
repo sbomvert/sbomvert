@@ -2,9 +2,9 @@ import { composeStories } from '@storybook/react';
 import { render } from '@testing-library/react';
 import * as Stories from './ToolInfoCard.stories';
 
-const { Default } = composeStories(Stories);
+const { ToolInfoCardStory } = composeStories(Stories);
 
-test.skip('renders without crashing', () => {
-  const { container } = render(<Default />);
+test('renders without crashing', () => {
+  const { container } = render(<ToolInfoCardStory />);
   expect(container).toBeInTheDocument();
 });

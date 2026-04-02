@@ -2,9 +2,9 @@ import { composeStories } from '@storybook/react';
 import { render } from '@testing-library/react';
 import * as Stories from './SBOMComparisonViewSelector.stories';
 
-const { Default } = composeStories(Stories);
+const { SummaryView } = composeStories(Stories);
 
-test.skip('renders without crashing', () => {
-  const { container } = render(<Default />);
+test('renders without crashing', () => {
+  const { container } = render(<SummaryView />);
   expect(container).toBeInTheDocument();
 });

@@ -13,13 +13,13 @@ export const TOOL_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6
 // so a single token change in tailwind.config.js ripples through.
 export const getPackageTypeColor = (type?: string): string => {
   switch (type) {
-    case 'os':      return 'bg-info-subtle text-info-fg';
-    case 'npm':     return 'bg-error-subtle text-error-fg';
-    case 'python':  return 'bg-info-subtle text-info-fg';
-    case 'maven':   return 'bg-warning-subtle text-warning-fg';
-    case 'binary':  return 'bg-surface-alt text-foreground-muted';
-    case 'library': return 'bg-success-subtle text-success-fg';
-    default:        return 'bg-surface-alt text-foreground-muted';
+    case 'os':      return 'bg-purple-100 text-purple-800';
+    case 'npm':     return 'bg-red-100 text-red-800';
+    case 'python':  return 'bg-blue-100 text-blue-800';
+    case 'maven':   return 'bg-orange-100 text-orange-800';
+    case 'binary':  return 'bg-gray-100 text-gray-800';
+    case 'library': return 'bg-green-100 text-green-800';
+    default:        return 'bg-gray-100 text-gray-800';
   }
 };
 

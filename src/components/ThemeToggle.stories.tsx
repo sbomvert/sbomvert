@@ -15,7 +15,7 @@ const meta: Meta<typeof ThemeToggle> = {
 export default meta;
 type Story = StoryObj<typeof ThemeToggle>;
 
-export const Light: Story = {
+export const Default: Story = {
   args: { isDark: false, toggle: () => {} },
 };
 

@@ -102,7 +102,6 @@ const extractPackageType = (
         return 'generic';
 
       default:
-        console.log(thepurl?.type);
         return 'generic';
     }
   }

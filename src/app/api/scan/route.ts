@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createScanQueue } from '@/services/scanQueue';
 import { z } from 'zod';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 // Payload schema – simple validation
 const ScanRequestSchema = z.object({
@@ -12,7 +13,7 @@ const ScanRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (process.env.NEXT_PUBLIC_ENABLE_SCAN_API !== 'true') {
+  if (FEATURE_FLAGS.ENABLE_SCAN_API) {
     return NextResponse.json(
       { error: 'Scan feature disabled' },
       { status: 403 }
