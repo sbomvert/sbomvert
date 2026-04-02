@@ -32,14 +32,13 @@ describe('Sidebar', () => {
     expect(screen.getByText('SBOM Analysis')).toBeInTheDocument();
     expect(screen.getByText('SBOM Comparison')).toBeInTheDocument();
     expect(screen.getByText('CVE Comparison')).toBeInTheDocument();
-    expect(screen.getByText('Upload SBOM')).toBeInTheDocument();
   });
 
   it('renders correct number of buttons', () => {
     render(<Sidebar />);
 
     const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(5);
+    expect(buttons).toHaveLength(4);
   });
 
   it('calls router.push with correct route on click', () => {
@@ -57,8 +56,6 @@ describe('Sidebar', () => {
     fireEvent.click(screen.getByText('CVE Comparison'));
     expect(pushMock).toHaveBeenCalledWith('/compare/cve');
 
-    fireEvent.click(screen.getByText('Upload SBOM'));
-    expect(pushMock).toHaveBeenCalledWith('/compare/upload/sbom');
   });
 
   it('applies layout classes to sidebar', () => {
@@ -75,6 +72,7 @@ describe('Sidebar', () => {
     expect(screen.getByTestId('icon-analysis')).toBeInTheDocument();
     expect(screen.getByTestId('icon-scale')).toBeInTheDocument();
     expect(screen.getByTestId('icon-shieldx')).toBeInTheDocument();
-    expect(screen.getByTestId('icon-upload')).toBeInTheDocument();
   });
 });
+
+// TODO: add test when sbom upload is enabled
