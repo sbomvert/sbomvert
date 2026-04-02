@@ -46,7 +46,7 @@ describe('Sidebar', () => {
     render(<Sidebar />);
 
     fireEvent.click(screen.getByText('Home'));
-    expect(pushMock).toHaveBeenCalledWith('/compare');
+    expect(pushMock).toHaveBeenCalledWith('/');
 
     fireEvent.click(screen.getByText('SBOM Analysis'));
     expect(pushMock).toHaveBeenCalledWith('/compare/analyze');
