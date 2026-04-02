@@ -194,7 +194,7 @@ export class S3CVEService implements CVEServiceType {
       // Return the files for that container (or empty array)
       return containerMap.get(containerName) || [];
     } catch (error) {
-      console.error(`Error listing files for container ${containerName} from S3:`, error);
+      console.error(`Error listing files for container %s from S3:`,containerName, error);
       return [];
     }
   }
@@ -224,7 +224,7 @@ export class S3CVEService implements CVEServiceType {
 
       return Buffer.concat(chunks).toString('utf8');
     } catch (err) {
-      console.error(`Error reading CVE from S3: ${key}`, err);
+      console.error(`Error reading CVE from S3: %s`, key,err);
       throw new Error('CVE file not found');
     }
   }
