@@ -30,5 +30,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build sbomvert container
-        working-directory: crd
         run: docker buildx build --platform linux/amd64,linux/arm64 ghcr.io/sbomvert/sbomvert:${{ steps.tag.outputs.TAG }} --push .
