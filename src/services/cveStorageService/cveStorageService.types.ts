@@ -1,5 +1,3 @@
-// Shared interfaces for SBOM services
-
 export interface CVEfile {
   name: string;
   path: string;
@@ -24,7 +22,6 @@ export interface CVEListResponse {
   pagination: PaginationInfo;
 }
 
-// Abstract interface that both implementations follow
 export interface CVEServiceType {
   listCVEFiles(containerName: string): Promise<CVEfile[]>;
   getFileContent(containerName: string, fileName: string): Promise<string>;

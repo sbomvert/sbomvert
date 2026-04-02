@@ -11,7 +11,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Use shared interface method, works for BOTH S3 and Local
     const files = await CVEService.listCVEFiles(container);
 
     if (!files || files.length === 0) {
