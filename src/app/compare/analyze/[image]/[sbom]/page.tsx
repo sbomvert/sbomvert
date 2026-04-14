@@ -5,7 +5,7 @@ import { formatContainerName } from '@/lib/container/containerUtils';
 import { SpdxDocument } from '@/lib/sbom/spdx/types';
 import AnalyzeDetailClient from './AnalyzeDetailClient';
 
-export default async function Page({
+export default async function DetailPage({
   params,
 }: {
   params: Promise<{ image: string; sbom: string }>;

@@ -52,6 +52,9 @@ export class LocalCVEService implements CVEServiceType {
     const containerPath = path.join(this.sbomDir, containerName);
 
     try {
+      if (!fs.existsSync(containerPath) || !fs.statSync(containerPath).isDirectory()) {
+        return [];
+      }
       const fileNames = fs.readdirSync(containerPath)
         .filter(name => name.endsWith('.json'));
       
