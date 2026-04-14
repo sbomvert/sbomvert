@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Selector } from '@/components/select/Selector';
+import { SanitizeContainerImage } from '@/lib/utils';
 
 interface ExportButtonsProps {
   comparison: IMultiToolComparison;
@@ -15,7 +16,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       const imageName = comparison.imageId;
 
       // Sanitize container name for API URL: replace slashes and colons with placeholders
-      const sanitizedContainer = encodeURIComponent(imageName.replace(/\//g, 'slash').replace(/:/g, 'twodots'));
+      const sanitizedContainer = encodeURIComponent(SanitizeContainerImage(imageName));
 
       // Find the tool format to determine file extension
       const tool = comparison.tools.find(t => t.name === toolName);
