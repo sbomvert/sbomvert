@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ComparisonTypeSelector } from '@/components/hoc/ComparisonTypeSelector';
 import '@testing-library/jest-dom';
+import { ComparisonTypeSelector } from './ComparisonTypeSelector';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() })

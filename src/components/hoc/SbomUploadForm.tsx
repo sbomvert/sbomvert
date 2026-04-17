@@ -8,20 +8,20 @@ import { CardHeader } from '@/components/card/CardHeader';
 import { CardTitle } from '@/components/card/CardTitle';
 import { CardContent } from '@/components/card/CardContent';
 import { FileUp } from 'lucide-react';
-import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 interface SbomUploadFormProps {
+  title?: string;
+  submitText?: string;
   onUpload: (name: string, containerName: string, file: File) => void;
   onCancel?: () => void;
 }
 
-export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCancel }) => {
+export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title = 'Upload SBOM File', submitText = 'Upload SBOM', onUpload, onCancel }) => {
   const [name, setName] = useState('');
   const [containerName, setContainerName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!FEATURE_FLAGS.ENABLE_SBOM_UPLOAD) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,11 +56,11 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
   const labelClass = 'block text-body-sm font-medium text-foreground-muted mb-1';
 
   return (
-    <Card className="mb-6">
+    <Card >
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileUp size={20} />
-          Upload SBOM File
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -94,6 +94,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
             <div className="flex items-center gap-2">
               <Button
                 type="button"
+                size='Sm'
                 variant="outline"
                 onClick={() => document.getElementById('file-input')?.click()}
               >
@@ -116,10 +117,10 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ onUpload, onCanc
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Uploading…' : 'Upload SBOM'}
+            <Button type="submit" size='Sm' variant="primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Loading…' : submitText}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" size='Sm' variant="outline" onClick={onCancel}>
               Cancel
             </Button>
           </div>

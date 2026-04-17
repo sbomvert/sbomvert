@@ -18,8 +18,7 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Weigh the Options <br className="hidden block" />
-          <span className="text-primary mt-1 block">Clarify the Threats</span>
+          SBOM<p className="text-primary inline">Vert</p>
         </motion.h1>
 
         <motion.p
@@ -28,7 +27,7 @@ export default function HomePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          Compare SBOMs of the container images you use to bring clarity and eliminate false
+          Compare SBOMs and CVEs of the container images you use to bring clarity and eliminate false
           positives.
         </motion.p> 
       </main>
