@@ -1,60 +1,6 @@
 import { InferPkgTypeFromPurl } from "../purl/converter";
-import { PkgType } from "../purl/types";
+import { LicenseInfo, PackageInfo, RichFile, RichPackage, SbomInfo } from '../analyzeTypes';
 import { SpdxDocument, SpdxPackage } from "./types";
-
-export interface RichPackage {
-    raw: SpdxPackage;
-    spdxId: string;
-    name: string;
-    version: string;
-    pkgType: PkgType;
-    purl?: string;
-    cpes: string[];
-    license?: string;
-    supplier?: string;
-    originator?: string;
-    downloadLocation?: string;
-    homepage?: string;
-    description?: string;
-    sourceInfo?: string;
-    copyrightText?: string;
-    hash?: string;
-    files: RichFile[];
-}
-
-export interface RichFile {
-    fileName: string;
-    spdxId: string;
-    fileTypes?: string[];
-    sha256?: string;
-    sha1?: string;
-    layerId?: string; // extracted from comment "layerID: sha256:..."
-}
-
-export interface LicenseInfo {
-    declared: number;
-    deducted: number;
-    unknown: number;
-}
-
-export interface PackageInfo {
-  [key: string]: number;
-}
-
-export interface SbomInfo {
-    tool: string;
-    toolVersion: string;
-    vendor: string;
-    format: string;
-    created: string;
-    imageId: string;
-    spdxVersion: string;
-    documentNamespace?: string;
-    totalPackages: number;
-    licenseInfo: LicenseInfo;
-    packageInfo:PackageInfo;
-
-}
 
  const skip = new Set(['CONTAINER', 'OPERATING-SYSTEM']);
 
@@ -138,13 +84,13 @@ export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInf
     };
     
 
-    // Build file map: SPDXID → RichFile
+    // Build file map: source reference → RichFile
     const fileMap = new Map<string, RichFile>();
     for (const f of doc.files ?? []) {
         const layerMatch = f.comment?.match(/layerID:\s*(sha256:[a-f0-9]+)/i);
         fileMap.set(f.SPDXID, {
             fileName: f.fileName,
-            spdxId: f.SPDXID,
+            sourceRef: f.SPDXID,
             fileTypes: f.fileTypes,
             sha256: f.checksums?.find(c => c.algorithm === 'SHA256')?.checksumValue,
             sha1: f.checksums?.find(c => c.algorithm === 'SHA1')?.checksumValue,
@@ -172,7 +118,7 @@ export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInf
             const hash = p.checksums?.[0] ? `${p.checksums[0].algorithm.toLowerCase()}:${p.checksums[0].checksumValue}` : undefined;
             return {
                 raw: p,
-                spdxId: p.SPDXID,
+                sourceRef: p.SPDXID,
                 name: p.name,
                 version: p.versionInfo ?? 'unknown',
                 pkgType: InferPkgTypeFromPurl(p.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? ''),

@@ -6,7 +6,7 @@ import { Search, X, ChevronRight } from 'lucide-react';
 import { cn, getPackageTypeColor, TOOL_COLORS } from '@/lib/utils';
 import { BackButton } from '@/components/button/BackButton';
 import { Card } from '@/components/card/Card';
-import { SbomInfo, RichPackage } from '@/lib/sbom/spdx/parser';
+import { SbomInfo, RichPackage } from '@/lib/sbom/analyzeTypes';
 import { CopyButton } from '@/components/button/CopyButton';
 import { PackageDrawer } from './components';
 import { PageTitle } from '@/components/Title/Title';
@@ -256,7 +256,7 @@ export default function AnalyzeDetailClient({
             <tbody>
               {filtered.map((pkg) => (
                 <tr
-                  key={pkg.spdxId}
+                  key={pkg.sourceRef}
                   onClick={() => setSelectedPkg(pkg)}
                   className="cursor-pointer hover:bg-gray-50"
                 >

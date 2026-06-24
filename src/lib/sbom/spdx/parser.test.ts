@@ -86,7 +86,7 @@ describe('SPDX analysis', () => {
       const result = AnalyzeSPDX(doc, 'img');
 
       expect(result.packages).toHaveLength(1);
-      expect(result.packages[0].spdxId).toBe('pkg-1');
+      expect(result.packages[0].sourceRef).toBe('pkg-1');
     });
 
     it('should classify package types from purl', () => {

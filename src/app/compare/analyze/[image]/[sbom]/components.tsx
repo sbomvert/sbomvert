@@ -1,5 +1,5 @@
 import { CopyButton } from "@/components/button/CopyButton";
-import { RichPackage, cleanLicense } from "@/lib/sbom/spdx/parser";
+import { RichPackage } from "@/lib/sbom/analyzeTypes";
 import { cn, getPackageTypeColor } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { X, Hash,Info, Package, Shield, Tag, ExternalLink, FileText } from "lucide-react";
@@ -87,7 +87,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
           <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl px-4 py-1">
             <MetaRow label="Name" value={pkg.name} />
             <MetaRow label="Version" value={pkg.version} mono />
-            <MetaRow label="SPDX ID" value={pkg.spdxId} mono />
+            <MetaRow label="Source Ref" value={pkg.sourceRef} mono />
             <MetaRow label="Hash" value={pkg.hash} mono />
             <MetaRow label="Source" value={pkg.sourceInfo} />
           </div>
@@ -113,8 +113,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
             <Shield size={12} /> License
           </h3>
           <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl px-4 py-1">
-            <MetaRow label="Declared" value={cleanLicense(pkg.raw.licenseDeclared)} />
-            <MetaRow label="Concluded" value={cleanLicense(pkg.raw.licenseConcluded)} />
+            <MetaRow label="License" value={pkg.license} />
           </div>
         </section>
 
@@ -182,7 +181,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
             </h3>
             <div className="flex flex-col gap-1.5">
               {pkg.files.map((file) => (
-                <div key={file.spdxId}
+                <div key={file.sourceRef}
                   className="bg-gray-50 dark:bg-gray-800/60 rounded-xl px-4 py-3">
                   <div className="flex items-center gap-2 mb-1.5">
                     <FileText size={12} className="text-gray-400 shrink-0" />

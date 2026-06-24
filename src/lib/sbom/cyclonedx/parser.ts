@@ -1,4 +1,5 @@
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
+import { LicenseInfo, PackageInfo, RichPackage, SbomInfo } from '@/lib/sbom/analyzeTypes';
 import { CycloneDxBom, CycloneDxComponent, CycloneDxLicense } from './types';
 
 const getPackageTypeFromPurl = (purl?: string): ISbomPackage['packageType'] => {
@@ -76,6 +77,23 @@ const getTool = (data: CycloneDxBom, toolName: string): IToolInfo => {
   };
 };
 
+const getCpes = (component: CycloneDxComponent): string[] => {
+  return component.cpe ? [component.cpe] : [];
+};
+
+const getPackageInfo = (packages: RichPackage[]): PackageInfo => {
+  return packages.reduce((info, pkg) => {
+    info[pkg.pkgType] = (info[pkg.pkgType] ?? 0) + 1;
+    return info;
+  }, {} as PackageInfo);
+};
+
+const getLicenseInfo = (packages: RichPackage[]): LicenseInfo => ({
+  declared: packages.filter(pkg => pkg.license).length,
+  deducted: 0,
+  unknown: packages.filter(pkg => !pkg.license).length,
+});
+
 export const parseCycloneDxSbom = (
   data: CycloneDxBom,
   containerName: string,
@@ -110,4 +128,54 @@ export const parseCycloneDxSbom = (
     console.error('Error parsing CycloneDX SBOM:', error);
     return null;
   }
+};
+
+export const AnalyzeCycloneDX = (
+  data: CycloneDxBom,
+  imageId: string,
+  toolName: string
+): { info: SbomInfo; packages: RichPackage[] } => {
+  const toolInfo = getTool(data, toolName);
+
+  const packages: RichPackage[] = getUniquePurlComponents(data.components).map(component => {
+    const hash = component.hashes?.[0]
+      ? `${component.hashes[0].alg.toLowerCase()}:${component.hashes[0].content}`
+      : undefined;
+
+    return {
+      raw: component,
+      sourceRef: component['bom-ref'] ?? component.name,
+      name: component.name,
+      version: component.version || 'unknown',
+      pkgType: getPackageTypeFromPurl(component.purl),
+      purl: component.purl,
+      cpes: getCpes(component),
+      license: getLicense(component.licenses),
+      supplier: component.supplier?.name ?? component.publisher,
+      originator: component.author,
+      downloadLocation: component.externalReferences?.[0]?.url,
+      homepage: component.externalReferences?.find(ref => ref.type === 'website')?.url,
+      description: component.description,
+      sourceInfo: component.publisher,
+      copyrightText: component.copyright,
+      hash,
+      files: [],
+    };
+  });
+
+  return {
+    info: {
+      tool: toolInfo.name,
+      toolVersion: toolInfo.version ?? '',
+      vendor: toolInfo.vendor ?? '',
+      format: 'CycloneDX',
+      created: data.metadata?.timestamp ?? new Date().toISOString(),
+      imageId,
+      spdxVersion: data.specVersion,
+      totalPackages: packages.length,
+      licenseInfo: getLicenseInfo(packages),
+      packageInfo: getPackageInfo(packages),
+    },
+    packages,
+  };
 };

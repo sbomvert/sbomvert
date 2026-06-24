@@ -1,8 +1,8 @@
 // app/.../page.tsx
 
+import { AnalyzeCycloneDX } from '@/lib/sbom/cyclonedx/parser';
 import { AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
 import { formatContainerName } from '@/lib/container/containerUtils';
-import { SpdxDocument } from '@/lib/sbom/spdx/types';
 import AnalyzeDetailClient from './AnalyzeDetailClient';
 
 export default async function DetailPage({
@@ -30,9 +30,16 @@ export default async function DetailPage({
     throw new Error(`Failed to fetch SBOM: ${res.status}`);
   }
 
-  const doc: SpdxDocument = await res.json();
+  const doc = await res.json();
 
-  const parsed = AnalyzeSPDX(doc, imageName);
+  let parsed;
+  if (doc?.bomFormat === 'CycloneDX') {
+    parsed = AnalyzeCycloneDX(doc, imageName, toolFile);
+  } else if (typeof doc?.spdxVersion === 'string' && doc.spdxVersion.startsWith('SPDX-')) {
+    parsed = AnalyzeSPDX(doc, imageName);
+  } else {
+    throw new Error('Unknown SBOM format. Expected SPDX or CycloneDX format');
+  }
 
   // Ensure serializable payload
   const safeParsed = JSON.parse(JSON.stringify(parsed));

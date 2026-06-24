@@ -1,6 +1,6 @@
 // lib/store/sbomStore.ts
 import { create } from 'zustand';
-import { SbomInfo, RichPackage } from '@/lib/sbom/spdx/parser';
+import { SbomInfo, RichPackage } from '@/lib/sbom/analyzeTypes';
 
 type SbomState = {
   info: SbomInfo | null;

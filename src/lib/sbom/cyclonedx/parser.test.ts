@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseCycloneDxSbom } from './parser';
+import { AnalyzeCycloneDX, parseCycloneDxSbom } from './parser';
 
 const baseBom = {
   bomFormat: 'CycloneDX',
@@ -198,5 +198,98 @@ describe('parseCycloneDxSbom', () => {
       result?.packages.filter(pkg => pkg.purl === 'pkg:golang/stdlib@1.26.4')
     ).toHaveLength(1);
     expect(result?.packages.every(pkg => pkg.purl)).toBe(true);
+  });
+});
+
+describe('AnalyzeCycloneDX', () => {
+  it('uses the same filtered and deduped package set for analysis', () => {
+    const bom = {
+      ...baseBom,
+      components: [
+        {
+          type: 'library',
+          name: 'stdlib',
+          version: '1.26.4',
+          purl: 'pkg:golang/stdlib@1.26.4',
+          'bom-ref': 'pkg:golang/stdlib@1.26.4?package-id=1',
+          licenses: [{ license: { id: 'BSD-3-Clause' } }],
+        },
+        {
+          type: 'library',
+          name: 'stdlib',
+          version: '1.26.4',
+          purl: 'pkg:golang/stdlib@1.26.4',
+          'bom-ref': 'pkg:golang/stdlib@1.26.4?package-id=2',
+        },
+        {
+          type: 'library',
+          name: 'express',
+          version: '4.18.2',
+          purl: 'pkg:npm/express@4.18.2',
+        },
+        {
+          type: 'library',
+          name: 'no-purl',
+          version: '1.0.0',
+        },
+      ],
+    };
+
+    const parsed = parseCycloneDxSbom(bom as any, 'golang:1.26-alpine', 'syft.cdx.json');
+    const analyzed = AnalyzeCycloneDX(bom as any, 'golang:1.26-alpine', 'syft.cdx.json');
+
+    expect(analyzed.packages.map(pkg => pkg.purl)).toEqual(
+      parsed?.packages.map(pkg => pkg.purl)
+    );
+    expect(analyzed.info.totalPackages).toBe(2);
+    expect(analyzed.info.licenseInfo).toEqual({
+      declared: 1,
+      deducted: 0,
+      unknown: 1,
+    });
+    expect(analyzed.info.packageInfo).toEqual({
+      generic: 1,
+      npm: 1,
+    });
+  });
+
+  it('collects standard component CPEs', () => {
+    const bom = {
+      ...baseBom,
+      components: [
+        {
+          type: 'library',
+          name: 'openssl',
+          version: '1.1.1',
+          purl: 'pkg:deb/debian/openssl@1.1.1',
+          cpe: 'cpe:2.3:a:openssl:openssl:1.1.1:*:*:*:*:*:*:*',
+        },
+      ],
+    };
+
+    const analyzed = AnalyzeCycloneDX(bom as any, 'debian:latest', 'syft.cdx.json');
+
+    expect(analyzed.packages[0].cpes).toEqual([
+      'cpe:2.3:a:openssl:openssl:1.1.1:*:*:*:*:*:*:*',
+    ]);
+  });
+
+  it('analyzes the generated Go CycloneDX sample', () => {
+    const filePath = path.join(
+      process.cwd(),
+      'public/sbom/golang1.26-alpine/syft.cdx.json'
+    );
+    const bom = JSON.parse(readFileSync(filePath, 'utf8'));
+
+    const analyzed = AnalyzeCycloneDX(bom, 'golang1.26-alpine', 'syft.cdx.json');
+
+    expect(analyzed.info.format).toBe('CycloneDX');
+    expect(analyzed.info.tool).toBe('syft');
+    expect(analyzed.info.toolVersion).toBe('1.45.1');
+    expect(analyzed.info.totalPackages).toBe(29);
+    expect(analyzed.packages).toHaveLength(29);
+    expect(
+      analyzed.packages.filter(pkg => pkg.purl === 'pkg:golang/stdlib@1.26.4')
+    ).toHaveLength(1);
   });
 });
