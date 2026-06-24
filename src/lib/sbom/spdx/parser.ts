@@ -4,6 +4,24 @@ import { SpdxDocument, SpdxPackage } from "./types";
 
  const skip = new Set(['CONTAINER', 'OPERATING-SYSTEM']);
 
+const getPackagePurl = (pkg: SpdxPackage): string | undefined => {
+    return pkg.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator;
+};
+
+const getAnalyzablePackages = (doc: SpdxDocument): SpdxPackage[] => {
+    const seenPurls = new Set<string>();
+
+    return doc.packages
+        .filter(p => !skip.has(p.primaryPackagePurpose ?? '') && (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION'))
+        .filter(p => {
+            const purl = getPackagePurl(p);
+            if (!purl) return true;
+            if (seenPurls.has(purl)) return false;
+            seenPurls.add(purl);
+            return true;
+        });
+};
+
 export function cleanLicense(l?: string): string | undefined {
     if (!l || l === 'NOASSERTION' || l === 'NONE') return undefined;
     return l;
@@ -19,8 +37,7 @@ export function parseCreator(creators: string[]): { tool: string; toolVersion: s
 }
 
 
-const GetLicenses = (doc: SpdxDocument) => (doc.packages
-        .filter(p => !skip.has(p.primaryPackagePurpose ?? '') && (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION'))
+const GetLicenses = (doc: SpdxDocument) => (getAnalyzablePackages(doc)
         .reduce((prev: LicenseInfo, curr: SpdxPackage, _idx) => {
 
             if (cleanLicense(curr.licenseDeclared))
@@ -46,14 +63,10 @@ const GetLicenses = (doc: SpdxDocument) => (doc.packages
 
 
 const GroupPackages = (doc: SpdxDocument): PackageInfo => {
-  return doc.packages
-    .filter(p =>
-      !skip.has(p.primaryPackagePurpose ?? '') &&
-      (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION')
-    )
+  return getAnalyzablePackages(doc)
     .reduce((prev: PackageInfo, curr: SpdxPackage) => {
       const ptype = InferPkgTypeFromPurl(
-        curr.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? ''
+        getPackagePurl(curr) ?? ''
       );
 
       return {
@@ -110,10 +123,9 @@ export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInf
     }
 
    
-    const packages: RichPackage[] = doc.packages
-        .filter(p => !skip.has(p.primaryPackagePurpose ?? '') && (p.versionInfo || p.primaryPackagePurpose === 'APPLICATION'))
+    const packages: RichPackage[] = getAnalyzablePackages(doc)
         .map(p => {
-            const purl = p.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator;
+            const purl = getPackagePurl(p);
             const cpes = p.externalRefs?.filter(r => r.referenceType === 'cpe23Type').map(r => r.referenceLocator) ?? [];
             const hash = p.checksums?.[0] ? `${p.checksums[0].algorithm.toLowerCase()}:${p.checksums[0].checksumValue}` : undefined;
             return {
@@ -121,7 +133,7 @@ export function AnalyzeSPDX(doc: SpdxDocument, imageId: string): { info: SbomInf
                 sourceRef: p.SPDXID,
                 name: p.name,
                 version: p.versionInfo ?? 'unknown',
-                pkgType: InferPkgTypeFromPurl(p.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator ?? ''),
+                pkgType: InferPkgTypeFromPurl(purl ?? ''),
                 purl,
                 cpes,
                 license: cleanLicense(p.licenseDeclared) ?? cleanLicense(p.licenseConcluded),

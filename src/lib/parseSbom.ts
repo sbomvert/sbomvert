@@ -127,6 +127,24 @@ const extractPackageType = (
   return 'library';
 };
 
+const getSpdxPackagePurl = (pkg: SpdxPackage): string | undefined => {
+  return pkg.externalRefs?.find(
+    ref => ref.referenceType === 'purl' && ref.referenceCategory === 'PACKAGE-MANAGER'
+  )?.referenceLocator;
+};
+
+const getUniqueSpdxPackagesByPurl = (packages: SpdxPackage[]): SpdxPackage[] => {
+  const seenPurls = new Set<string>();
+
+  return packages.filter(pkg => {
+    const purl = getSpdxPackagePurl(pkg);
+    if (!purl) return true;
+    if (seenPurls.has(purl)) return false;
+    seenPurls.add(purl);
+    return true;
+  });
+};
+
 export const parseSpdxSbom = (
   data: SpdxDocument,
   containerName: string,
@@ -168,12 +186,10 @@ export const parseSpdxSbom = (
     };
 
     // Filter out container image and operating system packages
-    const packages: ISbomPackage[] = data.packages
+    const packages: ISbomPackage[] = getUniqueSpdxPackagesByPurl(data.packages)
       .map(pkg => {
         // Extract pURL from external refs
-        const purlRef = pkg.externalRefs?.find(
-          ref => ref.referenceType === 'purl' && ref.referenceCategory === 'PACKAGE-MANAGER'
-        );
+        const purl = getSpdxPackagePurl(pkg);
 
         // Extract CPE from external refs
         const cpeRef = pkg.externalRefs?.find(ref => ref.referenceType === 'cpe23Type');
@@ -203,10 +219,10 @@ export const parseSpdxSbom = (
           packageType: extractPackageType(
             pkg.attributionTexts,
             pkg.primaryPackagePurpose,
-            purlRef?.referenceLocator
+            purl
           ),
           hash,
-          purl: purlRef?.referenceLocator,
+          purl,
           cpe: cpeRef?.referenceLocator,
         };
       });
