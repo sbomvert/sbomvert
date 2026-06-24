@@ -1,5 +1,5 @@
 import { ISbom } from '@/models/ISbom';
-import { parseSpdxSbom, parseCycloneDxSbom } from './parseSbom';
+import { parseSbom } from './parseSbom';
 import { formatContainerName, reverseFormatContainerName } from './container/containerUtils';
 
 interface ContainerSboms {
@@ -111,15 +111,7 @@ export const loadSbomsForImage = async (image: string): Promise<{ sboms: Contain
         if (!sbomResponse.ok) return null;
 
         const sbomData = await sbomResponse.json();
-
-        const [toolName, ext] = file.name.split('.');
-        const format = ext?.toUpperCase();
-
-        if (format === 'SPDX') return parseSpdxSbom(sbomData, image, toolName);
-
-        if (format === 'CYCLONEDX') return parseCycloneDxSbom(sbomData, image, toolName);
-
-        return null;
+        return parseSbom(sbomData, image, file.name);
       } catch (err) {
         console.error(`Error loading SBOM ${file.name}:`, err);
         return null;

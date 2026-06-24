@@ -1,5 +1,7 @@
 import { IPurl } from '@/models/IPurl';
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
+import { CycloneDxBom } from '@/lib/sbom/cyclonedx/types';
+import { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
 
 export const parsePurl = (purlString?: string): IPurl | null => {
   if (!purlString) return null;
@@ -223,4 +225,22 @@ export const parseSpdxSbom = (
   }
 };
 
-export { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
+export const parseSbom = (
+  data: unknown,
+  containerName: string,
+  fileName: string
+): ISbom | null => {
+  if (!data || typeof data !== 'object') return null;
+
+  if ('spdxVersion' in data) {
+    return parseSpdxSbom(data as SpdxDocument, containerName, fileName);
+  }
+
+  if ('bomFormat' in data && data.bomFormat === 'CycloneDX') {
+    return parseCycloneDxSbom(data as CycloneDxBom, containerName, fileName);
+  }
+
+  return null;
+};
+
+export { parseCycloneDxSbom };

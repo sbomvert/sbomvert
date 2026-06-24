@@ -1,4 +1,5 @@
-import { detectSbomFormatDetailed, SbomFormat } from "./parser";
+import { parseSbom } from '@/lib/parseSbom';
+import { detectSbomFormatDetailed, SbomFormat } from './parser';
 
 describe('detectSbomFormatDetailed', () => {
   describe('CycloneDX detection', () => {
@@ -144,5 +145,60 @@ describe('detectSbomFormatDetailed', () => {
 
       expect(result).toBe('cyclonedx');
     });
+  });
+});
+
+describe('parseSbom', () => {
+  it('routes SPDX objects to the SPDX parser', () => {
+    const result = parseSbom(
+      {
+        spdxVersion: 'SPDX-2.3',
+        name: 'doc',
+        creationInfo: {
+          creators: ['Tool: syft-1.2.3'],
+          created: '2024-01-01T00:00:00Z',
+        },
+        packages: [],
+      },
+      'image:latest',
+      'syft.spdx.json'
+    );
+
+    expect(result?.format).toBe('SPDX');
+    expect(result?.toolInfo.name).toBe('Syft');
+  });
+
+  it('routes CycloneDX objects to the CycloneDX parser', () => {
+    const result = parseSbom(
+      {
+        bomFormat: 'CycloneDX',
+        specVersion: '1.6',
+        version: 1,
+        metadata: {
+          tools: {
+            components: [{ type: 'application', name: 'syft', version: '1.45.1' }],
+          },
+        },
+        components: [
+          {
+            type: 'library',
+            name: 'stdlib',
+            version: '1.26.4',
+            purl: 'pkg:golang/stdlib@1.26.4',
+          },
+        ],
+      },
+      'golang:1.26-alpine',
+      'syft.cdx.json'
+    );
+
+    expect(result?.format).toBe('CycloneDX');
+    expect(result?.toolInfo.name).toBe('syft');
+    expect(result?.packages).toHaveLength(1);
+  });
+
+  it('returns null for unknown or invalid input', () => {
+    expect(parseSbom({ foo: 'bar' }, 'image', 'unknown.json')).toBeNull();
+    expect(parseSbom(null, 'image', 'unknown.json')).toBeNull();
   });
 });
