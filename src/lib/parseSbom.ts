@@ -223,13 +223,4 @@ export const parseSpdxSbom = (
   }
 };
 
-export const parseCycloneDxSbom = (
-  _data: unknown,
-  _containerName: string,
-  _toolName: string
-): ISbom | null => {
-  // Placeholder for CycloneDX parsing
-  // Will be implemented when CycloneDX files are provided
-  console.warn('CycloneDX parsing not yet implemented');
-  return null;
-};
+export { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';

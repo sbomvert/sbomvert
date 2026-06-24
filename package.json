@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.931.0",
+    "@cyclonedx/cyclonedx-library": "^10.1.0",
     "@testing-library/react": "^16.3.2",
     "bullmq": "^5.70.1",
     "clsx": "^2.1.1",
