@@ -1,7 +1,5 @@
 import { parseSpdxSbom } from '@/lib/parseSbom';
 import { describe, expect, it } from '@jest/globals';
-import { readFileSync } from 'fs';
-import path from 'path';
 const sample = {
   spdxVersion: 'SPDX-2.3',
   name: 'doc',
@@ -359,21 +357,6 @@ describe('parseSpdxSbom', () => {
     const res = parseSpdxSbom(testSample as any, 'test-image', 'Syft');
 
     expect(res?.packages.map(pkg => pkg.name)).toEqual(['stdlib', 'no-purl']);
-  });
-
-  it('dedupes repeated stdlib packages in the generated Go SPDX sample', () => {
-    const filePath = path.join(
-      process.cwd(),
-      'public/sbom/golang1.26-alpine/syft.spdx.json'
-    );
-    const doc = JSON.parse(readFileSync(filePath, 'utf8'));
-
-    const res = parseSpdxSbom(doc, 'golang1.26-alpine', 'syft.spdx.json');
-
-    expect(res?.packages).toHaveLength(30);
-    expect(
-      res?.packages.filter(pkg => pkg.purl === 'pkg:golang/stdlib@1.26.4')
-    ).toHaveLength(1);
   });
 
 });

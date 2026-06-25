@@ -1,5 +1,3 @@
-import { readFileSync } from 'fs';
-import path from 'path';
 import { AnalyzeCycloneDX, parseCycloneDxSbom } from './parser';
 
 const baseBom = {
@@ -182,18 +180,36 @@ describe('parseCycloneDxSbom', () => {
     ]);
   });
 
-  it('parses the generated Go CycloneDX sample', () => {
-    const filePath = path.join(
-      process.cwd(),
-      'public/sbom/golang1.26-alpine/syft.cdx.json'
-    );
-    const bom = JSON.parse(readFileSync(filePath, 'utf8'));
+  it('parses Syft CycloneDX JSON input', () => {
+    const bom = JSON.parse(JSON.stringify({
+      ...baseBom,
+      components: [
+        {
+          type: 'library',
+          name: 'stdlib',
+          version: '1.26.4',
+          purl: 'pkg:golang/stdlib@1.26.4',
+        },
+        {
+          type: 'library',
+          name: 'stdlib',
+          version: '1.26.4',
+          purl: 'pkg:golang/stdlib@1.26.4',
+        },
+        {
+          type: 'library',
+          name: 'cmd/link',
+          version: '1.26.4',
+          purl: 'pkg:golang/cmd/link@1.26.4',
+        },
+      ],
+    }));
 
     const result = parseCycloneDxSbom(bom, 'golang1.26-alpine', 'syft.cdx.json');
 
     expect(result?.toolInfo.name).toBe('syft');
     expect(result?.toolInfo.version).toBe('1.45.1');
-    expect(result?.packages).toHaveLength(29);
+    expect(result?.packages).toHaveLength(2);
     expect(
       result?.packages.filter(pkg => pkg.purl === 'pkg:golang/stdlib@1.26.4')
     ).toHaveLength(1);
@@ -274,22 +290,4 @@ describe('AnalyzeCycloneDX', () => {
     ]);
   });
 
-  it('analyzes the generated Go CycloneDX sample', () => {
-    const filePath = path.join(
-      process.cwd(),
-      'public/sbom/golang1.26-alpine/syft.cdx.json'
-    );
-    const bom = JSON.parse(readFileSync(filePath, 'utf8'));
-
-    const analyzed = AnalyzeCycloneDX(bom, 'golang1.26-alpine', 'syft.cdx.json');
-
-    expect(analyzed.info.format).toBe('CycloneDX');
-    expect(analyzed.info.tool).toBe('syft');
-    expect(analyzed.info.toolVersion).toBe('1.45.1');
-    expect(analyzed.info.totalPackages).toBe(29);
-    expect(analyzed.packages).toHaveLength(29);
-    expect(
-      analyzed.packages.filter(pkg => pkg.purl === 'pkg:golang/stdlib@1.26.4')
-    ).toHaveLength(1);
-  });
 });

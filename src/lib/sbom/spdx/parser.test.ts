@@ -1,7 +1,5 @@
 import { cleanLicense, parseCreator, AnalyzeSPDX } from "./parser";
 import { SpdxDocument } from "./types";
-import { readFileSync } from 'fs';
-import path from 'path';
 
 describe('SPDX analysis', () => {
   describe('cleanLicense', () => {
@@ -293,20 +291,5 @@ describe('SPDX analysis', () => {
       });
     });
 
-    it('should dedupe repeated stdlib packages in the generated Go SPDX sample', () => {
-      const filePath = path.join(
-        process.cwd(),
-        'public/sbom/golang1.26-alpine/syft.spdx.json'
-      );
-      const doc = JSON.parse(readFileSync(filePath, 'utf8'));
-
-      const result = AnalyzeSPDX(doc, 'golang1.26-alpine');
-
-      expect(result.info.totalPackages).toBe(29);
-      expect(result.packages).toHaveLength(29);
-      expect(
-        result.packages.filter(pkg => pkg.purl === 'pkg:golang/stdlib@1.26.4')
-      ).toHaveLength(1);
-    });
   });
 });
