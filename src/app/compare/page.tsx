@@ -25,8 +25,6 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [_, setJobIdState] = useState<string | null>(null);
-  const [__, setJobStatus] = useState<string | null>(null);
 
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -81,29 +79,7 @@ export default function Home() {
 
   const handleSearch = (value: string) => setSearchInput(value);
 
-  const handleScanSubmit = async (image: string, tools: { producers: string[], consumers: string[] }) => {
-    const payload = { image, tools };
-
-    try {
-      const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setJobIdState(data.jobId);
-        setJobStatus('running');
-      } else {
-        alert(data.error || 'Failed to start scan');
-      }
-    } catch (e) {
-      console.error(e);
-      alert('Failed to start scan');
-    }
-  };
+ 
 
   /* ------------------ UI ------------------ */
   return (
@@ -113,12 +89,7 @@ export default function Home() {
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
       {!loading && (
         <>
-          {FEATURE_FLAGS.ENABLE_SCAN_API && (
-            <ImageScanForm
-              onSubmit={handleScanSubmit}
-              onCancel={() => setShowScanForm(false)}
-            />
-          )}
+
           <SearchBar value={searchInput} onChange={handleSearch} />
           <ImageSelector
             images={filteredImages as any}
