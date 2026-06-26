@@ -13,7 +13,7 @@ const ScanRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (FEATURE_FLAGS.ENABLE_SCAN_API) {
+  if (!FEATURE_FLAGS.ENABLE_SCAN_API) {
     return NextResponse.json(
       { error: 'Scan feature disabled' },
       { status: 403 }

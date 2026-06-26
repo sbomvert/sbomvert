@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
@@ -23,9 +24,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  const [showScanForm, setShowScanForm] = useState(false);
-
 
   const [_, setJobIdState] = useState<string | null>(null);
   const [__, setJobStatus] = useState<string | null>(null);
@@ -66,7 +64,7 @@ export default function Home() {
     return images.filter(
       img =>
         img.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        img.description.toLowerCase().includes(searchTerm.toLowerCase())
+          img.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [images, searchTerm]);
 
@@ -79,7 +77,6 @@ export default function Home() {
     } else {
       router.push('/compare/cve/report');
     }
-    
   };
 
   const handleSearch = (value: string) => setSearchInput(value);
@@ -99,7 +96,6 @@ export default function Home() {
       if (res.ok) {
         setJobIdState(data.jobId);
         setJobStatus('running');
-        setShowScanForm(false);
       } else {
         alert(data.error || 'Failed to start scan');
       }
@@ -109,32 +105,21 @@ export default function Home() {
     }
   };
 
-
-
   /* ------------------ UI ------------------ */
-
   return (
     <>
-            <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
-        <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
-
-
-
-
+      <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
+      <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
-
       {!loading && (
         <>
-        
-          {showScanForm && FEATURE_FLAGS.ENABLE_SCAN_API && (
+          {FEATURE_FLAGS.ENABLE_SCAN_API && (
             <ImageScanForm
               onSubmit={handleScanSubmit}
               onCancel={() => setShowScanForm(false)}
             />
           )}
-
           <SearchBar value={searchInput} onChange={handleSearch} />
-
           <ImageSelector
             images={filteredImages as any}
             onImageSelect={handleImageSelect}
