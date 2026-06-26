@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createScanQueue } from '@/services/scanQueue';
+import { createScanQueue, createScanWorker } from '@/services/scanQueue';
 import { z } from 'zod';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
@@ -27,11 +27,13 @@ export async function POST(request: Request) {
     // Lazy initialize queue at runtime (not build time)
     const scanQueue = createScanQueue();
 
-    const job = await scanQueue.add('scan-job', {
+    const job = await scanQueue.add('scan', {
       image: parsed.image,
       tools: parsed.tools,
     });
 
+    createScanWorker()
+    
     return NextResponse.json({ jobId: job.id }, { status: 202 });
   } catch (error) {
     const message =
