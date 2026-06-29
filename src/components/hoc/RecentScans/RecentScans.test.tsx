@@ -7,6 +7,7 @@ global.fetch = jest.fn();
 const mockScans = [
   {
     jobId: 'job1',
+    image: 'nginx:latest',
     status: 'completed',
     updatedAt: new Date().toISOString(),
     history: [{ level: 'info', message: 'Started' }],
@@ -33,6 +34,7 @@ describe('RecentScans component', () => {
     fetch.mockResolvedValueOnce({ ok: true, json: async () => mockScans });
     render(<RecentScans />);
     await waitFor(() => expect(screen.getByText('job1')).toBeInTheDocument());
+    expect(screen.getByText('nginx:latest')).toBeInTheDocument();
     expect(screen.getByText('completed')).toBeInTheDocument();
     expect(screen.getByText('Started')).toBeInTheDocument();
   });

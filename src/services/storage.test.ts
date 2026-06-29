@@ -101,6 +101,16 @@ beforeEach(async () => {
       expect(result.history[0]).toEqual(entry);
     });
 
+    it('should preserve image metadata across status updates', async () => {
+      await saveJobStatus('jobImage', 'running', undefined, { image: 'nginx:latest' });
+      await saveJobStatus('jobImage', 'completed');
+
+      const result = await getJobStatus('jobImage');
+
+      expect(result.image).toBe('nginx:latest');
+      expect(result.status).toBe('completed');
+    });
+
     it('should handle missing previous file (ENOENT)', async () => {
       const resultPath = await saveJobStatus('nonexistent', 'new');
 

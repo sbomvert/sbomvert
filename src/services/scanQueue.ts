@@ -1,7 +1,6 @@
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import SBOMService from '@/services/sbomStorageService/sbomStorageService';
-const execFileAsync = promisify(execFile);
 
 import { Queue, Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
@@ -18,6 +17,7 @@ import { ScanSPDXwithTool } from '@/lib/vuln/scanner';
 import CVEService from './cveStorageService/cveStorageService';
 import { VULN_EXTRACTORS } from '@/lib/vuln/vulnutils';
 
+const execFileAsync = promisify(execFile);
 /**
  * Lazy Redis connection (prevents build-time connection attempts)
  */
@@ -95,7 +95,7 @@ export function createScanWorker() {
         return;
       }
 
-      await saveJobStatus(job.id, 'running');
+      await saveJobStatus(job.id, 'running', undefined, { image });
 
       const results: Record<string, any> = {};
       const mergedCveMap = new Map<string, any>();
