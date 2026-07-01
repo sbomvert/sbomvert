@@ -11,13 +11,17 @@ import {
   saveMergedCveReport,
   saveJobStatus,
 } from './storage';
-import { GenerateSPDXSBOMwithTool } from '@/lib/sbom/generator';
+import {
+  GenerateCycloneDXSBOMwithTool,
+  GenerateSPDXSBOMwithTool,
+} from '@/lib/sbom/generator';
 import { SanitizeContainerImage } from '@/lib/utils';
 import { ScanSPDXwithTool } from '@/lib/vuln/scanner';
 import CVEService from './cveStorageService/cveStorageService';
 import { VULN_EXTRACTORS } from '@/lib/vuln/vulnutils';
 
 const execFileAsync = promisify(execFile);
+const RUN_EXPERIMENT_TIMEOUT = Number(process.env.RUN_EXPERIMENT_TIMEOUT) || 3 * 60 * 1000;
 /**
  * Lazy Redis connection (prevents build-time connection attempts)
  */
@@ -121,6 +125,8 @@ export function createScanWorker() {
 
       for (const tool of tools.producers) {
         const spdxcmd = GenerateSPDXSBOMwithTool(tool, image);
+        const cyclonedxcmd = GenerateCycloneDXSBOMwithTool(tool, image);
+
         if (!spdxcmd) continue;
 
         try {
@@ -128,12 +134,44 @@ export function createScanWorker() {
             10 + Math.floor((processed / tools.producers.length) * 70)
           );
 
-          const stdout = await runCommand(spdxcmd.cmd, spdxcmd.args);
+          if (cyclonedxcmd) {
+            try {
+              const cyclonedxStdout = await runCommand(
+                cyclonedxcmd.cmd,
+                cyclonedxcmd.args,
+                RUN_EXPERIMENT_TIMEOUT
+              );
+              safeJsonParse(cyclonedxStdout);
+
+              await SBOMService.saveSBOM(
+                SanitizeContainerImage(image),
+                'cdx',
+                tool,
+                cyclonedxStdout
+              );
+
+              await saveJobStatus(job.id, 'partial', {
+                level: 'info',
+                message: `${tool} CycloneDX SBOM has been saved`,
+              });
+            } catch (error) {
+              await saveJobStatus(job.id, 'partial', {
+                level: 'warning',
+                message: `${tool} CycloneDX SBOM failed: ${error}`,
+              });
+            }
+          }
 
           await saveJobStatus(job.id, 'partial', {
             level: 'info',
             message: `Tool ${tool} is computing sbom`,
           });
+
+          const stdout = await runCommand(
+            spdxcmd.cmd,
+            spdxcmd.args,
+            RUN_EXPERIMENT_TIMEOUT
+          );
 
           let parsed;
           try {
@@ -174,7 +212,7 @@ export function createScanWorker() {
           }
 
           try {
-            const data = await runCommand(cvecmd.cmd, cvecmd.args);
+            const data = await runCommand(cvecmd.cmd, cvecmd.args, RUN_EXPERIMENT_TIMEOUT);
             const vulns = safeJsonParse(data);
 
             await saveJobStatus(job.id, 'partial', {
