@@ -123,6 +123,8 @@ export function createScanWorker() {
 
       let processed = 0;
 
+      const sbomPaths: Record<string, string> = {};
+
       for (const tool of tools.producers) {
         const spdxcmd = GenerateSPDXSBOMwithTool(tool, image);
         const cyclonedxcmd = GenerateCycloneDXSBOMwithTool(tool, image);
@@ -174,6 +176,7 @@ export function createScanWorker() {
           );
 
           let parsed;
+
           try {
             parsed = safeJsonParse(stdout);
 
@@ -200,52 +203,8 @@ export function createScanWorker() {
 
           const sbomPath = await saveRawSbom(job.id, tool, parsed);
 
-          // CVE extraction
-          const cvecmd = ScanSPDXwithTool(tool, sbomPath);
+          sbomPaths[tool] = sbomPath;
 
-          if (cvecmd === null) {
-            await saveJobStatus(job.id, 'failed', {
-              level: 'error',
-              message: `${tool} has no capabilities to find CVEs`,
-            });
-            continue;
-          }
-
-          try {
-            const data = await runCommand(cvecmd.cmd, cvecmd.args, RUN_EXPERIMENT_TIMEOUT);
-            const vulns = safeJsonParse(data);
-
-            await saveJobStatus(job.id, 'partial', {
-              level: 'info',
-              message: `${tool} CVEs have been computed`,
-            });
-
-            const formatter = VULN_EXTRACTORS[tool];
-            const formattedCVEs = formatter(vulns, {});
-
-            await saveJobStatus(job.id, 'partial', {
-              level: 'info',
-              message: `${tool} CVEs formatted`,
-            });
-
-            await CVEService.saveCVEFile(
-              SanitizeContainerImage(image),
-              'spdx',
-              tool,
-              JSON.stringify(formattedCVEs)
-            );
-
-            await saveJobStatus(job.id, 'partial', {
-              level: 'info',
-              message: `${tool} CVEs saved`,
-            });
-          } catch (error) {
-            await saveJobStatus(job.id, 'failed', {
-              level: 'error',
-              message: `${tool} failed CVE extraction: ${error}`,
-            });
-            throw error;
-          }
         } catch (err) {
           console.warn(`Tool failed ${tool}`, err);
 
@@ -256,6 +215,66 @@ export function createScanWorker() {
         }
 
         processed++;
+      }
+
+      // CVE extraction
+      for (const consumer of tools.consumers) {
+        const sbomProducer = consumer === 'grype' ? 'syft' : consumer;
+        const sbomPath = sbomPaths[sbomProducer];
+
+        if (!sbomPath) {
+          await saveJobStatus(job.id, 'partial', {
+            level: 'warning',
+            message: `${consumer} has no ${sbomProducer} SBOM to scan`,
+          });
+          continue;
+        }
+
+        const cvecmd = ScanSPDXwithTool(consumer, sbomPath);
+
+        if (cvecmd === null) {
+          await saveJobStatus(job.id, 'failed', {
+            level: 'error',
+            message: `${consumer} has no capabilities to find CVEs`,
+          });
+          continue;
+        }
+
+        try {
+          const data = await runCommand(cvecmd.cmd, cvecmd.args, RUN_EXPERIMENT_TIMEOUT);
+
+          const vulns = safeJsonParse(data);
+
+          await saveJobStatus(job.id, 'partial', {
+            level: 'info',
+            message: `${consumer} CVEs have been computed`,
+          });
+
+          const formatter = VULN_EXTRACTORS[consumer];
+          const formattedCVEs = formatter(vulns, {});
+
+          await saveJobStatus(job.id, 'partial', {
+            level: 'info',
+            message: `${consumer} CVEs formatted`,
+          });
+
+          await CVEService.saveCVEFile(
+            SanitizeContainerImage(image),
+            'spdx',
+            consumer,
+            JSON.stringify(formattedCVEs)
+          );
+
+          await saveJobStatus(job.id, 'partial', {
+            level: 'info',
+            message: `${consumer} CVEs saved`,
+          });
+        } catch (error) {
+          await saveJobStatus(job.id, 'failed', {
+            level: 'error',
+            message: `${consumer} failed CVE extraction: ${error}`,
+          });
+        }
       }
 
       await saveCombinedSbom(job.id, Object.values(results));

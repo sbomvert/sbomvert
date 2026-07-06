@@ -9,7 +9,7 @@ export function ScanSPDXwithTool(
         args: ['sbom', sbompath, '--format', 'json'],
       };
 
-    case 'syft': // FIXME: should be grype
+    case 'grype':
       return {
         cmd: 'grype',
         args: [`sbom:${sbompath}`, '-o=json'],

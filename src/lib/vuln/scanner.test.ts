@@ -5,8 +5,8 @@ describe('scanner.ScanSPDXwithTool', () => {
     expect(ScanSPDXwithTool('trivy', 'image.sbom')).toStrictEqual({"args": ["sbom", "image.sbom", "--format", "json"], "cmd": "trivy"});
   });
 
-  test('returns correct command for syft', () => {
-    expect(ScanSPDXwithTool('syft', 'path.sbom')).toStrictEqual({args:['sbom:path.sbom', '-o=json'],cmd: 'grype'});
+  test('returns correct command for grype', () => {
+    expect(ScanSPDXwithTool('grype', 'path.sbom')).toStrictEqual({args:['sbom:path.sbom', '-o=json'],cmd: 'grype'});
   });
 
   test('returns correct command for scout', () => {
