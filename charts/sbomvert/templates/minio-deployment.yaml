@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-minio
+  labels:
+    app: {{ .Release.Name }}-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-minio
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-minio
+    spec:
+      containers:
+        - name: minio
+          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":{{ .Values.minio.consolePort }}"
+          ports:
+            - containerPort: {{ .Values.minio.port }}
+            - containerPort: {{ .Values.minio.consolePort }}
+          env:
+            - name: MINIO_ROOT_USER
+              value: {{ .Values.minio.rootUser | quote }}
+            - name: MINIO_ROOT_PASSWORD
+              value: {{ .Values.minio.rootPassword | quote }}
+          {{- if .Values.minio.persistence.enabled }}
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+          {{- end }}
+      {{- if .Values.minio.persistence.enabled }}
+      volumes:
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-minio-data
+      {{- end }}
