@@ -510,7 +510,6 @@ export const VULN_EXTRACTORS: Record<
 > = {
   trivy: extractTrivyVulnerabilities,
   grype: extractAnchoreVulnerabilities,
-  syft: extractAnchoreVulnerabilities,
   //scout: extractDockerVulnerabilities,
 };
 
@@ -900,4 +899,3 @@ export function getPkgInfoFromPurl(
   if (cvers !== null) version = cvers;
   return [name, version];
 }
-

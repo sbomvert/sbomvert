@@ -1,16 +1,20 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { Shield, ShieldX, Scale, Home, FileChartColumnIncreasing, Upload } from 'lucide-react';
+import { Shield, ShieldX, Scale, Home, FileChartColumnIncreasing, Upload,ScanText } from 'lucide-react';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 const navItems = [
   { icon: Home,                    label: 'Home',            href: '/' },
   { icon: FileChartColumnIncreasing, label: 'SBOM Analysis', href: '/compare/analyze' },
   { icon: Scale,                   label: 'SBOM Comparison', href: '/compare/sbom' },
-  { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve' }
+  { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve' },
+  ...(FEATURE_FLAGS.ENABLE_SCAN_API
+    ? [{ icon: ScanText, label: 'Scan', href: '/scan' }]
+    : []),
 ];
 
 if (process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD === 'true'){
-navItems.push({ icon: Upload,                  label: 'Upload SBOM',     href: '/compare/upload/sbom' })
+  navItems.push({ icon: Upload, label: 'Upload SBOM', href: '/compare/upload/sbom' })
 } 
 
 export default function Sidebar() {

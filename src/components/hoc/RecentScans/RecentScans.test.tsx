@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { RecentScans } from './RecentScans';
 
 // Mock fetch globally
@@ -7,6 +8,7 @@ global.fetch = jest.fn();
 const mockScans = [
   {
     jobId: 'job1',
+    image: 'nginx:latest',
     status: 'completed',
     updatedAt: new Date().toISOString(),
     history: [{ level: 'info', message: 'Started' }],
@@ -33,7 +35,28 @@ describe('RecentScans component', () => {
     fetch.mockResolvedValueOnce({ ok: true, json: async () => mockScans });
     render(<RecentScans />);
     await waitFor(() => expect(screen.getByText('job1')).toBeInTheDocument());
+    expect(screen.getByText('nginx:latest')).toBeInTheDocument();
     expect(screen.getByText('completed')).toBeInTheDocument();
+  });
+
+  test('renders scan details when expanded', async () => {
+    // @ts-ignore
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockScans,
+    });
+
+    const user = userEvent.setup();
+
+    render(<RecentScans />);
+
+    await waitFor(() =>
+      expect(screen.getByText('job1')).toBeInTheDocument()
+    );
+
+    await user.click(screen.getByRole('button'));
+
+    expect(screen.getByText(/Updated:/i)).toBeInTheDocument();
     expect(screen.getByText('Started')).toBeInTheDocument();
   });
 

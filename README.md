@@ -67,7 +67,7 @@ CVE_DIR='public/cve'
 NEXT_PUBLIC_ENABLE_SBOM_UPLOAD='false'
 NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
 
-#_NEXT_PUBLIC_ENABLE_SCAN_API='true' # Still under development
+#NEXT_PUBLIC_ENABLE_SCAN_API='true' # Still under development
 
 
 ```

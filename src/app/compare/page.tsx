@@ -1,11 +1,10 @@
 'use client';
+
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
-import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
-import { ImageScanForm } from '@/components/hoc/ImageScanForm/ImageScanForm';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
 import { PageTitle } from '@/components/Title/Title';
@@ -24,11 +23,6 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [showScanForm, setShowScanForm] = useState(false);
-
-
-  const [_, setJobIdState] = useState<string | null>(null);
-  const [__, setJobStatus] = useState<string | null>(null);
 
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -66,7 +60,7 @@ export default function Home() {
     return images.filter(
       img =>
         img.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        img.description.toLowerCase().includes(searchTerm.toLowerCase())
+          img.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [images, searchTerm]);
 
@@ -79,62 +73,22 @@ export default function Home() {
     } else {
       router.push('/compare/cve/report');
     }
-    
   };
 
   const handleSearch = (value: string) => setSearchInput(value);
 
-  const handleScanSubmit = async (image: string, tools: { producers: string[], consumers: string[] }) => {
-    const payload = { image, tools };
-
-    try {
-      const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setJobIdState(data.jobId);
-        setJobStatus('running');
-        setShowScanForm(false);
-      } else {
-        alert(data.error || 'Failed to start scan');
-      }
-    } catch (e) {
-      console.error(e);
-      alert('Failed to start scan');
-    }
-  };
-
-
+ 
 
   /* ------------------ UI ------------------ */
-
   return (
     <>
-            <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
-        <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
-
-
-
-
+      <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
+      <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
-
       {!loading && (
         <>
-        
-          {showScanForm && FEATURE_FLAGS.ENABLE_SCAN_API && (
-            <ImageScanForm
-              onSubmit={handleScanSubmit}
-              onCancel={() => setShowScanForm(false)}
-            />
-          )}
 
           <SearchBar value={searchInput} onChange={handleSearch} />
-
           <ImageSelector
             images={filteredImages as any}
             onImageSelect={handleImageSelect}

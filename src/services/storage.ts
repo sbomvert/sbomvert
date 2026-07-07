@@ -52,18 +52,24 @@ export interface JobLogEntry {
   message: string;
 }
 
+type JobStatusMetadata = {
+  image?: string;
+};
+
 
 /** Retrieve a JSON file (raw) */
 export async function saveJobStatus(
   jobId: string,
   status: string,
-  entry?: JobLogEntry
+  entry?: JobLogEntry,
+  metadata?: JobStatusMetadata
 ) {
   const dir = join(getStorageRoot(), 'jobs');
   await ensureDir(dir);
   const path = join(dir, `${jobId}.json`);
 
   let previousHistory: unknown[] = [];
+  let previousImage: string | undefined;
 
   try {
     const existing = await fs.readFile(path, 'utf8');
@@ -71,6 +77,9 @@ export async function saveJobStatus(
     previousHistory = Array.isArray(parsed?.history)
       ? parsed.history
       : [];
+    previousImage = typeof parsed?.image === 'string'
+      ? parsed.image
+      : undefined;
   } catch (err: any) {
     if (err.code !== 'ENOENT') {
       console.error('Failed reading previous job file:', err);
@@ -85,6 +94,9 @@ export async function saveJobStatus(
     status,
     updatedAt: new Date().toISOString(),
     history: updatedHistory,
+    ...(metadata?.image || previousImage
+      ? { image: metadata?.image ?? previousImage }
+      : {}),
   };
 
   await fs.writeFile(path, JSON.stringify(payload, null, 2));
@@ -98,5 +110,4 @@ export async function getJobStatus(jobId: string) {
   const content = await fs.readFile(path, 'utf-8');
   return JSON.parse(content);
 }
-
 
