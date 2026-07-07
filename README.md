@@ -2,9 +2,6 @@
 
 SBOMVert is web app for comparing SBOM (Software Bill of Materials) and CVE reports across different tools.
 
-> [!CAUTION]
-> The tool is under active development and is intended for educational purposes
-
 Read the associated research: [https://arxiv.org/abs/2510.05798](https://arxiv.org/abs/2510.05798).
 
 ## Features
@@ -57,17 +54,27 @@ CVE_DIR='public/cve'
 
 ##### S3 configuration #####
 # ARTIFACT_BACKEND_TYPE='s3'
-# SBOM_S3_BUCKET=sbom-files
+# S3_BUCKET=sbomvert
+# S3_PREFIX=artifacts/
 # S3_ENDPOINT=https://mys3.com
 # S3_FORCE_PATH_STYLE=true
 # S3_ACCESS_KEY_ID=KEY_ID
 # S3_SECRET_ACCESS_KEY=ACCES_KEY
 # AWS_REGION=us-east-1
 
+##### Local artifact storage #####
+# ARTIFACT_ROOT=./public
+
+NEXT_PUBLIC_BASE_URL='http://localhost:3000'
 NEXT_PUBLIC_ENABLE_SBOM_UPLOAD='false'
 NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
 
-#NEXT_PUBLIC_ENABLE_SCAN_API='true' # Still under development
+##### Scan API (experimental) #####
+#NEXT_PUBLIC_ENABLE_SCAN_API='true'
+#REDIS_HOST=127.0.0.1
+#REDIS_PORT=6379
+#SCAN_CONCURRENCY=2
+#RUN_EXPERIMENT_TIMEOUT=180000
 
 
 ```
@@ -138,4 +145,10 @@ npm run build
 ## License
 
 Apache 2.0
+
+## Acknowledgements
+
+This project is sponsored by [NLnet](https://nlnet.nl).
+
+[![NLnet logo](https://nlnet.nl/logo/banner.svg)](https://nlnet.nl)
 
