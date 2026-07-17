@@ -21,8 +21,17 @@ jest.mock('lucide-react', () => ({
 }));
 
 describe('Sidebar', () => {
+  const originalEnv = process.env;
+
   beforeEach(() => {
+    process.env = { ...originalEnv };
+    process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'false';
+    process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD = 'false';
     pushMock.mockClear();
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
   });
 
   it('renders all navigation items', () => {
@@ -34,13 +43,20 @@ describe('Sidebar', () => {
     expect(screen.getByText('CVE Comparison')).toBeInTheDocument();
   });
 
-  it('renders correct number of buttons', () => {
+  it('renders 4 buttons when scan API is disabled', () => {
     render(<Sidebar />);
 
-    const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(4);
+    expect(screen.getAllByRole('button')).toHaveLength(4);
   });
 
+  it('renders 5 buttons when scan API is enabled', () => {
+    process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'true';
+
+    render(<Sidebar />);
+
+    expect(screen.getAllByRole('button')).toHaveLength(5);
+    expect(screen.getByRole('button', { name: /scan/i })).toBeInTheDocument();
+  });
   it('calls router.push with correct route on click', () => {
     render(<Sidebar />);
 
