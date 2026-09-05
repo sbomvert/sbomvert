@@ -1,0 +1,144 @@
+name: Publish Helm Chart
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Chart/app version to publish. Required when triggered manually.'
+        required: true
+        type: string
+      reset_index:
+        description: 'Discard the existing Pages index and publish only the new chart. Use to drop dead/legacy entries.'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  helm-publish:
+    name: Package and Publish Helm Chart
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+
+      - name: Resolve version
+        id: ver
+        run: |
+          # On tag push: github.ref_name is the tag (e.g. v0.4.0).
+          # On workflow_dispatch: github.ref_name is the branch; require the
+          # `version` input instead.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${{ github.ref_name }}"
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "::error::No version resolved (tag-push ref empty and workflow_dispatch input missing)"
+            exit 1
+          fi
+          if [[ "$VERSION" != v* ]]; then
+            echo "::error::Version '$VERSION' must start with 'v' (e.g. v0.4.0)"
+            exit 1
+          fi
+          CHART_VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "chart_version=$CHART_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION (chart version: $CHART_VERSION)"
+
+      - name: Update Chart Version
+        run: |
+          VERSION='${{ steps.ver.outputs.version }}'
+          CHART_VERSION='${{ steps.ver.outputs.chart_version }}'
+
+          sed -i "s/^version:.*/version: $CHART_VERSION/" charts/sbomvert/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" charts/sbomvert/Chart.yaml
+
+          sed -i "s|tag: .*|tag: $VERSION|" charts/sbomvert/values.yaml
+
+          echo "Updated Chart.yaml:"
+          grep -E "^(version|appVersion):" charts/sbomvert/Chart.yaml
+
+      - name: Fetch previously published charts
+        env:
+          RESET_INDEX: ${{ inputs.reset_index }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p .helm-repo
+          touch .helm-repo/.nojekyll
+
+          if [ "$RESET_INDEX" = "true" ]; then
+            echo "reset_index=true — discarding any previously published chart versions"
+            exit 0
+          fi
+
+          PAGES_URL="https://sbomvert.github.io/sbomvert"
+
+          if ! curl -fsSL "$PAGES_URL/index.yaml" -o previous-index.yaml; then
+            echo "No previously published index found at $PAGES_URL/index.yaml — starting fresh"
+            exit 0
+          fi
+
+          echo "Downloading previously published chart archives"
+          mapfile -t urls < <(grep -oE 'https://[^"[:space:]]+\.tgz' previous-index.yaml | sort -u)
+          for url in "${urls[@]}"; do
+            echo "  $url"
+            if ! curl -fsSL "$url" -O --output-dir .helm-repo; then
+              echo "::error::Failed to download previously published chart archive: $url. Refusing to publish, since this would drop it from the index without preserving its .tgz. Re-run, or use reset_index to intentionally discard history."
+              exit 1
+            fi
+          done
+
+      - name: Package Helm Chart
+        env:
+          RESET_INDEX: ${{ inputs.reset_index }}
+        run: |
+          helm package charts/sbomvert --destination .helm-repo
+
+          if [ "$RESET_INDEX" != "true" ] && [ -f previous-index.yaml ]; then
+            echo "Merging with previous index"
+            helm repo index .helm-repo \
+              --url https://sbomvert.github.io/sbomvert \
+              --merge previous-index.yaml
+          else
+            echo "Generating a fresh index (no merge)"
+            helm repo index .helm-repo \
+              --url https://sbomvert.github.io/sbomvert
+          fi
+
+          echo "Charts in repository:"
+          ls -lh .helm-repo/*.tgz
+          echo ""
+          echo "Index entries:"
+          grep -E "^\s+(version|urls):" .helm-repo/index.yaml || true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: .helm-repo
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
