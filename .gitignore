@@ -17,6 +17,8 @@ pnpm-debug.log*
 coverage/
 .cache
 .vercel
+docs-site/.vitepress/cache
+docs-site/.vitepress/dist
 
 public/sbom/
 public/cve/
