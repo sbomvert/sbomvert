@@ -72,7 +72,7 @@ jobs:
           sed -i "s/^version:.*/version: $CHART_VERSION/" charts/sbomvert/Chart.yaml
           sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" charts/sbomvert/Chart.yaml
 
-          sed -i "s|tag: .*|tag: $VERSION|" charts/sbomvert/values.yaml
+          sed -i "/^app:/,/^redis:/ s|^\([[:space:]]*\)tag: .*|\1tag: $VERSION|" charts/sbomvert/values.yaml
 
           echo "Updated Chart.yaml:"
           grep -E "^(version|appVersion):" charts/sbomvert/Chart.yaml
