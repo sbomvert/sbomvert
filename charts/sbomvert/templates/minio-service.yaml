@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+spec:
+  selector:
+    app: {{ .Release.Name }}-minio
+  ports:
+    - name: api
+      port: {{ .Values.minio.port }}
+      targetPort: {{ .Values.minio.port }}
+    - name: console
+      port: {{ .Values.minio.consolePort }}
+      targetPort: {{ .Values.minio.consolePort }}
+  type: ClusterIP

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+  labels:
+    app: {{ .Release.Name }}-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-app
+    spec:
+      containers:
+        - name: sbomvert
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.app.port }}
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.app.env.NODE_ENV | quote }}
+            - name: REDIS_HOST
+              value: {{ .Values.app.env.REDIS_HOST | quote }}
+            - name: ARTIFACT_BACKEND_TYPE
+              value: {{ .Values.app.env.ARTIFACT_BACKEND_TYPE | quote }}
+            - name: S3_ENDPOINT
+              value: {{ .Values.app.env.S3_ENDPOINT | quote }}
+            - name: S3_ACCESS_KEY_ID
+              value: {{ .Values.app.env.S3_ACCESS_KEY_ID | quote }}
+            - name: S3_SECRET_ACCESS_KEY
+              value: {{ .Values.app.env.S3_SECRET_ACCESS_KEY | quote }}
+            - name: SBOM_S3_BUCKET
+              value: {{ .Values.app.env.SBOM_S3_BUCKET | quote }}
+            - name: CVE_S3_BUCKET
+              value: {{ .Values.app.env.CVE_S3_BUCKET | quote }}
