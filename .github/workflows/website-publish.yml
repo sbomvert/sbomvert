@@ -1,14 +1,27 @@
 name: Publish Helm Chart
 
 on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+  # Docs-only auto-publish on main branch 
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - '.github/workflows/docs-ci.yml'
+      - '.github/workflows/website-publish.yml'
   workflow_dispatch:
     inputs:
+      docs_only:
+        description: 'Publish docs only, leaving the existing charts unchanged (no version required).'
+        required: false
+        type: boolean
+        default: false
       version:
-        description: 'Chart/app version to publish. Required when triggered manually.'
-        required: true
+        description: 'Chart/app version to publish. Required unless docs_only is set.'
+        required: false
         type: string
       reset_index:
         description: 'Discard the existing Pages index and publish only the new chart. Use to drop dead/legacy entries.'
@@ -28,12 +41,18 @@ concurrency:
 jobs:
   docs:
     name: Build docs
+    # On workflow_run, only proceed when the Release run actually succeeded.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/docs-ci.yml
 
   helm-publish:
     name: Package and Publish Helm Chart
     needs: docs
     runs-on: ubuntu-latest
+    # Docs-only when triggered by a docs push, or by a manual run with the
+    # docs_only box checked. A workflow_run (post-Release) always packages a chart.
+    env:
+      DOCS_ONLY: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.docs_only) }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -41,20 +60,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # workflow_run runs against the default branch by default; check out
+          # the tag that triggered the Release run so we package the right ref.
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
 
       - name: Install Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
 
       - name: Resolve version
         id: ver
+        if: env.DOCS_ONLY != 'true'
         run: |
-          # On tag push: github.ref_name is the tag (e.g. v0.4.0).
+          # On workflow_run (after Release): the triggering tag is exposed as
+          #   github.event.workflow_run.head_branch (e.g. v0.4.0).
           # On workflow_dispatch: github.ref_name is the branch; require the
-          # `version` input instead.
+          #   `version` input instead.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ inputs.version }}"
           else
-            VERSION="${{ github.ref_name }}"
+            VERSION="${{ github.event.workflow_run.head_branch }}"
           fi
           if [ -z "$VERSION" ]; then
             echo "::error::No version resolved (tag-push ref empty and workflow_dispatch input missing)"
@@ -70,6 +95,7 @@ jobs:
           echo "Resolved version: $VERSION (chart version: $CHART_VERSION)"
 
       - name: Update Chart Version
+        if: env.DOCS_ONLY != 'true'
         run: |
           VERSION='${{ steps.ver.outputs.version }}'
           CHART_VERSION='${{ steps.ver.outputs.chart_version }}'
@@ -95,7 +121,7 @@ jobs:
             exit 0
           fi
 
-          PAGES_URL="https://sbomvert.github.io/charts"
+          PAGES_URL="https://sbomvert.github.io/sbomvert/charts"
 
           if ! curl -fsSL "$PAGES_URL/index.yaml" -o previous-index.yaml; then
             echo "No previously published index found at $PAGES_URL/index.yaml — starting fresh"
@@ -116,17 +142,31 @@ jobs:
         env:
           RESET_INDEX: ${{ inputs.reset_index }}
         run: |
+          if [ "$DOCS_ONLY" = "true" ]; then
+            # Preserve the published charts verbatim: the archives were already
+            # fetched into .helm-repo above; reuse the existing index unchanged.
+            echo "Docs-only publish — carrying existing charts forward, packaging no new chart"
+            if [ -f previous-index.yaml ]; then
+              cp previous-index.yaml .helm-repo/index.yaml
+            else
+              echo "No charts have ever been published — generating an empty index"
+              helm repo index .helm-repo --url https://sbomvert.github.io/sbomvert/charts
+            fi
+            ls -lh .helm-repo/*.tgz 2>/dev/null || echo "(no chart archives)"
+            exit 0
+          fi
+
           helm package charts/sbomvert --destination .helm-repo
 
           if [ "$RESET_INDEX" != "true" ] && [ -f previous-index.yaml ]; then
             echo "Merging with previous index"
             helm repo index .helm-repo \
-              --url https://sbomvert.github.io/charts \
+              --url https://sbomvert.github.io/sbomvert/charts \
               --merge previous-index.yaml
           else
             echo "Generating a fresh index (no merge)"
             helm repo index .helm-repo \
-              --url https://sbomvert.github.io/charts
+              --url https://sbomvert.github.io/sbomvert/charts
           fi
 
           echo "Charts in repository:"
