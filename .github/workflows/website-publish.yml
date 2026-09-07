@@ -26,8 +26,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  docs:
+    name: Build docs
+    uses: ./.github/workflows/docs-ci.yml
+
   helm-publish:
     name: Package and Publish Helm Chart
+    needs: docs
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -84,14 +89,13 @@ jobs:
           set -euo pipefail
 
           mkdir -p .helm-repo
-          touch .helm-repo/.nojekyll
 
           if [ "$RESET_INDEX" = "true" ]; then
             echo "reset_index=true — discarding any previously published chart versions"
             exit 0
           fi
 
-          PAGES_URL="https://sbomvert.github.io/sbomvert"
+          PAGES_URL="https://sbomvert.github.io/charts"
 
           if ! curl -fsSL "$PAGES_URL/index.yaml" -o previous-index.yaml; then
             echo "No previously published index found at $PAGES_URL/index.yaml — starting fresh"
@@ -117,12 +121,12 @@ jobs:
           if [ "$RESET_INDEX" != "true" ] && [ -f previous-index.yaml ]; then
             echo "Merging with previous index"
             helm repo index .helm-repo \
-              --url https://sbomvert.github.io/sbomvert \
+              --url https://sbomvert.github.io/charts \
               --merge previous-index.yaml
           else
             echo "Generating a fresh index (no merge)"
             helm repo index .helm-repo \
-              --url https://sbomvert.github.io/sbomvert
+              --url https://sbomvert.github.io/charts
           fi
 
           echo "Charts in repository:"
@@ -130,6 +134,21 @@ jobs:
           echo ""
           echo "Index entries:"
           grep -E "^\s+(version|urls):" .helm-repo/index.yaml || true
+      
+      - name: Download built docs site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: docs-site
+          path: docs-site-dist
+
+      - name: Assemble Pages artifact
+        run: |
+          # Docs site at the root, Helm chart repo under /charts.
+          mkdir -p public
+          cp -r docs-site-dist/. public/
+          mkdir -p public/charts
+          cp .helm-repo/* public/charts/
+          touch public/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
@@ -137,7 +156,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: .helm-repo
+          path: public
 
       - name: Deploy to GitHub Pages
         id: deployment
