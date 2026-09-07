@@ -1,0 +1,43 @@
+/**
+ * Brand palette mirrored from the main app's tailwind.config.js / globals.css 
+ */
+:root {
+  --vp-c-brand-1: #4f46e5; /* indigo-600 — primary */
+  --vp-c-brand-2: #4338ca; /* indigo-700 — hover */
+  --vp-c-brand-3: #6366f1; /* indigo-500 — active/lighter accents */
+  --vp-c-brand-soft: #e0e7ff; /* indigo-100 — subtle backgrounds */
+
+  --vp-c-bg: #f8fafc; /* slate-50 */
+  --vp-c-bg-alt: #f1f5f9; /* slate-100 */
+  --vp-c-bg-elv: #ffffff;
+
+  --vp-c-text-1: #334155; /* slate-700 */
+  --vp-c-text-2: #475569; /* slate-600 */
+  --vp-c-text-3: #94a3b8; /* slate-400 */
+
+  --vp-c-divider: #e2e8f0;
+  --vp-c-gutter: #e2e8f0;
+}
+
+.dark {
+  --vp-c-bg: #020617; /* slate-950 */
+  --vp-c-bg-alt: #0f172a; /* slate-900 */
+  --vp-c-bg-elv: #0f172a;
+
+  --vp-c-text-1: #f8fafc;
+  --vp-c-text-2: #94a3b8;
+  --vp-c-text-3: #64748b;
+
+  --vp-c-divider: #1e293b;
+  --vp-c-gutter: #1e293b;
+}
+
+/* Home hero gradient using the brand indigo instead of VitePress' default green */
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #6366f1 30%, #4f46e5);
+
+  --vp-button-brand-bg: var(--vp-c-brand-1);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-bg: var(--vp-c-brand-2);
+}

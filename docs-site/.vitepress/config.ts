@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   title: 'SBOMVert',
   description: 'SBOM and CVE comparison across Syft, Trivy, Docker Scout, and Grype',
-  base: '/sbomvert/',
+  base: '/',
   cleanUrls: true,
 
   themeConfig: {
