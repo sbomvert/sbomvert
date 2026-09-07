@@ -6,6 +6,7 @@ on:
     paths:
       - "docs-site/**"
       - ".github/workflows/docs-ci.yml"
+  workflow_call:
 
 jobs:
   build:
@@ -25,5 +26,23 @@ jobs:
       - name: Install docs dependencies
         run: npm ci --prefix docs-site
 
+      # Cache VitePress deps
+      - name: Cache VitePress build
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: docs-site/.vitepress/cache
+          key: vitepress-${{ hashFiles('docs-site/package-lock.json') }}-${{ hashFiles('docs-site/**/*.md', 'docs-site/.vitepress/config.ts') }}
+          restore-keys: |
+            vitepress-${{ hashFiles('docs-site/package-lock.json') }}-
+            vitepress-
+
       - name: Build docs
         run: npm run docs:build
+
+      # Make the built site available to callers (e.g. website-publish).
+      - name: Upload docs build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docs-site
+          path: docs-site/.vitepress/dist
+          if-no-files-found: error
