@@ -5,11 +5,23 @@ on:
     workflows: ["Release"]
     types:
       - completed
+  # Docs-only auto-publish on main branch 
+  push:
+    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - '.github/workflows/docs-ci.yml'
+      - '.github/workflows/website-publish.yml'
   workflow_dispatch:
     inputs:
+      docs_only:
+        description: 'Publish docs only, leaving the existing charts unchanged (no version required).'
+        required: false
+        type: boolean
+        default: false
       version:
-        description: 'Chart/app version to publish. Required when triggered manually.'
-        required: true
+        description: 'Chart/app version to publish. Required unless docs_only is set.'
+        required: false
         type: string
       reset_index:
         description: 'Discard the existing Pages index and publish only the new chart. Use to drop dead/legacy entries.'
@@ -37,6 +49,10 @@ jobs:
     name: Package and Publish Helm Chart
     needs: docs
     runs-on: ubuntu-latest
+    # Docs-only when triggered by a docs push, or by a manual run with the
+    # docs_only box checked. A workflow_run (post-Release) always packages a chart.
+    env:
+      DOCS_ONLY: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.docs_only) }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -54,6 +70,7 @@ jobs:
 
       - name: Resolve version
         id: ver
+        if: env.DOCS_ONLY != 'true'
         run: |
           # On workflow_run (after Release): the triggering tag is exposed as
           #   github.event.workflow_run.head_branch (e.g. v0.4.0).
@@ -78,6 +95,7 @@ jobs:
           echo "Resolved version: $VERSION (chart version: $CHART_VERSION)"
 
       - name: Update Chart Version
+        if: env.DOCS_ONLY != 'true'
         run: |
           VERSION='${{ steps.ver.outputs.version }}'
           CHART_VERSION='${{ steps.ver.outputs.chart_version }}'
@@ -124,6 +142,20 @@ jobs:
         env:
           RESET_INDEX: ${{ inputs.reset_index }}
         run: |
+          if [ "$DOCS_ONLY" = "true" ]; then
+            # Preserve the published charts verbatim: the archives were already
+            # fetched into .helm-repo above; reuse the existing index unchanged.
+            echo "Docs-only publish — carrying existing charts forward, packaging no new chart"
+            if [ -f previous-index.yaml ]; then
+              cp previous-index.yaml .helm-repo/index.yaml
+            else
+              echo "No charts have ever been published — generating an empty index"
+              helm repo index .helm-repo --url https://sbomvert.github.io/sbomvert/charts
+            fi
+            ls -lh .helm-repo/*.tgz 2>/dev/null || echo "(no chart archives)"
+            exit 0
+          fi
+
           helm package charts/sbomvert --destination .helm-repo
 
           if [ "$RESET_INDEX" != "true" ] && [ -f previous-index.yaml ]; then
