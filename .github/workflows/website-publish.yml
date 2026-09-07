@@ -1,9 +1,10 @@
 name: Publish Helm Chart
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       version:
@@ -28,6 +29,8 @@ concurrency:
 jobs:
   docs:
     name: Build docs
+    # On workflow_run, only proceed when the Release run actually succeeded.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/docs-ci.yml
 
   helm-publish:
@@ -41,6 +44,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # workflow_run runs against the default branch by default; check out
+          # the tag that triggered the Release run so we package the right ref.
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
 
       - name: Install Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
@@ -48,13 +55,14 @@ jobs:
       - name: Resolve version
         id: ver
         run: |
-          # On tag push: github.ref_name is the tag (e.g. v0.4.0).
+          # On workflow_run (after Release): the triggering tag is exposed as
+          #   github.event.workflow_run.head_branch (e.g. v0.4.0).
           # On workflow_dispatch: github.ref_name is the branch; require the
-          # `version` input instead.
+          #   `version` input instead.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ inputs.version }}"
           else
-            VERSION="${{ github.ref_name }}"
+            VERSION="${{ github.event.workflow_run.head_branch }}"
           fi
           if [ -z "$VERSION" ]; then
             echo "::error::No version resolved (tag-push ref empty and workflow_dispatch input missing)"
@@ -95,7 +103,7 @@ jobs:
             exit 0
           fi
 
-          PAGES_URL="https://sbomvert.github.io/charts"
+          PAGES_URL="https://sbomvert.github.io/sbomvert/charts"
 
           if ! curl -fsSL "$PAGES_URL/index.yaml" -o previous-index.yaml; then
             echo "No previously published index found at $PAGES_URL/index.yaml — starting fresh"
@@ -121,12 +129,12 @@ jobs:
           if [ "$RESET_INDEX" != "true" ] && [ -f previous-index.yaml ]; then
             echo "Merging with previous index"
             helm repo index .helm-repo \
-              --url https://sbomvert.github.io/charts \
+              --url https://sbomvert.github.io/sbomvert/charts \
               --merge previous-index.yaml
           else
             echo "Generating a fresh index (no merge)"
             helm repo index .helm-repo \
-              --url https://sbomvert.github.io/charts
+              --url https://sbomvert.github.io/sbomvert/charts
           fi
 
           echo "Charts in repository:"
