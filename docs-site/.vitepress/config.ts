@@ -11,7 +11,13 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Introduction',
-        items: [{ text: 'What is SBOMVert?', link: '/' }],
+        items: [{ text: 'What is SBOMVert?', link: '/introduction' }],
+      },
+      {
+        text: 'Guide',
+        items: [
+          { text: 'Getting Started', link: '/getting-started' },
+        ],
       },
     ],
     search: {
