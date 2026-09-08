@@ -50,12 +50,5 @@ identifiers fail to agree.
 
 SBOMVert reads SBOM and CVE reports as data, diffs them, and "translates" SBOM
 documents so that they become compatible with downstream security scanners.
-There are two ways to supply data to SBOMVert:
-
-1. **Pre-generated dataset (default).** SBOMs and CVE reports are static JSON
-   files read from disk or uploaded by the user.
-2. **Live scan (experimental).** SBOMVert can generate SBOMs and CVE reports
-   from a number of tools on demand. It is off by default and requires
-   additional setup ([see Getting Started](/getting-started)).
 
 SBOMVert currently supports **SPDX** and **CycloneDX**.
