@@ -5,8 +5,9 @@ export default defineConfig({
   description: 'SBOM and CVE comparison across Syft, Trivy, Docker Scout, and Grype',
   base: '/sbomvert/',
   cleanUrls: true,
-
+  head: [['link', { rel: 'icon', href: '/sbomvert/favicon.ico' }]],
   themeConfig: {
+
     nav: [{ text: 'Home', link: '/' }],
     sidebar: [
       {
