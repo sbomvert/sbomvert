@@ -34,10 +34,14 @@ export const auth = betterAuth({
             }
         }),
         magicLink({ 
-            sendMagicLink: async ({ email, token, url, metadata }, ctx) => { 
+            sendMagicLink: async ({ email, url }) => {
                 //TODO: send email to user
-                console.log({email, token, url, metadata, ctx})
-            } 
+                // A logged link signs in as that user: only in development, never in production logs.
+                if (process.env.NODE_ENV === "production") {
+                    throw new Error("Magic link sign-in needs email sending, which is not configured")
+                }
+                console.log(`Magic link for ${email}: ${url}`)
+            }
         }) 
     ]
 });
