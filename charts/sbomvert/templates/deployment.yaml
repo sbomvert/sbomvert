@@ -21,8 +21,9 @@ spec:
           ports:
             - containerPort: {{ .Values.app.port }}
           env:
+            # not configurable: the image runs Next's standalone server, which is production-only
             - name: NODE_ENV
-              value: {{ .Values.app.env.NODE_ENV | quote }}
+              value: production
             - name: REDIS_HOST
               value: {{ .Values.app.env.REDIS_HOST | quote }}
             - name: ARTIFACT_BACKEND_TYPE

@@ -1,0 +1,15 @@
+# Local secrets: `next build` copies .env into the standalone output, i.e. into the image.
+# The image gets its configuration from the runtime environment instead.
+.env*
+
+# Installed/built inside the image; host copies would overwrite them (and may be for another OS)
+node_modules
+.next
+coverage
+storage
+
+.git
+.worktrees
+.claude
+docs
+docs-site

@@ -76,7 +76,8 @@ FROM node:${NODE_VERSION} AS runner
 # Set working directory
 WORKDIR /app
 
-# Set production environment variables
+# Set production environment variables. NODE_ENV is production regardless: Next's standalone
+# server.js sets it at startup, so `docker run -e NODE_ENV=…` can't change it.
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"

@@ -34,7 +34,6 @@ helm install sbomvert oci://ghcr.io/sbomvert/charts/sbomvert \
 | `app.image.tag` | Container image tag | `latest` |
 | `app.image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `app.port` | Port the app listens on | `3000` |
-| `app.env.NODE_ENV` | Node environment | `production` |
 | `app.env.REDIS_HOST` | Hostname of the Redis service | `redis` |
 | `app.env.ARTIFACT_BACKEND_TYPE` | Storage backend (`local` or `s3`) | `s3` |
 | `app.env.S3_ENDPOINT` | S3-compatible endpoint URL | `http://minio:9000` |
