@@ -1,0 +1,79 @@
+name: PR labels
+
+# Labels pull requests from their title and body:
+#   type:      the conventional-commit type of the title  (`fix: ...` → bug, `feat: ...` → enhancement)
+#   area:      the scope of the title                      (`fix(sbom): ...` → area: sbom)
+#   breaking:  `type!:` in the title or "BREAKING CHANGE" in the body → breaking-change
+# Re-runs when the title or body is edited; removes labels it owns that no longer apply, and never
+# touches labels it does not own. Labels that don't exist yet are created by GitHub on first use.
+#
+# pull_request_target so it can label PRs from forks too. It only reads the PR's title and body
+# from the event and never checks out or runs PR code.
+on:
+  pull_request_target:
+    types: [opened, edited, reopened]
+
+permissions: {}
+
+jobs:
+  label:
+    # Dependabot labels its own PRs; its runs only get a read-only token.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const TYPES = {
+              feat: 'enhancement',
+              fix: 'bug',
+              docs: 'documentation',
+              refactor: 'refactor',
+              perf: 'performance',
+              test: 'tests',
+              ci: 'ci',
+              build: 'build',
+              chore: 'chore',
+              revert: 'revert',
+            };
+            // scope (or part of it, e.g. `fix(helm,docker): ...`) → area label
+            const AREAS = [
+              [/^(sbom|syft|spdx|cyclonedx|cdx)$/, 'area: sbom'],
+              [/^(cve|cves|vuln|grype|trivy|scout)$/, 'area: cve'],
+              [/^(worker|scan|scans|queue)$/, 'area: scan worker'],
+              [/^(helm|chart|charts|k8s)$/, 'area: helm'],
+              [/^(docker|compose|dockerfile)$/, 'area: docker'],
+              [/^(ui|frontend|components)$/, 'area: ui'],
+              [/^(api|routes)$/, 'area: api'],
+              [/^(storage|s3|seaweedfs)$/, 'area: storage'],
+              [/^(deps|deps-dev)$/, 'dependencies'],
+            ];
+            const BREAKING = 'breaking-change';
+            const owned = new Set([...Object.values(TYPES), ...AREAS.map(([, l]) => l), BREAKING]);
+
+            const pr = context.payload.pull_request;
+            const title = pr.title ?? '';
+            const body = pr.body ?? '';
+            const m = title.match(/^(\w+)(?:\(([^)]*)\))?(!)?:\s/);
+
+            const wanted = new Set();
+            if (m) {
+              const [, type, scope = '', bang] = m;
+              if (TYPES[type.toLowerCase()]) wanted.add(TYPES[type.toLowerCase()]);
+              for (const part of scope.toLowerCase().split(/[,/\s]+/).filter(Boolean)) {
+                for (const [re, label] of AREAS) if (re.test(part)) wanted.add(label);
+              }
+              if (bang) wanted.add(BREAKING);
+            }
+            if (/^BREAKING[ -]CHANGE:/m.test(body)) wanted.add(BREAKING);
+
+            const current = new Set(pr.labels.map(l => l.name));
+            const add = [...wanted].filter(l => !current.has(l));
+            const remove = [...current].filter(l => owned.has(l) && !wanted.has(l));
+            const issue = { owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number };
+
+            if (add.length) await github.rest.issues.addLabels({ ...issue, labels: add });
+            for (const name of remove) await github.rest.issues.removeLabel({ ...issue, name });
+            core.info(`title: ${title}\nadded: ${add.join(', ') || '-'}\nremoved: ${remove.join(', ') || '-'}`);
