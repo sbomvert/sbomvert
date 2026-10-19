@@ -6,7 +6,8 @@ import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 
 import { Settings } from "@/components/auth/settings/settings"
-import { auth } from "@/lib/auth"
+import { getAuth } from "@/lib/auth"
+import { FEATURE_FLAGS } from "@/lib/featureFlags"
 import { getQueryClient } from "@/lib/query-client"
 
 const validSettingsPaths = new Set([
@@ -23,14 +24,14 @@ export default async function SettingsPage({
 }) {
   const { path } = await params
 
-  if (!validSettingsPaths.has(path)) {
+  if (!FEATURE_FLAGS.ENABLE_AUTH || !validSettingsPaths.has(path)) {
     notFound()
   }
 
   const requestHeaders = await headers()
   const queryClient = getQueryClient()
 
-  const session = await ensureSessionServer(queryClient, auth, {
+  const session = await ensureSessionServer(queryClient, getAuth(), {
     headers: requestHeaders
   })
 

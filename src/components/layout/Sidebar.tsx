@@ -7,9 +7,32 @@ import { UserButton } from '@/components/auth/user/user-button';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 
-export default function Sidebar() {
+// Its own component: useSession needs the AuthProvider, which is only there with auth enabled.
+function SidebarAccount() {
   const router = useRouter();
   const { data: session } = useSession(authClient);
+
+  return (
+    <div className="mt-auto p-2">
+      {session ? (
+          <UserButton />
+      ) : (
+        <div className="hover:bg-border transition rounded-md p-2">
+          <button
+            onClick={() => router.push('/auth/sign-in')}
+            className="flex items-center gap-3 text-left px-3 py-2 w-full text-foreground"
+          >
+            <LogIn className="w-5 h-5 text-foreground-muted" aria-hidden />
+            <span className="text-body-sm font-medium">Login</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Sidebar() {
+  const router = useRouter();
 
   const navItems = [
     { icon: Home,                    label: 'Home',            href: '/' },
@@ -44,21 +67,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto p-2">
-        {session ? (
-            <UserButton />
-        ) : (
-          <div className="hover:bg-border transition rounded-md p-2">
-            <button
-              onClick={() => router.push('/auth/sign-in')}
-              className="flex items-center gap-3 text-left px-3 py-2 w-full text-foreground"
-            >
-              <LogIn className="w-5 h-5 text-foreground-muted" aria-hidden />
-              <span className="text-body-sm font-medium">Login</span>
-            </button>
-          </div>
-        )}
-      </div>
+      {FEATURE_FLAGS.ENABLE_AUTH && <SidebarAccount />}
     </aside>
   );
 }

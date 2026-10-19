@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { FEATURE_FLAGS } from '@/lib/featureFlags'
-import { auth } from './lib/auth';
+import { getAuth } from './lib/auth';
 
 export async function proxy(request: NextRequest) {
     if (!FEATURE_FLAGS.ENABLE_SCAN_API) {
@@ -10,6 +10,7 @@ export async function proxy(request: NextRequest) {
 
     // NOTE: it's only for now
     if (
+        FEATURE_FLAGS.ENABLE_AUTH &&
         request.nextUrl.pathname === "/api/scan" &&
         request.method === "POST"
     ) {
@@ -17,7 +18,7 @@ export async function proxy(request: NextRequest) {
 
         // CLI authentication
         if (apiKeyString) {
-            const result = await auth.api.verifyApiKey({
+            const result = await getAuth().api.verifyApiKey({
                 body: {
                     key: apiKeyString,
                 },
@@ -38,7 +39,7 @@ export async function proxy(request: NextRequest) {
         }
 
         // Web authentication
-        const session = await auth.api.getSession({
+        const session = await getAuth().api.getSession({
             headers: request.headers,
         })
 
@@ -61,6 +62,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
     matcher: [
-        "/api/scan",
+        // the whole scan feature is off without ENABLE_SCAN_API
+        "/scan",
+        "/api/scan/:path*",
     ],
 }

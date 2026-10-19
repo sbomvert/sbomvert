@@ -19,6 +19,11 @@ jest.mock('@/lib/auth-client', () => ({
   authClient: {},
 }));
 
+// The real one imports @better-auth-ui, which ships ES modules only (Jest can't load them)
+jest.mock('@/components/auth/user/user-button', () => ({
+  UserButton: () => <span>Logged in</span>,
+}));
+
 // Mock lucide-react icons (avoid SVG noise)
 jest.mock('lucide-react', () => ({
   Shield: () => <svg data-testid="icon-shield" />,
@@ -38,7 +43,9 @@ describe('Sidebar', () => {
     process.env = { ...originalEnv };
     process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'false';
     process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD = 'false';
+    process.env.NEXT_PUBLIC_ENABLE_AUTH = 'true';
     pushMock.mockClear();
+    useSessionMock.mockClear();
     useSessionMock.mockReturnValue({ data: null });
   });
 
@@ -58,6 +65,17 @@ describe('Sidebar', () => {
     expect(screen.getByText('SBOM Comparison')).toBeInTheDocument();
     expect(screen.getByText('CVE Comparison')).toBeInTheDocument();
     expect(screen.getByText('Login')).toBeInTheDocument();
+  });
+
+  it('has no login or account controls when auth is disabled', () => {
+    process.env.NEXT_PUBLIC_ENABLE_AUTH = 'false';
+
+    render(<Sidebar />);
+
+    expect(screen.queryByText('Login')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(4);
+    // useSession needs the AuthProvider, which is not rendered without auth
+    expect(useSessionMock).not.toHaveBeenCalled();
   });
 
   it('renders 5 buttons when scan API is disabled', () => {

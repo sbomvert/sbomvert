@@ -9,6 +9,7 @@ import { apiKeyPlugin } from "@/lib/auth/api-key-plugin"
 import { magicLinkPlugin } from "@/lib/auth/magic-link-plugin"
 import { authClient } from "@/lib/auth-client"
 import { getQueryClient } from "@/lib/query-client"
+import { FEATURE_FLAGS } from "@/lib/featureFlags"
 import { AuthProvider } from "./auth/auth-provider"
 import { Toaster } from "./ui/sonner"
 import { TooltipProvider } from "./ui/tooltip"
@@ -16,6 +17,17 @@ import { TooltipProvider } from "./ui/tooltip"
 export function Providers({ children }: { children: ReactNode }) {
     const router = useRouter()
     const queryClient = getQueryClient()
+
+    const content = (
+        <>
+            <TooltipProvider>{children}</TooltipProvider>
+            <Toaster />
+        </>
+    )
+
+    if (!FEATURE_FLAGS.ENABLE_AUTH) {
+        return <QueryClientProvider client={queryClient}>{content}</QueryClientProvider>
+    }
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -40,8 +52,7 @@ export function Providers({ children }: { children: ReactNode }) {
                 ]}
                 Link={Link}
             >
-                <TooltipProvider>{children}</TooltipProvider>
-                <Toaster />
+                {content}
             </AuthProvider>
         </QueryClientProvider>
     )
