@@ -95,7 +95,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title = 'Upload 
               <Button
                 type="button"
                 size='Sm'
-                variant="outline"
+                variant="outline-solid"
                 onClick={() => document.getElementById('file-input')?.click()}
               >
                 Choose File
@@ -120,7 +120,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title = 'Upload 
             <Button type="submit" size='Sm' variant="primary" disabled={isSubmitting}>
               {isSubmitting ? 'Loading…' : submitText}
             </Button>
-            <Button type="button" size='Sm' variant="outline" onClick={onCancel}>
+            <Button type="button" size='Sm' variant="outline-solid" onClick={onCancel}>
               Cancel
             </Button>
           </div>

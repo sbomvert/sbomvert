@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'disabled' | 'unfocused';
+  variant?: 'primary' | 'secondary' | 'outline-solid' | 'disabled' | 'unfocused';
   size?: 'sm' | 'md' | 'lg' | 'Sm';
   withHover?: boolean;
   children?: React.ReactNode;
@@ -28,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
       'border-2 border-input bg-input text-foreground focus:ring-ring shadow-button ' +
       (withHover ? 'hover:bg-border' : ''),
 
-    outline:
+    "outline-solid":
       'border-2 border-primary text-primary focus:ring-ring ' +
       (withHover ? 'hover:bg-info-subtle' : ''),
 

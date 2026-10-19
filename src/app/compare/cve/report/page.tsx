@@ -78,7 +78,7 @@ function PackageTableRow({
             <td key={tool} className="py-3 px-4 text-center tabular-nums">
               {count > 0 ? (
                 <span
-                  className="inline-block text-body-sm font-semibold rounded-pill min-w-[1.75rem] py-0.5 px-2"
+                  className="inline-block text-body-sm font-semibold rounded-pill min-w-7 py-0.5 px-2"
                   style={{ background: `${toolColors[tool]}22`, color: toolColors[tool] }}
                 >
                   {count}
@@ -288,7 +288,7 @@ export default function CVEPage() {
                     placeholder="Search packages…"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-body-sm bg-surface border border-border rounded-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
+                    className="w-full pl-9 pr-3 py-2 text-body-sm bg-surface border border-border rounded-input text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
                   />
                 </div>
                 <div className="flex gap-2 flex-wrap">

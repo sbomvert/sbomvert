@@ -1,0 +1,227 @@
+"use client"
+
+import type {
+  ApiKeyAuthClient,
+  ListedApiKey
+} from "@better-auth-ui/core/plugins/api-key"
+import { useAuth, useAuthPlugin } from "@better-auth-ui/react"
+import { useListApiKeys } from "@better-auth-ui/react/plugins/api-key"
+import {
+  createTableHook,
+  functionalUpdate,
+  type PaginationState,
+  rowPaginationFeature,
+  rowSortingFeature,
+  type SortingState,
+  tableFeatures,
+  type Updater
+} from "@tanstack/react-table"
+import { Fragment, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ItemGroup, ItemSeparator } from "@/components/ui/item"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import { apiKeyPlugin } from "@/lib/auth/api-key-plugin"
+import { cn } from "@/lib/utils"
+import { ApiKey } from "./api-key"
+import { ApiKeySkeleton } from "./api-key-skeleton"
+import { ApiKeysEmpty } from "./api-keys-empty"
+import { CreateApiKeyDialog } from "./create-api-key-dialog"
+
+const { createAppColumnHelper, useAppTable: useApiKeyTable } = createTableHook({
+  enableMultiSort: false,
+  enableSortingRemoval: false,
+  sortDescFirst: false,
+  features: tableFeatures({ rowPaginationFeature, rowSortingFeature })
+})
+
+const apiKeyColumnHelper = createAppColumnHelper<ListedApiKey>()
+const apiKeyColumns = apiKeyColumnHelper.columns([
+  apiKeyColumnHelper.accessor("createdAt", { id: "createdAt" }),
+  apiKeyColumnHelper.accessor("name", { id: "name" })
+])
+const EMPTY_API_KEYS: ListedApiKey[] = []
+
+export type ApiKeysProps = {
+  className?: string
+  /** Scope the list and create payload to an organization. */
+  organizationId?: string
+  /** Force the loading skeleton and disable the list query. */
+  isPending?: boolean
+  /** Hide the "Create API key" button (header + empty state). */
+  hideCreate?: boolean
+  /** Hide the per-row delete button on listed keys. */
+  hideDelete?: boolean
+  /** Hide the per-row edit button on listed keys. */
+  hideUpdate?: boolean
+}
+
+export function ApiKeys({
+  className,
+  organizationId,
+  isPending: isPendingProp,
+  hideCreate,
+  hideDelete,
+  hideUpdate
+}: ApiKeysProps) {
+  const { authClient } = useAuth<ApiKeyAuthClient>()
+  const { localization: apiKeyLocalization, pageSize } =
+    useAuthPlugin(apiKeyPlugin)
+  const [pagination, setPaginationState] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize
+  })
+  const [sorting, setSortingState] = useState<SortingState>([
+    { id: "createdAt", desc: true }
+  ])
+  const primarySort = sorting[0]
+  const sortBy = primarySort?.id === "name" ? "name" : "createdAt"
+  const sortDirection = primarySort?.desc ? "desc" : "asc"
+  const sort = `${sortBy}:${sortDirection}`
+  const sortItems = [
+    { label: apiKeyLocalization.newest, value: "createdAt:desc" },
+    { label: apiKeyLocalization.oldest, value: "createdAt:asc" },
+    { label: apiKeyLocalization.nameAscending, value: "name:asc" },
+    { label: apiKeyLocalization.nameDescending, value: "name:desc" }
+  ]
+
+  const { data: listData, isPending: isListPending } = useListApiKeys(
+    authClient,
+    {
+      enabled: !isPendingProp,
+      query: {
+        limit: pagination.pageSize,
+        offset: pagination.pageIndex * pagination.pageSize,
+        sortBy,
+        sortDirection,
+        ...(organizationId ? { organizationId, configId: "organization" } : {})
+      }
+    }
+  )
+
+  const isPending = isPendingProp || isListPending
+  const setPagination = (updater: Updater<PaginationState>) =>
+    setPaginationState((current) => functionalUpdate(updater, current))
+  const setSorting = (updater: Updater<SortingState>) => {
+    setSortingState((current) => functionalUpdate(updater, current))
+    setPaginationState((current) => ({ ...current, pageIndex: 0 }))
+  }
+  const table = useApiKeyTable({
+    columns: apiKeyColumns,
+    data: listData?.apiKeys ?? EMPTY_API_KEYS,
+    getRowId: (apiKey) => apiKey.id,
+    manualPagination: true,
+    manualSorting: true,
+    state: { pagination, sorting },
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting
+  })
+
+  const [createOpen, setCreateOpen] = useState(false)
+
+  return (
+    <div className={cn("flex flex-col gap-3", className)}>
+      <div className="flex items-end justify-between gap-3">
+        <h2 className="truncate text-sm font-semibold">
+          {apiKeyLocalization.apiKeys}
+        </h2>
+
+        {!hideCreate && (
+          <Button
+            className="shrink-0"
+            size="sm"
+            disabled={isPending}
+            onClick={() => setCreateOpen(true)}
+          >
+            {apiKeyLocalization.createApiKey}
+          </Button>
+        )}
+      </div>
+      <Select
+        items={sortItems}
+        value={sort}
+        onValueChange={(value) => {
+          const [id, direction] = (value ?? "createdAt:desc").split(":")
+          table.setSorting([{ id, desc: direction === "desc" }])
+        }}
+      >
+        <SelectTrigger aria-label={apiKeyLocalization.sortBy}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {sortItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
+      <Card className="p-0">
+        <CardContent className="p-0">
+          {isPending ? (
+            <ApiKeySkeleton />
+          ) : !listData?.apiKeys.length ? (
+            <ApiKeysEmpty
+              onCreatePress={() => setCreateOpen(true)}
+              hideCreate={hideCreate}
+            />
+          ) : (
+            <ItemGroup className="gap-0">
+              {table.getRowModel().rows.map((row, index) => (
+                <Fragment key={row.id}>
+                  {index > 0 && <ItemSeparator />}
+                  <ApiKey
+                    apiKey={row.original}
+                    hideDelete={hideDelete}
+                    hideUpdate={hideUpdate}
+                    organizationId={organizationId}
+                  />
+                </Fragment>
+              ))}
+            </ItemGroup>
+          )}
+        </CardContent>
+      </Card>
+      {(pagination.pageIndex > 0 ||
+        (listData?.apiKeys.length ?? 0) === pagination.pageSize) && (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+          >
+            {apiKeyLocalization.previousPage}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={(listData?.apiKeys.length ?? 0) < pagination.pageSize}
+            onClick={() => table.nextPage()}
+          >
+            {apiKeyLocalization.nextPage}
+          </Button>
+        </div>
+      )}
+
+      {!hideCreate && (
+        <CreateApiKeyDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          organizationId={organizationId}
+        />
+      )}
+    </div>
+  )
+}

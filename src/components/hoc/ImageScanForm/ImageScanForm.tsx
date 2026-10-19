@@ -51,7 +51,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
       <input
         type="text"
         placeholder="repo/app:tag"
-        className="w-full border border-border p-2 mb-4 rounded-input bg-input text-foreground focus:ring-2 focus:ring-ring focus:outline-none placeholder:text-foreground-subtle"
+        className="w-full border border-border p-2 mb-4 rounded-input bg-input text-foreground focus:ring-2 focus:ring-ring focus:outline-hidden placeholder:text-foreground-subtle"
         value={image}
         onChange={e => setImage(e.target.value)}
       />

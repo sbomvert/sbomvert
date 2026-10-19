@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 interface SelectorProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'disabled' | 'unfocused';
+  variant?: 'primary' | 'secondary' | 'outline-solid' | 'disabled' | 'unfocused';
   size?: 'sm' | 'md' | 'lg' | 'Sm';
   withHover?: boolean;
   children?: React.ReactNode;
@@ -30,7 +30,7 @@ export const Selector: React.FC<SelectorProps> = ({
       'bg-input text-foreground focus:ring-ring shadow-button ' +
       (withHover ? 'hover:bg-border' : ''),
 
-    outline:
+    "outline-solid":
       'border-2 border-primary text-primary focus:ring-ring ' +
       (withHover ? 'hover:bg-info-subtle' : ''),
 
