@@ -25,20 +25,6 @@ export default function Sidebar() {
       : []),
   ];
 
-  const navItems = [
-    { icon: Home,                    label: 'Home',            href: '/' },
-    { icon: FileChartColumnIncreasing, label: 'SBOM Analysis', href: '/compare/analyze' },
-    { icon: Scale,                   label: 'SBOM Comparison', href: '/compare/sbom' },
-    { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve' },
-    ...(FEATURE_FLAGS.ENABLE_SCAN_API
-      ? [{ icon: ScanText, label: 'Scan', href: '/scan' }]
-      : []),
-
-    ...(FEATURE_FLAGS.ENABLE_SBOM_UPLOAD
-      ? [{ icon: Upload, label: 'Upload SBOM', href: '/compare/upload/sbom' }]
-      : []),
-  ];
-
   return (
     <aside className="w-64 bg-background border-r-4 border-border flex flex-col">
       <nav className="flex flex-col p-2">
