@@ -36,7 +36,7 @@
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.2",
     "fast-check": "^4.6.0",
-    "framer-motion": "^12.0.0",
+    "framer-motion": "^14.3.0",
     "lucide-react": "^0.469.0",
     "memfs": "^4.56.10",
     "next": "^16.1.6",
