@@ -85,7 +85,7 @@
     "tailwindcss": "^4.3.3",
     "tmp": "^0.2.1",
     "ts-jest": "^29.2.5",
-    "typescript": "^5.5.4",
+    "typescript": "^7.0.2",
     "vite": "^6.0.0"
   },
   "engines": {
