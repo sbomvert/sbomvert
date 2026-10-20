@@ -28,3 +28,4 @@ CLAUDE.md
 .worktrees
 .claude/
 storage/*
+tsconfig.tsbuildinfo
