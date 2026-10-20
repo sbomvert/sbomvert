@@ -1,12 +1,16 @@
 /**
  * Feature flags configuration
  */
+
+const runtimeEnv = (name: string) => process.env[name];
+
 export const FEATURE_FLAGS = {
   get ENABLE_SBOM_UPLOAD() {
     return process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD === 'true';
   },
+  // server-side only (see runtimeEnv)
   get ENABLE_SCAN_API() {
-    return process.env.NEXT_PUBLIC_ENABLE_SCAN_API === 'true';
+    return runtimeEnv('NEXT_PUBLIC_ENABLE_SCAN_API') === 'true';
   },
   get CVE_MAPPING_ENABLED() {
     return process.env.NEXT_PUBLIC_CVE_MAPPING_ENABLED === 'true';

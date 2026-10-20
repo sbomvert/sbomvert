@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Selector } from '@/components/select/Selector';
-import { SanitizeContainerImage } from '@/lib/utils';
+import { SanitizeContainerImage } from '@sbomvert/core/image';
 
 interface ExportButtonsProps {
   comparison: IMultiToolComparison;

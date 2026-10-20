@@ -1,5 +1,5 @@
 
-jest.mock('@/services/cveStorageService/cveStorageService', () => ({
+jest.mock('@sbomvert/core/storage/cve/cveStorageService', () => ({
   __esModule: true,
   default: {
     getFileContent: jest.fn(),
@@ -7,7 +7,7 @@ jest.mock('@/services/cveStorageService/cveStorageService', () => ({
 }));
 
 import { GET } from './route';
-import CVEService from '@/services/cveStorageService/cveStorageService';
+import CVEService from '@sbomvert/core/storage/cve/cveStorageService';
 
 describe('GET /api/cve/[image]/[file]', () => {
   beforeEach(() => {

@@ -7,11 +7,30 @@ app:
   env:
     REDIS_HOST: redis
     ARTIFACT_BACKEND_TYPE: s3
-    S3_ENDPOINT: http://minio:9000
-    S3_ACCESS_KEY_ID: minioadmin
-    S3_SECRET_ACCESS_KEY: minioadmin
+    S3_ENDPOINT: http://seaweedfs:8333
+    S3_FORCE_PATH_STYLE: "true"
+    # stored in the release's S3 Secret; SeaweedFS uses the same pair. Change them for production.
+    S3_ACCESS_KEY_ID: sbomvert
+    S3_SECRET_ACCESS_KEY: change-me
     SBOM_S3_BUCKET: sbom
     CVE_S3_BUCKET: cve
+
+# Live scans: turns on the scan pages/API in the app and deploys the scan worker.
+scan:
+  enabled: false
+
+# Scan worker settings (deployed when scan.enabled).
+worker:
+  replicas: 1
+  concurrency: 1
+  image:
+    repository: ghcr.io/sbomvert/sbomvert-worker
+    tag: latest
+    pullPolicy: IfNotPresent
+  cache:
+    # grype + trivy databases (trivy's Java DB alone is several GiB unpacked)
+    dbs:
+      size: 10Gi
 
 redis:
   image:
@@ -23,16 +42,14 @@ redis:
     enabled: true
     size: 1Gi
 
-minio:
+# S3-compatible storage (SeaweedFS). Disable to use an external S3 via app.env.S3_*.
+seaweedfs:
+  enabled: true
   image:
-    repository: minio/minio
-    tag: latest
+    repository: chrislusf/seaweedfs
+    tag: "4.48"
     pullPolicy: IfNotPresent
-  port: 9000
-  consolePort: 9001
-  rootUser: minioadmin
-  rootPassword: minioadmin
-  defaultBuckets: sbom,cve
+  port: 8333
   persistence:
     enabled: true
     size: 10Gi

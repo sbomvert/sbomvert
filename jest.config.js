@@ -9,9 +9,12 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@sbomvert/core/(.*)$': '<rootDir>/packages/core/src/$1',
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
+    'packages/core/src/**/*.ts',
+    'worker/src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
   ],

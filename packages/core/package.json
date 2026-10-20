@@ -1,0 +1,13 @@
+{
+  "name": "@sbomvert/core",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Code shared by the web app and the scan worker: SBOM/CVE tool commands, report parsers, storage, scan queue.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.931.0",
+    "bullmq": "^5.70.1"
+  }
+}

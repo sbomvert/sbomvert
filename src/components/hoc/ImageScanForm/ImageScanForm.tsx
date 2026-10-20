@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Button } from '@/components/button/Button';
-import { SupportedTools, SupportedToolsType, ToolConfig } from '@/lib/sbom/tools';
+import { SupportedTools, SupportedToolsType, ToolConfig } from '@sbomvert/core/tools';
 
 type ImageScanFormProps = {
   onSubmit: (image: string, tools: { producers: string[]; consumers: string[] }) => Promise<void> | void;

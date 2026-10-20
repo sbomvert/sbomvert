@@ -2,6 +2,10 @@
   "name": "sbom-comparator",
   "version": "0.0.1",
   "private": false,
+  "workspaces": [
+    "packages/*",
+    "worker"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,7 +18,9 @@
     "docs:dev": "npm --prefix docs-site run dev",
     "docs:build": "npm --prefix docs-site run build",
     "docs:preview": "npm --prefix docs-site run preview",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "worker": "npm run start -w @sbomvert/scan-worker",
+    "worker:dev": "npm run dev -w @sbomvert/scan-worker"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.931.0",
@@ -23,6 +29,7 @@
     "@better-auth-ui/react": "1.7.19",
     "@better-auth/api-key": "1.7.11",
     "@cyclonedx/cyclonedx-library": "^10.1.0",
+    "@sbomvert/core": "*",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-pacer": "^0.23.0",
     "@tanstack/react-query": "^5.102.8",
