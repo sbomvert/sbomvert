@@ -35,7 +35,7 @@ services:
     command: sh -c "npm install --force && npm run dev"
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: redis-dev
 
     ports:
