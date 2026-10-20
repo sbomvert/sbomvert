@@ -30,8 +30,8 @@ const createAuth = () => {
                 enableSessionForAPIKeys: true,
                 rateLimit: {
                     enabled: true,
-                    timeWindow: 1000 * 60 * 60, // 1 day
-                    maxRequests: 50, // 10 requests per day
+                    timeWindow: 1000 * 60 * 60, // 1 hour
+                    maxRequests: 50, // 50 requests per hour per key
                 },
                 keyExpiration: {
                     minExpiresIn: 7,
