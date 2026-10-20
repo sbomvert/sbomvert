@@ -31,5 +31,5 @@ const customJestConfig = {
 
 module.exports = createJestConfig({
   ...customJestConfig,
-  testPathIgnorePatterns: ['<rootDir>/../', '<rootDir>/~/.config/superpowers/worktrees/'],
+  testPathIgnorePatterns: ['<rootDir>/../', '<rootDir>/docs-site/.vitepress/'],
 });

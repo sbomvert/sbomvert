@@ -9,7 +9,7 @@ import type { OrganizationAuthClient } from "@better-auth-ui/core/plugins/organi
 import { useAuth, useAuthPlugin } from "@better-auth-ui/react"
 import { useCreateOrganization } from "@better-auth-ui/react/plugins/organization"
 import { Briefcase } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { buttonVariants } from "@/components/ui/button"
 import {
   Dialog,
@@ -50,7 +50,7 @@ export function CreateOrganizationDialog({
   } = useAuthPlugin(organizationPlugin)
   const hideSlug = hideSlugProp ?? pluginHideSlug ?? false
 
-  const [slugEdited, setSlugEdited] = useState(false)
+  const slugEdited = useRef(false)
   const submissionGeneration = useRef(0)
   const submissionAttemptGeneration = useRef(0)
 
@@ -81,7 +81,7 @@ export function CreateOrganizationDialog({
     if (!open) {
       submissionGeneration.current += 1
       form.reset()
-      setSlugEdited(false)
+      slugEdited.current = false
     }
   }, [form, open])
 
@@ -136,7 +136,7 @@ export function CreateOrganizationDialog({
                         onChange={(event) => {
                           const value = event.target.value
                           field.handleChange(value)
-                          if (!slugEdited) {
+                          if (!slugEdited.current) {
                             form.setFieldValue("slug", sanitizeSlug(value))
                           }
                         }}
@@ -157,7 +157,7 @@ export function CreateOrganizationDialog({
                       value={field.state.value}
                       onChange={(value) => {
                         field.handleChange(value)
-                        setSlugEdited(true)
+                        slugEdited.current = true
                       }}
                     />
                   )}

@@ -1,7 +1,6 @@
 "use client"
 
 import { useAuth, useAuthPlugin } from "@better-auth-ui/react"
-import { useEffect, useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
@@ -34,13 +33,8 @@ export function MagicLinkSent({ className }: MagicLinkSentProps) {
   const { localization: magicLinkLocalization } = useAuthPlugin(magicLinkPlugin)
 
   const isHydrated = useIsHydrated()
-  const [email, setEmail] = useState(
-    (isHydrated && sessionStorage.getItem(MAGIC_LINK_SENT_STORAGE_KEY)) || ""
-  )
-
-  useEffect(() => {
-    setEmail(sessionStorage.getItem(MAGIC_LINK_SENT_STORAGE_KEY) ?? "")
-  }, [])
+  // read during render: useIsHydrated re-renders once on the client, where sessionStorage exists
+  const email = (isHydrated && sessionStorage.getItem(MAGIC_LINK_SENT_STORAGE_KEY)) || ""
 
   return (
     <Card className={cn("w-full max-w-sm", className)}>

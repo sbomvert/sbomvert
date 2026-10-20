@@ -9,7 +9,9 @@ jest.mock('@/components/navbar/Navbar', () => ({
 
 // Sidebar and Providers pull in @better-auth-ui, which ships ES modules only (Jest can't load them);
 // they have their own tests.
-jest.mock('@/components/layout/Sidebar', () => () => <aside data-testid="sidebar" />);
+jest.mock('@/components/layout/Sidebar', () => function Sidebar() {
+  return <aside data-testid="sidebar" />;
+});
 jest.mock('@/components/providers', () => ({
   Providers: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

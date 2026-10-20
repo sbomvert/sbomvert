@@ -49,11 +49,10 @@ export function OpenEmailButton({
   const { localization } = useAuth()
 
   const provider = getEmailProviderLink(email)
-  const loginUrl = provider?.loginUrl
-  const qrCode = useMemo(
-    () => (loginUrl ? createQrCodeSvgData(loginUrl) : null),
-    [loginUrl]
-  )
+  const qrCode = useMemo(() => {
+    const loginUrl = getEmailProviderLink(email)?.loginUrl
+    return loginUrl ? createQrCodeSvgData(loginUrl) : null
+  }, [email])
 
   if (!provider || !qrCode) return null
 

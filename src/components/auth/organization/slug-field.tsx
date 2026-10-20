@@ -52,7 +52,8 @@ export function SlugField({
     slugPrefix
   } = useAuthPlugin(organizationPlugin)
 
-  const [slugError, setSlugError] = useState<string>()
+  const [invalid, setInvalid] = useState<{ value: string; message: string }>()
+  const slugError = invalid?.value === value ? invalid.message : undefined
 
   const {
     mutate: checkSlug,
@@ -72,16 +73,11 @@ export function SlugField({
   )
 
   useEffect(() => {
-    // Clear stale validation errors when the controlled value changes
-    // externally (e.g. the parent resets the form), not just via this
-    // input's onChange.
-    setSlugError(undefined)
-
     if (!checkSlugEnabled) return
 
     resetCheckSlug()
     debouncer.maybeExecute(value)
-  }, [checkSlugEnabled, value, debouncer.maybeExecute, resetCheckSlug])
+  }, [checkSlugEnabled, value, debouncer, resetCheckSlug])
 
   return (
     <Field data-invalid={!!slugError}>
@@ -98,11 +94,10 @@ export function SlugField({
           value={value}
           onChange={(e) => {
             onChange(sanitizeSlug(e.target.value))
-            setSlugError(undefined)
           }}
           onInvalid={(e) => {
             e.preventDefault()
-            setSlugError(authLocalization.auth.fieldRequired)
+            setInvalid({ value, message: authLocalization.auth.fieldRequired })
           }}
           aria-invalid={!!slugError}
           placeholder={localization.slugPlaceholder}
