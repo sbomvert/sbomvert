@@ -1,4 +1,5 @@
 import { FlowJob, FlowProducer, Job, JobNode, Queue, QueueEvents } from 'bullmq';
+import { sbomProducerFor } from './tools';
 
 // The scan queue shared by the web app (adds scans, reads status) and the scan worker (runs them).
 export const SCAN_QUEUE = 'scan';
@@ -48,8 +49,8 @@ export const redisConnection = (env: Record<string, string | undefined> = proces
 // Finished jobs are kept for the status pages, but not forever.
 const KEEP = { count: 500 };
 
-// The scanner reads the SBOM of this producer (grype reads syft's).
-export const sbomProducerFor = (consumer: string) => (consumer === 'grype' ? 'syft' : consumer);
+// re-exported: the worker and tests import it from the queue
+export { sbomProducerFor };
 
 export function buildScanFlow(scan: ScanJobData): FlowJob {
   const opts = { removeOnComplete: KEEP, removeOnFail: KEEP };
