@@ -34,7 +34,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 text-body-sm rounded-input border border-border bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
+          className="w-full pl-9 pr-3 py-2 text-body-sm rounded-input border border-border bg-surface text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
         />
       </div>
     </motion.div>

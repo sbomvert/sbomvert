@@ -102,7 +102,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                     <div className="flex items-center gap-2">
                       <div className="font-medium text-foreground truncate" title={pkg.name}>{pkg.name}</div>
                       {(pkg.hasMetadataConflicts || pkg.foundInTools.length !== comparison.tools.length) && (
-                        <AlertTriangle size={16} className="text-warning flex-shrink-0" />
+                        <AlertTriangle size={16} className="text-warning shrink-0" />
                       )}
                     </div>
                   </td>

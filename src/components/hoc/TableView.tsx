@@ -34,7 +34,7 @@ export const TableView: React.FC<TableViewProps> = ({ comparison }) => {
             placeholder="Search packages..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="px-2 py-1 border border-border rounded-input text-body-sm bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
+            className="px-2 py-1 border border-border rounded-input text-body-sm bg-surface text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
           />
           <div className="flex gap-2">
             <button onClick={() => setPackageFilter('all')}    className={filterBtnClass(packageFilter === 'all')}>

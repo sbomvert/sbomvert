@@ -1,106 +1,249 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-alt: #ea580c;
+  --color-background: var(--color-background);
+  --color-background-alt: var(--color-background-alt);
+  --color-foreground: var(--color-foreground);
+  --color-foreground-muted: var(--color-foreground-muted);
+  --color-foreground-subtle: var(--color-foreground-subtle);
+  --color-border: var(--color-border);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-input: var(--color-input);
+  --color-ring: var(--color-ring);
+  --color-surface: var(--color-surface);
+  --color-surface-alt: var(--color-surface-alt);
+  --color-success: var(--color-success);
+  --color-success-subtle: var(--color-success-subtle);
+  --color-success-fg: var(--color-success-fg);
+  --color-warning: var(--color-warning);
+  --color-warning-subtle: var(--color-warning-subtle);
+  --color-warning-fg: var(--color-warning-fg);
+  --color-error: var(--color-error);
+  --color-error-subtle: var(--color-error-subtle);
+  --color-error-fg: var(--color-error-fg);
+  --color-info: var(--color-info);
+  --color-info-subtle: var(--color-info-subtle);
+  --color-info-fg: var(--color-info-fg);
+
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+  --radius-badge: 0.375rem;
+  --radius-card: 0.75rem;
+  --radius-card-lg: 1rem;
+  --radius-pill: 9999px;
+  --radius-button: 0.5rem;
+  --radius-input: 0.5rem;
+  --radius-panel: 0.75rem;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  --shadow-card:
+    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --shadow-card-hover:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-button:
+    0 4px 6px -1px rgb(0 0 0 / 0.12), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-panel: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-none: none;
+
+  --spacing-card-p: 1.25rem;
+  --spacing-card-p-lg: 1.5rem;
+  --spacing-section: 2rem;
+  --spacing-inset: 1rem;
+  --spacing-inset-lg: 1.5rem;
+
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.05em;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-heading-sm: 1.125rem;
+  --text-heading-sm--line-height: 1.75rem;
+  --text-heading-sm--font-weight: 600;
+  --text-heading: 1.25rem;
+  --text-heading--line-height: 1.75rem;
+  --text-heading--font-weight: 600;
+  --text-heading-lg: 1.5rem;
+  --text-heading-lg--line-height: 2rem;
+  --text-heading-lg--font-weight: 700;
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
+  --text-display--font-weight: 800;
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 1;
+  --text-display-lg--font-weight: 800;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --animate-fade-in: fadeIn 0.3s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
 
 /*
- * ─── Design tokens (runtime only) ───────────────────────────────────────────
- * No Tailwind `theme()` calls here — only resolved values.
- */
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Default theme (light) */
-/* ────────────────────────────────────────────────────────────────────────── */
-:root {
-  /* ── Surfaces (clear hierarchy) ── */
-  --color-background:     #f8fafc; /* slate-50 */
-  --color-background-alt: #f1f5f9; /* slate-100 */
-  --color-surface:        #ffffff; /* cards */
-  --color-surface-alt:    #f8fafc; /* hover / inputs */
-
-  /* ── Text (unchanged, already good) ── */
-  --color-foreground:        #334155; /* slate-900 */
-  --color-foreground-muted:  #475569; /* slate-600 */
-  --color-foreground-subtle: #94a3b8; /* slate-400 */
-
-  /* ── Borders (key improvement) ── */
-  --color-border:        #cbd5f5; /* slightly indigo-tinted */
-  --color-border-subtle: #e2e8f0;
-  --color-input:         #e2e8f0;
-  --color-ring:          #6366f1;
-
-  /* ── Status (unchanged) ── */
-  --color-success:        #16a34a;
-  --color-success-subtle: #dcfce7;
-  --color-success-fg:     #166534;
-
-  --color-warning:        #f59e0b;
-  --color-warning-subtle: #fef3c7;
-  --color-warning-fg:     #92400e;
-
-  --color-error:          #ef4444;
-  --color-error-subtle:   #fee2e2;
-  --color-error-fg:       #991b1b;
-
-  --color-info:           #6366f1;
-  --color-info-subtle:    #e0e7ff;
-  --color-info-fg:        #3730a3;
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Dark mode */
-/* ────────────────────────────────────────────────────────────────────────── */
-.dark {
-  --color-background:     #020617; /* slate-950 */
-  --color-background-alt: #020617;
-  --color-surface:        #0f172a; /* slate-900 */
-  --color-surface-alt:    #1e293b; /* slate-800 */
-
-  --color-foreground:        #f8fafc;
-  --color-foreground-muted:  #94a3b8;
-  --color-foreground-subtle: #64748b;
-
-  --color-border:        #1e293b;
-  --color-border-subtle: rgba(148, 163, 184, 0.3);
-  --color-input:         #1e293b;
-  --color-ring:          #818cf8;
-
-  --color-success:        #4ade80;
-  --color-success-subtle: rgba(22, 101, 52, 0.3);
-  --color-success-fg:     #bbf7d0;
-
-  --color-warning:        #fbbf24;
-  --color-warning-subtle: rgba(146, 64, 14, 0.3);
-  --color-warning-fg:     #fde68a;
-
-  --color-error:          #f87171;
-  --color-error-subtle:   rgba(153, 27, 27, 0.3);
-  --color-error-fg:       #fecaca;
-
-  --color-info:           #818cf8;
-  --color-info-subtle:    rgba(55, 48, 163, 0.3);
-  --color-info-fg:        #c7d2fe;
-}
-
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Base layer */
-/* ────────────────────────────────────────────────────────────────────────── */
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
 @layer base {
-  *, ::before, ::after {
-    border-color: var(--color-border);
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
   }
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Utilities */
 /* ────────────────────────────────────────────────────────────────────────── */
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /*
+ * ─── Design tokens (runtime only) ───────────────────────────────────────────
+ * No Tailwind `theme()` calls here — only resolved values.
+ */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Default theme (light) */
+  /* ────────────────────────────────────────────────────────────────────────── */
+  :root {
+    /* ── Surfaces (clear hierarchy) ── */
+    --color-background: #f8fafc; /* slate-50 */
+    --color-background-alt: #f1f5f9; /* slate-100 */
+    --color-surface: #ffffff; /* cards */
+    --color-surface-alt: #f8fafc; /* hover / inputs */
+
+    /* ── Text (unchanged, already good) ── */
+    --color-foreground: #334155; /* slate-900 */
+    --color-foreground-muted: #475569; /* slate-600 */
+    --color-foreground-subtle: #94a3b8; /* slate-400 */
+
+    /* ── Borders (key improvement) ── */
+    --color-border: #cbd5f5; /* slightly indigo-tinted */
+    --color-border-subtle: #e2e8f0;
+    --color-input: #e2e8f0;
+    --color-ring: #6366f1;
+
+    /* ── Status (unchanged) ── */
+    --color-success: #16a34a;
+    --color-success-subtle: #dcfce7;
+    --color-success-fg: #166534;
+
+    --color-warning: #f59e0b;
+    --color-warning-subtle: #fef3c7;
+    --color-warning-fg: #92400e;
+
+    --color-error: #ef4444;
+    --color-error-subtle: #fee2e2;
+    --color-error-fg: #991b1b;
+
+    --color-info: #6366f1;
+    --color-info-subtle: #e0e7ff;
+    --color-info-fg: #3730a3;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Dark mode */
+  /* ────────────────────────────────────────────────────────────────────────── */
+  .dark {
+    --color-background: #020617; /* slate-950 */
+    --color-background-alt: #020617;
+    --color-surface: #0f172a; /* slate-900 */
+    --color-surface-alt: #1e293b; /* slate-800 */
+
+    --color-foreground: #f8fafc;
+    --color-foreground-muted: #94a3b8;
+    --color-foreground-subtle: #64748b;
+
+    --color-border: #1e293b;
+    --color-border-subtle: rgba(148, 163, 184, 0.3);
+    --color-input: #1e293b;
+    --color-ring: #818cf8;
+
+    --color-success: #4ade80;
+    --color-success-subtle: rgba(22, 101, 52, 0.3);
+    --color-success-fg: #bbf7d0;
+
+    --color-warning: #fbbf24;
+    --color-warning-subtle: rgba(146, 64, 14, 0.3);
+    --color-warning-fg: #fde68a;
+
+    --color-error: #f87171;
+    --color-error-subtle: rgba(153, 27, 27, 0.3);
+    --color-error-fg: #fecaca;
+
+    --color-info: #818cf8;
+    --color-info-subtle: rgba(55, 48, 163, 0.3);
+    --color-info-fg: #c7d2fe;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Base layer */
+  /* ────────────────────────────────────────────────────────────────────────── */
+}
+@layer base {
+  *, ::before, ::after {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
   }
 }

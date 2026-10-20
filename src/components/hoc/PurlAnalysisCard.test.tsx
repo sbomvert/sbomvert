@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@/test-utils';
 import { PurlAnalysisCard } from '@/components/hoc/PurlAnalysisCard';
 

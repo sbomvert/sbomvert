@@ -4,14 +4,13 @@ import { motion } from 'framer-motion';
 import Head from 'next/head';
 
 export default function HomePage() {
-
   return (
     <>
       <Head>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex-grow flex flex-col items-center justify-center text-center px-inset-lg py-16">
+      <main className="grow flex flex-col items-center justify-center text-center px-inset-lg py-16">
         <motion.h1
           className="text-display-lg font-extrabold mb-4 text-foreground"
           initial={{ opacity: 0, y: 20 }}
@@ -29,7 +28,8 @@ export default function HomePage() {
         >
           Compare SBOMs and CVEs of the container images you use to bring clarity and eliminate false
           positives.
-        </motion.p> 
+
+        </motion.p>
       </main>
     </>
   );

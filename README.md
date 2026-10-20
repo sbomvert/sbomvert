@@ -69,6 +69,20 @@ NEXT_PUBLIC_BASE_URL='http://localhost:3000'
 NEXT_PUBLIC_ENABLE_SBOM_UPLOAD='false'
 NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
 
+##### Authentication (optional) #####
+# Off by default. On: sign-in (GitHub, magic link), account settings, and POST /api/scan needs a
+# session or an x-api-key. Needs Postgres: `docker compose --profile auth up`, then create the
+# tables once with `npx drizzle-kit push`.
+#NEXT_PUBLIC_ENABLE_AUTH='true'
+#BETTER_AUTH_SECRET=            # openssl rand -base64 32
+#BETTER_AUTH_URL=http://localhost:3000
+#POSTGRES_USER=sbomvert
+#POSTGRES_PASSWORD=sbomvert
+#POSTGRES_DB=sbomvert
+#DATABASE_URL=postgresql://sbomvert:sbomvert@localhost:5432/sbomvert
+#GITHUB_CLIENT_ID=              # GitHub OAuth app, callback http://localhost:3000/api/auth/callback/github
+#GITHUB_CLIENT_SECRET=
+
 ##### Scan API (experimental) #####
 #NEXT_PUBLIC_ENABLE_SCAN_API='true'
 #REDIS_HOST=127.0.0.1

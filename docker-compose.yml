@@ -24,9 +24,14 @@ services:
     environment:
       NODE_ENV: development
       REDIS_HOST: redis
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sbomvert}:${POSTGRES_PASSWORD:-sbomvert}@postgres-dev:5432/${POSTGRES_DB:-sbomvert}
 
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+        required: false # only with the auth profile
     command: sh -c "npm install --force && npm run dev"
 
   redis:
@@ -39,5 +44,20 @@ services:
     volumes:
       - redis_data:/data
 
+  # Only for authentication (NEXT_PUBLIC_ENABLE_AUTH): docker compose --profile auth up
+  postgres:
+    profiles: [auth]
+    container_name: postgres-dev
+    image: postgres:18.4
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-sbomvert}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-sbomvert}
+      - POSTGRES_DB=${POSTGRES_DB:-sbomvert}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
 volumes:
   redis_data:
+  postgres_data:

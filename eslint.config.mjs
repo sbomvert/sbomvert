@@ -5,6 +5,15 @@ import unusedImports from "eslint-plugin-unused-imports";
 const config = [
   ...next,
   {
+    // generated, git-ignored output: test coverage, VitePress caches/builds, built Storybook
+    ignores: [
+      "coverage/**",
+      "docs-site/.vitepress/cache/**",
+      "docs-site/.vitepress/dist/**",
+      "storybook-static/**",
+    ],
+  },
+  {
     plugins: {
         "unused-imports": unusedImports,
     },

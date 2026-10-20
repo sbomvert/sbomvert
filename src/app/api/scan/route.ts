@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createScanQueue, createScanWorker } from '@/services/scanQueue';
 import { z } from 'zod';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
+import { authorizeScanRequest } from '@/lib/auth/scan-auth';
 
 // Payload schema – simple validation
 const ScanRequestSchema = z.object({
@@ -18,6 +19,14 @@ export async function POST(request: Request) {
       { error: 'Scan feature disabled' },
       { status: 403 }
     );
+  }
+
+  // Defense in depth: the proxy also gates this, but don't rely on it alone.
+  if (FEATURE_FLAGS.ENABLE_AUTH) {
+    const auth = await authorizeScanRequest(request.headers);
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
   }
 
   try {

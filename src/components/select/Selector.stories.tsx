@@ -26,7 +26,7 @@ export const Default: Story = {
 
 export const Outline: Story = {
   args: {
-    variant: 'outline',
+    variant: 'outline-solid',
     size: 'md',
     children: (
       <>

@@ -5,7 +5,6 @@ app:
     pullPolicy: IfNotPresent
   port: 3000
   env:
-    NODE_ENV: production
     REDIS_HOST: redis
     ARTIFACT_BACKEND_TYPE: s3
     S3_ENDPOINT: http://minio:9000

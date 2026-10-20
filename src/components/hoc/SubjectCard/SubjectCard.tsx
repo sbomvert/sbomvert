@@ -109,7 +109,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, index = 0, on
   const updatedAt = subject.updatedAt ?? subject.createdAt;
 
   const accentBar = canCompareSbom && canCompareCve
-    ? 'bg-gradient-to-r from-primary via-success to-primary'
+    ? 'bg-linear-to-r from-primary via-success to-primary'
     : canCompareSbom
     ? 'bg-primary'
     : 'bg-border';

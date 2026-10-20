@@ -187,7 +187,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       {packageData.hasMetadataConflicts && (
         <div className="bg-warning-subtle border border-warning rounded-panel p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle size={20} className="text-warning flex-shrink-0 mt-0.5" />
+            <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
               <h5 className="text-body-sm font-semibold text-warning-fg mb-1">Metadata Conflicts Detected</h5>
               <p className="text-body-sm text-warning-fg">
