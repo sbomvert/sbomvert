@@ -14,6 +14,9 @@ WORKDIR /app
 
 # Copy package-related files first to leverage Docker's caching mechanism
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+# npm workspaces: every workspace's package.json must be present for `npm ci`
+COPY packages/core/package.json packages/core/
+COPY worker/package.json worker/
 
 # Install project dependencies with frozen lockfile for reproducible builds
 RUN --mount=type=cache,target=/root/.npm \

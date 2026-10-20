@@ -1,0 +1,50 @@
+{{- if .Values.scan.enabled }}
+# Scan worker: runs the SBOM/CVE tools for queued scans. It stores nothing (the app stores the
+# results), so it only needs Redis.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker
+  labels:
+    app: {{ .Release.Name }}-worker
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-worker
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          env:
+            - name: REDIS_HOST
+              value: {{ .Values.app.env.REDIS_HOST | quote }}
+            - name: SCAN_CONCURRENCY
+              value: {{ .Values.worker.concurrency | quote }}
+          volumeMounts:
+            - name: dbs
+              mountPath: /cache/dbs
+      volumes:
+        # vulnerability databases: kept across pod restarts
+        - name: dbs
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-worker-dbs
+---
+# ReadWriteOnce: with more than one worker replica, use a storage class that supports ReadWriteMany.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-worker-dbs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.worker.cache.dbs.size }}
+{{- end }}

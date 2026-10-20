@@ -1,5 +1,5 @@
 import { POST } from '@/app/api/sbom/upload/route';
-import SBOMService from '@/services/sbomStorageService/sbomStorageService';
+import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
 import { parseSpdxSbom, parseCycloneDxSbom } from '@/lib/parseSbom';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
@@ -37,7 +37,7 @@ jest.mock('@/lib/featureFlags', () => ({
 }));
 
 // Mock services
-jest.mock('@/services/sbomStorageService/sbomStorageService', () => ({
+jest.mock('@sbomvert/core/storage/sbom/sbomStorageService', () => ({
   __esModule: true,
   default: {
     saveSBOM: jest.fn(),

@@ -1,0 +1,15 @@
+{
+  "name": "@sbomvert/scan-worker",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Runs SBOM and CVE scans for the scan queue.",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@sbomvert/core": "*",
+    "bullmq": "^5.70.1",
+    "tsx": "4.23.15"
+  }
+}

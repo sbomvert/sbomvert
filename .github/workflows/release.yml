@@ -41,6 +41,16 @@ jobs:
             --push \
             .
 
+      - name: Build and push scan worker image
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f worker/Dockerfile \
+            -t ghcr.io/sbomvert/sbomvert-worker:${{ steps.tag.outputs.TAG }} \
+            -t ghcr.io/sbomvert/sbomvert-worker:latest \
+            --push \
+            .
+
       - name: Install Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
 

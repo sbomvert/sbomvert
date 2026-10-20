@@ -32,3 +32,21 @@ describe('Feature Flags', () => {
     expect(FEATURE_FLAGS.ENABLE_SBOM_UPLOAD).toBe(false);
   });
 });
+
+describe('ENABLE_SCAN_API', () => {
+  // next/jest loads .env files, which may set it: start from unset, restore afterwards
+  const original = process.env.NEXT_PUBLIC_ENABLE_SCAN_API;
+  beforeEach(() => delete process.env.NEXT_PUBLIC_ENABLE_SCAN_API);
+  afterEach(() => {
+    if (original === undefined) delete process.env.NEXT_PUBLIC_ENABLE_SCAN_API;
+    else process.env.NEXT_PUBLIC_ENABLE_SCAN_API = original;
+  });
+
+  it('is read from the environment at runtime, so one image can run with scanning on or off', () => {
+    expect(FEATURE_FLAGS.ENABLE_SCAN_API).toBe(false);
+    process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'true';
+    expect(FEATURE_FLAGS.ENABLE_SCAN_API).toBe(true);
+    process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'false';
+    expect(FEATURE_FLAGS.ENABLE_SCAN_API).toBe(false);
+  });
+});
