@@ -16,7 +16,7 @@ app:
 redis:
   image:
     repository: redis
-    tag: 7-alpine
+    tag: 8-alpine
     pullPolicy: IfNotPresent
   port: 6379
   persistence:
