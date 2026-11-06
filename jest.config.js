@@ -5,8 +5,11 @@ const createJestConfig = nextJest({
 });
 
 const customJestConfig = {
+  setupFiles: ['<rootDir>/jest.polyfills.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
+  // jsdom defaults to the "browser" export condition, which resolves aws-sdk to ESM-only builds
+  testEnvironmentOptions: { customExportConditions: ['node', 'node-addons'] },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@sbomvert/core/(.*)$': '<rootDir>/packages/core/src/$1',
