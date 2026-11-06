@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.931.0",
-    "bullmq": "^5.70.1"
+    "bullmq": "^6.5.4"
   }
 }
