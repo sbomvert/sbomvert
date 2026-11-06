@@ -1,23 +1,29 @@
 import { NextResponse } from 'next/server';
-import { createScanQueue, createScanWorker } from '@/services/scanQueue';
 import { z } from 'zod';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { authorizeScanRequest } from '@/lib/auth/scan-auth';
+import { isValidImageRef } from '@sbomvert/core/image';
+import { buildScanFlow, getScanFlows } from '@sbomvert/core/queue';
 
-// Payload schema – simple validation
 const ScanRequestSchema = z.object({
-  image: z.string().min(1),
+  image: z.string().refine(isValidImageRef, 'Invalid image reference'),
   tools: z.object({
     producers: z.array(z.string()).nonempty(),
     consumers: z.array(z.string()).nonempty(),
   }),
 });
 
+// Only queues the scan; the scan worker app (worker/) runs it.
 export async function POST(request: Request) {
   if (!FEATURE_FLAGS.ENABLE_SCAN_API) {
+    return NextResponse.json({ error: 'Scan feature disabled' }, { status: 403 });
+  }
+
+  const parsed = ScanRequestSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Scan feature disabled' },
-      { status: 403 }
+      { error: parsed.error.issues[0]?.message ?? 'Invalid request' },
+      { status: 400 }
     );
   }
 
@@ -30,24 +36,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json();
-    const parsed = ScanRequestSchema.parse(body);
-
-    // Lazy initialize queue at runtime (not build time)
-    const scanQueue = createScanQueue();
-
-    const job = await scanQueue.add('scan', {
-      image: parsed.image,
-      tools: parsed.tools,
-    });
-
-    createScanWorker()
-    
+    // one job per tool, under a parent scan job whose id identifies the scan
+    const { job } = await getScanFlows().add(buildScanFlow(parsed.data));
     return NextResponse.json({ jobId: job.id }, { status: 202 });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Invalid request';
-
-    return NextResponse.json({ error: message }, { status: 400 });
+    console.error('Failed to queue scan', error);
+    return NextResponse.json({ error: 'Scan queue unavailable' }, { status: 503 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import SBOMService from '@/services/sbomStorageService/sbomStorageService';
+import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { parseSpdxSbom, parseCycloneDxSbom } from '@/lib/parseSbom';
 

@@ -31,7 +31,7 @@ function SidebarAccount() {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ scanEnabled = false }: { scanEnabled?: boolean }) {
   const router = useRouter();
 
   const navItems = [
@@ -39,9 +39,7 @@ export default function Sidebar() {
     { icon: FileChartColumnIncreasing, label: 'SBOM Analysis', href: '/compare/analyze' },
     { icon: Scale,                   label: 'SBOM Comparison', href: '/compare/sbom' },
     { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve' },
-    ...(FEATURE_FLAGS.ENABLE_SCAN_API
-      ? [{ icon: ScanText, label: 'Scan', href: '/scan' }]
-      : []),
+    ...(scanEnabled ? [{ icon: ScanText, label: 'Scan', href: '/scan' }] : []),
 
     ...(FEATURE_FLAGS.ENABLE_SBOM_UPLOAD
       ? [{ icon: Upload, label: 'Upload SBOM', href: '/compare/upload/sbom' }]

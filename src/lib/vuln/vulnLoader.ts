@@ -1,5 +1,5 @@
 import { reverseFormatContainerName } from "../container/containerUtils";
-import { VulnReport } from "./vulnutils";
+import { VulnReport } from '@sbomvert/core/vuln/vulnutils';
 
 export interface CVEReport {
   [containerName: string]: VulnReport;

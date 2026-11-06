@@ -7,7 +7,7 @@ import {
 } from "@better-auth-ui/core"
 import { useAuth } from "@better-auth-ui/react"
 import { CircleCheckIcon, CircleXIcon, TriangleAlertIcon } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useMemo, useSyncExternalStore } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,13 +26,16 @@ type AuthResultProps = {
 
 function AuthResultView({ className, fallbackIntent }: AuthResultProps) {
   const { basePaths, localization, navigate, viewPaths } = useAuth()
-  const [result, setResult] = useState<AuthResult>(() =>
-    parseAuthResult("", fallbackIntent)
+  // "" on the server, the real query string once hydrated
+  const search = useSyncExternalStore(
+    () => () => {},
+    () => window.location.search,
+    () => ""
   )
-
-  useEffect(() => {
-    setResult(parseAuthResult(window.location.search, fallbackIntent))
-  }, [fallbackIntent])
+  const result: AuthResult = useMemo(
+    () => parseAuthResult(search, fallbackIntent),
+    [search, fallbackIntent]
+  )
 
   const message = getAuthResultMessage(result, localization)
   const action = (() => {

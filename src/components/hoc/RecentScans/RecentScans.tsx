@@ -1,6 +1,6 @@
 'use client';
 
-import { JobLogEntry } from '@/services/storage';
+import type { ScanLogEntry } from '@sbomvert/core/queue';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -10,7 +10,7 @@ type Scan = {
   image?: string;
   status: string;
   updatedAt: string;
-  history?: JobLogEntry[];
+  history?: ScanLogEntry[];
 };
 
 export function RecentScans() {

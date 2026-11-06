@@ -3,13 +3,17 @@ import './globals.css';
 import { Navbar } from '@/components/navbar/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import { Providers } from '@/components/providers';
+import { connection } from 'next/server';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 export const metadata: Metadata = {
   title: 'SBOMVert',
   description: 'Compare SBOM tool outputs for container images',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // render per request, not at build time, so the scan flag comes from the running environment
+  await connection();
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
@@ -17,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="min-h-screen flex flex-col transition-colors duration-300">
             <Navbar />
             <div className="flex flex-1 min-h-0 bg-background">
-              <Sidebar />
+              <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />
 
               <div className="flex flex-1 min-h-0 flex-col">
                 <main className="flex-1 overflow-y-auto">

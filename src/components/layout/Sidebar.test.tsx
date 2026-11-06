@@ -84,10 +84,8 @@ describe('Sidebar', () => {
     expect(screen.getAllByRole('button')).toHaveLength(5);
   });
 
-  it('renders 6 buttons when scan API is enabled', () => {
-    process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'true';
-
-    render(<Sidebar />);
+  it('renders 6 buttons when scanning is enabled (passed in by the server layout)', () => {
+    render(<Sidebar scanEnabled />);
 
     expect(screen.getAllByRole('button')).toHaveLength(6);
     expect(screen.getByRole('button', { name: /scan/i })).toBeInTheDocument();

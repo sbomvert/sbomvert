@@ -1,5 +1,5 @@
 import { CVEReport } from '@/lib/vuln/vulnLoader';
-import { VulnReport } from '@/lib/vuln/vulnutils';
+import { VulnReport } from '@sbomvert/core/vuln/vulnutils';
 
 export interface PackageRow {
   pkg: string;

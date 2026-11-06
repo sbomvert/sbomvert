@@ -1,0 +1,92 @@
+{{- if .Values.seaweedfs.enabled }}
+# SeaweedFS: S3-compatible storage for SBOMs and CVE reports (replaces MinIO, whose community
+# images are no longer published). Credentials come from the release's S3 Secret; the pod creates
+# the `sbomvert` bucket (the one the app uses) once the server is up.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  labels:
+    app: {{ .Release.Name }}-seaweedfs
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # one pod at a time on the data volume
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-seaweedfs
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-seaweedfs
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: seaweedfs
+          image: "{{ .Values.seaweedfs.image.repository }}:{{ .Values.seaweedfs.image.tag }}"
+          imagePullPolicy: {{ .Values.seaweedfs.image.pullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              printf '{"identities":[{"name":"sbomvert","credentials":[{"accessKey":"%s","secretKey":"%s"}],"actions":["Admin","Read","Write","List","Tagging"]}]}' \
+                "$S3_ACCESS_KEY_ID" "$S3_SECRET_ACCESS_KEY" > /tmp/s3.json
+              # create the bucket once the master answers; it survives restarts on the data volume
+              (
+                until out=$(echo 's3.bucket.create -name sbomvert' | weed shell -master=localhost:9333 2>&1) \
+                  || case "$out" in *"already exists"*) true ;; *) false ;; esac; do
+                  sleep 2
+                done
+                echo "$out"
+              ) &
+              exec weed server -dir=/data -s3 -s3.port={{ .Values.seaweedfs.port }} -s3.config=/tmp/s3.json
+          ports:
+            - containerPort: {{ .Values.seaweedfs.port }}
+          env:
+            - name: S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-s3
+                  key: accessKey
+            - name: S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-s3
+                  key: secretKey
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          {{- if .Values.seaweedfs.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-seaweedfs-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs
+spec:
+  selector:
+    app: {{ .Release.Name }}-seaweedfs
+  ports:
+    - name: s3
+      port: {{ .Values.seaweedfs.port }}
+      targetPort: {{ .Values.seaweedfs.port }}
+  type: ClusterIP
+{{- if .Values.seaweedfs.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-seaweedfs-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.seaweedfs.persistence.size }}
+{{- end }}
+{{- end }}

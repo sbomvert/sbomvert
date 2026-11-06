@@ -39,6 +39,44 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+Live scans (`NEXT_PUBLIC_ENABLE_SCAN_API`) also need Redis and the scan worker, which runs
+syft, trivy, grype and Docker Scout:
+
+```bash
+npm run worker:dev
+```
+
+Or run everything (app, worker, Redis, SeaweedFS as S3) with Docker Compose; settings are in
+[`.env.dev`](.env.dev). The scan worker keeps its vulnerability databases (several GiB) on an
+external volume, so they survive `docker compose down -v`; create it once:
+
+```bash
+docker volume create sbomvert-scan-dbs
+docker compose up
+```
+
+### S3 storage with SeaweedFS
+
+Compose runs [SeaweedFS](https://github.com/seaweedfs/seaweedfs) as the S3 server. It reads its access key and secret from `.env.dev`
+(`S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`), the same pair the app uses, and a `seaweedfs-init` service creates the `sbomvert` bucket.
+
+**The app only uses SeaweedFS when `ARTIFACT_BACKEND_TYPE=s3`.**
+
+For Kubernetes, the Helm chart deploys SeaweedFS the same way, with the credentials in a Secret:
+see [charts/README.md](charts/README.md).
+
+## Repository layout
+
+An npm workspaces repo:
+
+| Path | Package | What it is |
+|---|---|---|
+| `/` | `sbom-comparator` | The Next.js app. It queues scans and shows results. |
+| `worker/` | `@sbomvert/scan-worker` | The scan worker: takes jobs from the BullMQ `scan` queue, runs the SBOM and CVE tools, and returns the results as the job's return value. It stores nothing: the web app saves the results as each job completes. Own image (`worker/Dockerfile`); no Docker daemon, since the tools pull images from their registries. Only the vulnerability databases are cached. |
+| `packages/core/` | `@sbomvert/core` | Code both use: tool commands, report parsers, SBOM/CVE storage, the scan queue. Consumed as TypeScript source (`@sbomvert/core/<module>`). |
+
+`npm install` at the root installs and links all of them.
+
 ## Environment Variables
 
 Here is a (non comprehensive) lilst of environment variables:
@@ -87,8 +125,11 @@ NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
 #NEXT_PUBLIC_ENABLE_SCAN_API='true'
 #REDIS_HOST=127.0.0.1
 #REDIS_PORT=6379
-#SCAN_CONCURRENCY=2
-#RUN_EXPERIMENT_TIMEOUT=180000
+#SCAN_CONCURRENCY=1            # worker: scans run in parallel (keep 1: trivy/grype share a cache lock)
+#RUN_EXPERIMENT_TIMEOUT=180000  # worker: per tool run, in ms
+#DB_REFRESH_HOURS=24            # worker: grype/trivy databases are downloaded at startup and refreshed this often, between jobs
+#DOCKER_SCOUT_HUB_USER=         # worker: Docker Hub account for Docker Scout
+#DOCKER_SCOUT_HUB_PASSWORD=
 
 
 ```
@@ -96,6 +137,7 @@ NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
 ## Available Scripts
 
 - `npm run dev` - Start development server
+- `npm run worker` / `npm run worker:dev` - Start the scan worker (`:dev` reloads on change)
 - `npm run build` - Build for production
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint

@@ -9,7 +9,7 @@ jest.mock('@/components/button/Button', () => {
 });
 
 // Mock SupportedTools to a simple list for test stability
-jest.mock('@/lib/sbom/tools', () => {
+jest.mock('@sbomvert/core/tools', () => {
   const mockTool = { name: 'trivy', description: '' };
   return { SupportedTools: { producers: [mockTool], consumers: [mockTool] } };
 });

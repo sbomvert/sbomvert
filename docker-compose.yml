@@ -15,24 +15,50 @@ services:
       # node_modules isolation
       - /app/node_modules
 
-      # docker daemon forwarding
-      - /var/run/docker.sock:/var/run/docker.sock
-
     ports:
       - "3000:3000"
 
+    env_file: .env.dev
     environment:
-      NODE_ENV: development
-      REDIS_HOST: redis
+      # only used with the auth profile; inside compose Postgres is postgres-dev
       DATABASE_URL: postgresql://${POSTGRES_USER:-sbomvert}:${POSTGRES_PASSWORD:-sbomvert}@postgres-dev:5432/${POSTGRES_DB:-sbomvert}
 
     depends_on:
       redis:
         condition: service_started
+      seaweedfs-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_started
         required: false # only with the auth profile
     command: sh -c "npm install --force && npm run dev"
+
+  # Runs the SBOM/CVE tools for queued scans 
+  scan-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+
+    container_name: scan-worker-dev
+
+    working_dir: /app
+
+    volumes:
+      # project files, so worker/ and packages/core reload on change
+      - ./:/app
+      - /app/node_modules
+      # grype/trivy vulnerability databases: an external volume, so `docker compose down -v` keeps them
+      - scan_dbs:/cache/dbs
+
+    env_file: .env.dev
+
+    depends_on:
+      redis:
+        condition: service_started
+      seaweedfs-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    command: sh -c "npm install --force && npm run worker:dev"
 
   redis:
     image: redis:7-alpine
@@ -58,6 +84,47 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  # S3-compatible object storage
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweedfs-dev
+    # credentials: S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY from .env.dev, the same pair the app uses
+    env_file: .env.dev
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        printf '{"identities":[{"name":"sbomvert","credentials":[{"accessKey":"%s","secretKey":"%s"}],"actions":["Admin","Read","Write","List","Tagging"]}]}' \
+          "$$S3_ACCESS_KEY_ID" "$$S3_SECRET_ACCESS_KEY" > /tmp/s3.json
+        exec weed server -dir=/data -s3 -s3.port=8333 -s3.config=/tmp/s3.json
+    ports:
+      - "8333:8333" # S3 API
+    volumes:
+      - seaweedfs_data:/data
+
+  # One-shot: create the bucket the app expects (SBOM/CVE services use `sbomvert`).
+  seaweedfs-init:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweedfs-init-dev
+    depends_on:
+      - seaweedfs
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in $$(seq 30); do
+          out=$$(echo 's3.bucket.create -name sbomvert' | weed shell -master=seaweedfs:9333 2>&1)
+          status=$$?
+          echo "$$out"
+          # the bucket survives restarts in the seaweedfs_data volume
+          case "$$out" in *"already exists"*) exit 0 ;; esac
+          [ $$status -eq 0 ] && exit 0
+          sleep 2
+        done
+        exit 1
+    restart: "no"
+
 volumes:
   redis_data:
   postgres_data:
+  seaweedfs_data:
+  scan_dbs:
+    name: sbomvert-scan-dbs

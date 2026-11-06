@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { SanitizeContainerImage } from '@/lib/utils';
+import { SanitizeContainerImage } from '@sbomvert/core/image';
 
 describe('ExportButtons download URL logic', () => {
   it('constructs correct download URL', () => {

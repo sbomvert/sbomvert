@@ -20,7 +20,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sbomvert/core/*": ["./packages/core/src/*"]
     },
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
