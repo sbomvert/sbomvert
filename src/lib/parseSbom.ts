@@ -2,6 +2,7 @@ import { IPurl } from '@/models/IPurl';
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
 import { CycloneDxBom } from '@/lib/sbom/cyclonedx/types';
 import { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
+import { capitalizeToolName } from '@/lib/sbom/utils';
 
 export const parsePurl = (purlString?: string): IPurl | null => {
   if (!purlString) return null;
@@ -177,8 +178,7 @@ export const parseSpdxSbom = (
 
     const toolInfo: IToolInfo = {
       name:
-        toolName.charAt(0).toUpperCase() +
-        toolName.slice(1) +
+        capitalizeToolName(toolName) +
         (tnameid.includes('all') ? ' all' : ''),
       version: toolVersion,
       vendor: vendor,

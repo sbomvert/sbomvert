@@ -46,6 +46,7 @@ describe('InferPkgTypeFromPurl', () => {
 
     it('should detect cargo (rust) packages', () => {
       expect(InferPkgTypeFromPurl('pkg:cargo/serde')).toBe('rust');
+      expect(InferPkgTypeFromPurl('pkg:gem/rails')).toBe('library');
     });
   });
 
