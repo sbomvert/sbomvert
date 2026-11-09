@@ -60,9 +60,17 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
           <div>
             <h3 className="text-heading-sm text-foreground mb-3">Package Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
+              <BarChart data={chartData} margin={{ bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="tool" stroke="var(--color-foreground-subtle)" />
+                <XAxis
+                  dataKey="tool"
+                  stroke="var(--color-foreground-subtle)"
+                  interval={0}
+                  angle={-30}
+                  textAnchor="end"
+                  height={80}
+                  tick={{ fontSize: 12 }}
+                />
                 <YAxis stroke="var(--color-foreground-subtle)" />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend />
@@ -75,9 +83,9 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
           <div>
             <h3 className="text-heading-sm text-foreground mb-3">Tool Analysis</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <RadarChart data={radarData}>
+              <RadarChart data={radarData} outerRadius="60%">
                 <PolarGrid stroke="var(--color-border)" />
-                <PolarAngleAxis  dataKey="tool" stroke="var(--color-foreground-subtle)" />
+                <PolarAngleAxis dataKey="tool" stroke="var(--color-foreground-subtle)" tick={{ fontSize: 12 }} />
                 <PolarRadiusAxis stroke="var(--color-foreground-subtle)" />
                 <Radar name="Coverage %"   dataKey="coverage"   stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
                 <Radar name="Uniqueness %" dataKey="uniqueness" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />

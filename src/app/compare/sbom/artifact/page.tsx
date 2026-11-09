@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { compareMultipleTools } from '@/lib/diffReports';
+import { withFormatInName } from '@/lib/sbom/utils';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
 import { loadSbomsForImage } from '@/lib/sbomLoader';
@@ -48,11 +49,15 @@ export default function Home() {
     const loadData = async () => {
       setLoading(true);
       const response = await loadSbomsForImage(selectedImage);
+      // tool + format, so a tool in both formats stays two separate entries in the comparison
+      const labeled = Object.fromEntries(
+        Object.entries(response.sboms).map(([image, list]) => [image, list.map(withFormatInName)])
+      );
 
-      setSboms(response.sboms);
+      setSboms(labeled);
       setViewMode('summary');
       // Set selected tools after data is loaded
-      const tools = new Set(response.sboms[selectedImage]?.map(sbom => sbom.tool) || []);
+      const tools = new Set(labeled[selectedImage]?.map(sbom => sbom.tool) || []);
       setSelectedTools(tools);
       setLoading(false);
     };
