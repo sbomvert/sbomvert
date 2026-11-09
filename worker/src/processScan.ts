@@ -15,7 +15,8 @@ import {
   ScanResult,
 } from '@sbomvert/core/queue';
 import { GenerateSBOMsWithTool } from '@sbomvert/core/sbom/generator';
-import { ScanSPDXwithTool } from '@sbomvert/core/vuln/scanner';
+import { SBOM_FORMATS, SbomFormat } from '@sbomvert/core/tools';
+import { ScanSbomWithTool } from '@sbomvert/core/vuln/scanner';
 import { VULN_EXTRACTORS } from '@sbomvert/core/vuln/vulnutils';
 
 export type RunCommand = (cmd: string, args: string[], timeoutMs: number) => Promise<string>;
@@ -68,6 +69,15 @@ function checkImage(image: unknown): string {
   return image;
 }
 
+// Job data comes over Redis: only known formats; jobs queued before formats existed get all of them.
+function checkFormats(formats: unknown): SbomFormat[] {
+  if (formats === undefined) return [...SBOM_FORMATS];
+  if (!Array.isArray(formats) || !formats.every((f): f is SbomFormat => SBOM_FORMATS.includes(f))) {
+    throw new Error(`Invalid formats: ${JSON.stringify(formats)}`);
+  }
+  return formats;
+}
+
 // One job of a scan flow (see packages/core/src/queue.ts). Tool failures are logged as warnings
 // and the job still completes with what did work; nothing is stored here: the returned
 // artifacts are stored by the web app.
@@ -87,12 +97,13 @@ export async function processScan(
   }
 }
 
-// SPDX and CycloneDX, each written to a file by the tool (syft writes both in one run).
+// The requested formats (SPDX, CycloneDX), each written to a file by the tool (syft writes both in one run).
 async function generateSboms(job: Job<SbomJobData>, deps: ScanDeps): Promise<ScanResult> {
   const image = checkImage(job.data.image);
   const { tool } = job.data;
+  const formats = checkFormats(job.data.formats);
   const result: ScanResult = { image, sboms: [], cves: [] };
-  if (!GenerateSBOMsWithTool(tool, image, '')) {
+  if (!GenerateSBOMsWithTool(tool, image, '', formats)) {
     await logStep(job, 'warning', `${tool} cannot produce SBOMs`);
     return result;
   }
@@ -103,7 +114,7 @@ async function generateSboms(job: Job<SbomJobData>, deps: ScanDeps): Promise<Sca
   }
   const workDir = await mkdtemp(join(tmpdir(), 'sbom-'));
   try {
-    const plan = GenerateSBOMsWithTool(tool, image, workDir)!;
+    const plan = GenerateSBOMsWithTool(tool, image, workDir, formats)!;
     await logStep(job, 'info', `${tool} is generating SBOMs`);
     for (const run of plan.runs) {
       try {
@@ -112,7 +123,7 @@ async function generateSboms(job: Job<SbomJobData>, deps: ScanDeps): Promise<Sca
         await logStep(job, 'warning', `${tool} failed: ${err}`);
       }
     }
-    for (const format of ['cdx', 'spdx'] as const) {
+    for (const format of formats) {
       const label = `${tool} ${format.toUpperCase()} SBOM`;
       try {
         const content = await readFile(plan.outputs[format], 'utf8');
@@ -130,43 +141,48 @@ async function generateSboms(job: Job<SbomJobData>, deps: ScanDeps): Promise<Sca
   return result;
 }
 
-// Scans the SPDX SBOM its child sbom job produced.
+// Scans the SBOMs its child sbom job produced, one CVE report per format.
 async function scanForCves(job: Job<CveJobData>, deps: ScanDeps): Promise<ScanResult> {
   const image = checkImage(job.data.image);
   const { tool, producer } = job.data;
+  const formats = checkFormats(job.data.formats);
   const result: ScanResult = { image, sboms: [], cves: [] };
-  const children = Object.values(await job.getChildrenValues<ScanResult | undefined>());
-  const sbom = children
-    .flatMap(c => c?.sboms ?? [])
-    .find(a => a.tool === producer && a.format === 'spdx');
-  if (!sbom) {
-    await logStep(job, 'warning', `${tool} has no ${producer} SBOM to scan`);
+  const extract = Object.hasOwn(VULN_EXTRACTORS, tool) ? VULN_EXTRACTORS[tool] : undefined;
+  if (!ScanSbomWithTool(tool, '') || !extract) {
+    await logStep(job, 'warning', `${tool} cannot scan for CVEs`);
     return result;
   }
-  const extract = Object.hasOwn(VULN_EXTRACTORS, tool) ? VULN_EXTRACTORS[tool] : undefined;
-  const workDir = await mkdtemp(join(tmpdir(), 'scan-'));
-  try {
-    // the scanners read the SBOM from a file
-    const sbomPath = join(workDir, `${producer}.spdx.json`);
-    const cmd = ScanSPDXwithTool(tool, sbomPath);
-    if (!cmd || !extract) {
-      await logStep(job, 'warning', `${tool} cannot scan for CVEs`);
-      return result;
+  const children = Object.values(await job.getChildrenValues<ScanResult | undefined>());
+  const sboms = children.flatMap(c => c?.sboms ?? []).filter(a => a.tool === producer);
+  let waited = false;
+  for (const format of formats) {
+    const label = `${tool} ${format.toUpperCase()}`;
+    const sbom = sboms.find(a => a.format === format);
+    if (!sbom) {
+      await logStep(job, 'warning', `${label}: no ${producer} ${format.toUpperCase()} SBOM to scan`);
+      continue;
     }
-    if (deps.databasesReady) {
-      await logStep(job, 'info', `${tool} is waiting for the vulnerability databases`);
-      await deps.databasesReady;
+    const workDir = await mkdtemp(join(tmpdir(), 'scan-'));
+    try {
+      // the scanners read the SBOM from a file
+      const sbomPath = join(workDir, `${producer}.${format}.json`);
+      const cmd = ScanSbomWithTool(tool, sbomPath)!;
+      if (deps.databasesReady && !waited) {
+        await logStep(job, 'info', `${tool} is waiting for the vulnerability databases`);
+        await deps.databasesReady;
+        waited = true;
+      }
+      await writeFile(sbomPath, sbom.content, 'utf8');
+      await logStep(job, 'info', `${label} is scanning the ${producer} SBOM`);
+      const out = await deps.runCommand(cmd.cmd, cmd.args, deps.timeoutMs);
+      const report = extract(parseJson(out, `${label} CVE report`), {});
+      result.cves.push({ tool, format, content: JSON.stringify(report) });
+      await logStep(job, 'info', `${label} CVE report generated`);
+    } catch (err) {
+      await logStep(job, 'warning', `${label} CVE scan failed: ${err}`);
+    } finally {
+      await rm(workDir, { recursive: true, force: true });
     }
-    await writeFile(sbomPath, sbom.content, 'utf8');
-    await logStep(job, 'info', `${tool} is scanning the ${producer} SBOM`);
-    const out = await deps.runCommand(cmd.cmd, cmd.args, deps.timeoutMs);
-    const report = extract(parseJson(out, `${tool} CVE report`), {});
-    result.cves.push({ tool, format: 'spdx', content: JSON.stringify(report) });
-    await logStep(job, 'info', `${tool} CVE report generated`);
-  } catch (err) {
-    await logStep(job, 'warning', `${tool} CVE scan failed: ${err}`);
-  } finally {
-    await rm(workDir, { recursive: true, force: true });
   }
   return result;
 }

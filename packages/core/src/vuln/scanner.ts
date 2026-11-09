@@ -1,4 +1,5 @@
-export function ScanSPDXwithTool(
+// The tools detect the format (SPDX or CycloneDX) from the file itself.
+export function ScanSbomWithTool(
   tool: string,
   sbompath: string
 ): { cmd: string; args: string[] } | null {

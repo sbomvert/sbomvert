@@ -1,6 +1,7 @@
 'use client';
 import { ImageScanForm } from "@/components/hoc/ImageScanForm/ImageScanForm";
 import { RecentScans } from "@/components/hoc/RecentScans/RecentScans";
+import { SbomFormat } from "@sbomvert/core/tools";
 import {useState } from "react";
 
 
@@ -11,8 +12,12 @@ const Page = () => {
   const [, setJobIdState] = useState<string | null>(null);
   const [, setJobStatus] = useState<string | null>(null);
 
-  const handleScanSubmit = async (image: string, tools: { producers: string[], consumers: string[] }) => {
-    const payload = { image, tools };
+  const handleScanSubmit = async (
+    image: string,
+    tools: { producers: string[], consumers: string[] },
+    formats: SbomFormat[]
+  ) => {
+    const payload = { image, tools, formats };
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',

@@ -40,10 +40,19 @@ test('403 when the scan feature is off', async () => {
 
 test('queues the scan as a flow and returns the scan job id (no worker runs in the web app)', async () => {
   expect(await post(valid)).toEqual({ status: 202, body: { jobId: '42' } });
-  expect(buildScanFlow).toHaveBeenCalledWith(valid);
-  expect(add).toHaveBeenCalledWith({ name: 'scan', data: valid });
+  // no formats in the request: both
+  const queued = { ...valid, formats: ['spdx', 'cdx'] };
+  expect(buildScanFlow).toHaveBeenCalledWith(queued);
+  expect(add).toHaveBeenCalledWith({ name: 'scan', data: queued });
   // auth is off: no login needed
   expect(mockedAuthorize).not.toHaveBeenCalled();
+});
+
+test('queues only the requested formats; an unknown or empty format list is a 400', async () => {
+  expect((await post({ ...valid, formats: ['cdx'] })).status).toBe(202);
+  expect(buildScanFlow).toHaveBeenCalledWith({ ...valid, formats: ['cdx'] });
+  expect((await post({ ...valid, formats: ['xml'] })).status).toBe(400);
+  expect((await post({ ...valid, formats: [] })).status).toBe(400);
 });
 
 test.each([
