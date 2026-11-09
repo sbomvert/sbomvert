@@ -26,7 +26,7 @@ describe('SPDX analysis', () => {
       const result = parseCreator(creators);
 
       expect(result).toEqual({
-        tool: 'syft',
+        tool: 'Syft',
         toolVersion: '1.2.3',
         vendor: 'anchore',
       });
@@ -37,7 +37,7 @@ describe('SPDX analysis', () => {
 
       const result = parseCreator(creators);
 
-      expect(result.tool).toBe('syft');
+      expect(result.tool).toBe('Syft');
       expect(result.toolVersion).toBe('');
       expect(result.vendor).toBe('');
     });
