@@ -72,7 +72,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.14.12",
+    "@types/node": "^26.6.6",
     "@types/pg": "^8.20.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
