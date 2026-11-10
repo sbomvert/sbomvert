@@ -5,7 +5,9 @@
 // them). Trivy's per-layer analysis stays in memory, so nothing about images is kept between runs.
 // Trivy needs its Java DB even for SBOMs, to identify JAR files.
 
-export type SbomFormat = 'spdx' | 'cdx';
+import { SBOM_FORMATS, SbomFormat } from '../tools';
+
+export type { SbomFormat };
 export type SbomPlan = {
   runs: { cmd: string; args: string[] }[];
   outputs: Record<SbomFormat, string>; // where each format ends up
@@ -14,7 +16,8 @@ export type SbomPlan = {
 export function GenerateSBOMsWithTool(
   tool: string,
   image: string,
-  outDir: string
+  outDir: string,
+  formats: readonly SbomFormat[] = SBOM_FORMATS
 ): SbomPlan | null {
   const outputs = { spdx: `${outDir}/${tool}.spdx.json`, cdx: `${outDir}/${tool}.cdx.json` };
   switch (tool) {
@@ -25,10 +28,8 @@ export function GenerateSBOMsWithTool(
             cmd: 'syft',
             args: [
               `registry:${image}`,
-              '-o',
-              `spdx-json=${outputs.spdx}`,
-              '-o',
-              `cyclonedx-json=${outputs.cdx}`,
+              ...(formats.includes('spdx') ? ['-o', `spdx-json=${outputs.spdx}`] : []),
+              ...(formats.includes('cdx') ? ['-o', `cyclonedx-json=${outputs.cdx}`] : []),
             ],
           },
         ],
@@ -52,14 +53,26 @@ export function GenerateSBOMsWithTool(
           image,
         ],
       });
-      return { runs: [trivy('spdx-json', outputs.spdx), trivy('cyclonedx', outputs.cdx)], outputs };
+      return {
+        runs: [
+          ...(formats.includes('spdx') ? [trivy('spdx-json', outputs.spdx)] : []),
+          ...(formats.includes('cdx') ? [trivy('cyclonedx', outputs.cdx)] : []),
+        ],
+        outputs,
+      };
     }
     case 'scout': {
       const scout = (format: string, file: string) => ({
         cmd: 'docker',
         args: ['scout', 'sbom', `registry://${image}`, `--format=${format}`, '--output', file],
       });
-      return { runs: [scout('spdx', outputs.spdx), scout('cyclonedx', outputs.cdx)], outputs };
+      return {
+        runs: [
+          ...(formats.includes('spdx') ? [scout('spdx', outputs.spdx)] : []),
+          ...(formats.includes('cdx') ? [scout('cyclonedx', outputs.cdx)] : []),
+        ],
+        outputs,
+      };
     }
     default:
       return null;

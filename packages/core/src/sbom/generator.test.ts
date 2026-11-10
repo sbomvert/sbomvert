@@ -20,6 +20,13 @@ test('syft writes SPDX and CycloneDX in a single run, so the image is pulled onc
   });
 });
 
+test('only the requested formats are generated', () => {
+  const syft = GenerateSBOMsWithTool('syft', 'nginx', OUT, ['cdx'])!;
+  expect(syft.runs[0].args).toStrictEqual(['registry:nginx', '-o', `cyclonedx-json=${OUT}/syft.cdx.json`]);
+  expect(GenerateSBOMsWithTool('trivy', 'nginx', OUT, ['spdx'])!.runs).toHaveLength(1);
+  expect(GenerateSBOMsWithTool('scout', 'nginx', OUT, ['cdx'])!.runs[0].args).toContain('--format=cyclonedx');
+});
+
 test('trivy pulls from the registry, never updates its databases, keeps no layer cache, one run per format', () => {
   const plan = GenerateSBOMsWithTool('trivy', 'nginx:1.27', OUT)!;
   expect(plan.runs).toStrictEqual([

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ChevronRight } from 'lucide-react';
-import { cn, getPackageTypeColor, TOOL_COLORS } from '@/lib/utils';
+import { cn, TOOL_COLORS } from '@/lib/utils';
+import { PackageTypeBadge } from '@/components/hoc/PackageTypeBadge';
 import { BackButton } from '@/components/button/BackButton';
 import { Card } from '@/components/card/Card';
 import { SbomInfo, RichPackage } from '@/lib/sbom/analyzeTypes';
@@ -185,7 +186,7 @@ export default function AnalyzeDetailClient({
 
       {/* Namespace */}
       {info?.documentNamespace && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border px-4 py-3 flex items-center gap-2">
+        <div className="bg-surface rounded-xl border px-4 py-3 flex items-center gap-2">
           <span className="text-[10px] font-semibold uppercase text-gray-400">
             Namespace
           </span>
@@ -250,7 +251,7 @@ export default function AnalyzeDetailClient({
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border overflow-hidden">
+      <div className="bg-surface rounded-2xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <tbody>
@@ -258,14 +259,14 @@ export default function AnalyzeDetailClient({
                 <tr
                   key={pkg.sourceRef}
                   onClick={() => setSelectedPkg(pkg)}
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="cursor-pointer border-b border-border hover:bg-surface-alt"
                 >
-                  <td className="px-4 py-2">{pkg.name}</td>
-                  <td className="px-4 py-2 text-xs">{pkg.version}</td>
+                  <td className="px-4 py-2 max-w-xs">
+                    <div className="font-medium truncate" title={pkg.name}>{pkg.name}</div>
+                  </td>
+                  <td className="px-4 py-2 text-xs font-mono max-w-[12rem] truncate" title={pkg.version}>{pkg.version}</td>
                   <td className="px-4 py-2">
-                    <span className={getPackageTypeColor(pkg.pkgType)}>
-                      {pkg.pkgType}
-                    </span>
+                    <PackageTypeBadge type={pkg.pkgType} />
                   </td>
                   <td className="px-4 py-2 text-xs">
                     {pkg.license ?? '—'}

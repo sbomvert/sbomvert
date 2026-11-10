@@ -87,6 +87,12 @@ export default function Heatmap({
 
   const [tooltip, setTooltip] = React.useState<any>(null);
 
+  // Room for the labels (14px text, ~7.5px per char): y labels sit left of the grid, x labels
+  // hang below it rotated 45deg, so they take ~0.71 of their length in height.
+  const longest = (labels: string[]) => Math.max(0, ...labels.map(l => l.length)) * 7.5;
+  const marginLeft = Math.max(100, longest(yLabels) + 20);
+  const marginBottom = Math.max(100, longest(xLabels) * 0.71 + 50);
+
   return (
     <div
       ref={containerRef}
@@ -102,11 +108,11 @@ export default function Heatmap({
         </defs>
 
         {/* Main group with margins */}
-        <g transform="translate(100, 20)">
+        <g transform={`translate(${marginLeft}, 20)`}>
           {/* Calculate available space */}
           {(() => {
-            const availableWidth = dimensions.width - 140;
-            const availableHeight = dimensions.height - 100;
+            const availableWidth = dimensions.width - marginLeft - 40;
+            const availableHeight = dimensions.height - marginBottom;
 
             // Calculate cell size to maintain squares
             const cellSize = Math.max(

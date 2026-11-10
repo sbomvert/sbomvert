@@ -2,6 +2,10 @@
 // scanner reads. The commands themselves are in sbom/generator.ts and vuln/scanner.ts, the report
 // parsers in vuln/vulnutils.ts (VULN_EXTRACTORS); tools.test.ts checks they all agree with this list.
 
+// The SBOM formats a scan can produce (and scan for CVEs): the file extension is `<tool>.<format>.json`.
+export const SBOM_FORMATS = ['spdx', 'cdx'] as const;
+export type SbomFormat = (typeof SBOM_FORMATS)[number];
+
 export type ToolConfig = {
   name: string;
   produce_sbom: boolean;

@@ -1,6 +1,7 @@
 import { CopyButton } from "@/components/button/CopyButton";
 import { RichPackage } from "@/lib/sbom/analyzeTypes";
-import { cn, getPackageTypeColor } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { getPackageTypeColor } from "@/components/hoc/PackageTypeBadge";
 import { motion } from "framer-motion";
 import { X, Hash,Info, Package, Shield, Tag, ExternalLink, FileText } from "lucide-react";
 

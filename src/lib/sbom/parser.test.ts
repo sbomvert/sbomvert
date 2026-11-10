@@ -193,7 +193,7 @@ describe('parseSbom', () => {
     );
 
     expect(result?.format).toBe('CycloneDX');
-    expect(result?.toolInfo.name).toBe('syft');
+    expect(result?.toolInfo.name).toBe('Syft');
     expect(result?.packages).toHaveLength(1);
   });
 

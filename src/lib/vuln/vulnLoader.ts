@@ -5,6 +5,12 @@ export interface CVEReport {
   [containerName: string]: VulnReport;
 }
 
+const getToolFromURL = (filename: string): string => 
+  filename.split('.')[0] || 'none';
+
+const getFormatFromURL = (filename: string): string => 
+  filename.split('.')[1].toUpperCase() || 'none';
+
 export const loadCVEsForImage = async (
   image: string
 ): Promise<{ cves: CVEReport }> => {
@@ -34,11 +40,13 @@ export const loadCVEsForImage = async (
     if (!res.ok) return null;
 
     const data = (await res.json()) as VulnReport;
-     const [toolName, _] = file.name.split('.');
+     const toolName = getToolFromURL(file.name)
+     const format = getFormatFromURL(file.name)
 
     return {
       report: data,
       toolName,
+      format
     };
   } catch (err) {
     console.error(`Error loading CVE ${file.name}:`, err);
@@ -49,14 +57,14 @@ export const loadCVEsForImage = async (
 const results = await Promise.all(cvePromises);
 
 const validResults = results.filter(
-  (x): x is { report: VulnReport, toolName: string } => x !== null
+  (x): x is { report: VulnReport, toolName: string, format: string } => x !== null
 );
 
-for (const { report, toolName } of validResults) {
+for (const { report, toolName,format } of validResults) {
   // 👉 Extract tool name from filePath
 
 
-  cves[toolName] = report;
+  cves[`${toolName} (${format})`] = report;
 }
 
 return { cves };

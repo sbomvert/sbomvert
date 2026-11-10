@@ -1,5 +1,5 @@
 import { FlowJob, FlowProducer, Job, JobNode, Queue, QueueEvents } from 'bullmq';
-import { sbomProducerFor } from './tools';
+import { SbomFormat, sbomProducerFor } from './tools';
 
 // The scan queue shared by the web app (adds scans, reads status) and the scan worker (runs them).
 export const SCAN_QUEUE = 'scan';
@@ -18,9 +18,10 @@ export const SCAN_QUEUE = 'scan';
 export type ScanJobData = {
   image: string;
   tools: { producers: string[]; consumers: string[] };
+  formats: SbomFormat[];
 };
-export type SbomJobData = { image: string; tool: string };
-export type CveJobData = { image: string; tool: string; producer: string };
+export type SbomJobData = { image: string; tool: string; formats: SbomFormat[] };
+export type CveJobData = { image: string; tool: string; producer: string; formats: SbomFormat[] };
 // storedAt: set by the web app once it has stored the job's results
 export type ScanQueueData = (ScanJobData | SbomJobData | CveJobData) & { storedAt?: string };
 
@@ -59,7 +60,7 @@ export function buildScanFlow(scan: ScanJobData): FlowJob {
   const sbomJob = (tool: string): FlowJob => ({
     name: 'sbom',
     queueName: SCAN_QUEUE,
-    data: { image: scan.image, tool } satisfies SbomJobData,
+    data: { image: scan.image, tool, formats: scan.formats } satisfies SbomJobData,
     opts: childOpts,
   });
   const read = new Set<string>();
@@ -72,7 +73,12 @@ export function buildScanFlow(scan: ScanJobData): FlowJob {
     children.push({
       name: 'cve',
       queueName: SCAN_QUEUE,
-      data: { image: scan.image, tool: consumer, producer } satisfies CveJobData,
+      data: {
+        image: scan.image,
+        tool: consumer,
+        producer,
+        formats: scan.formats,
+      } satisfies CveJobData,
       opts: childOpts,
       children: [sbomJob(producer)],
     });

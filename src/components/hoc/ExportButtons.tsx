@@ -23,7 +23,10 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       const fileExtension = tool?.format === 'CycloneDX' ? 'cyclonedx.json' : 'spdx.json';
 
       // Sanitize tool name: replace slashes and uppercase
-      const sanitizedTool = encodeURIComponent(toolName.replace(/[\\/]/g, '-').toLowerCase());
+      // (the displayed name is "Tool (FORMAT)"; the file is named after the tool alone)
+      const sanitizedTool = encodeURIComponent(
+        toolName.replace(` (${tool?.format})`, '').replace(/[\\/]/g, '-').toLowerCase()
+      );
 
       
       // Construct the download URL

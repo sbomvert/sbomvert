@@ -42,9 +42,9 @@ describe('parseCycloneDxSbom', () => {
 
     expect(result).not.toBeNull();
     expect(result?.format).toBe('CycloneDX');
-    expect(result?.tool).toBe('syft');
+    expect(result?.tool).toBe('Syft');
     expect(result?.toolInfo).toEqual({
-      name: 'syft',
+      name: 'Syft',
       version: '1.45.1',
       vendor: undefined,
       format: 'CycloneDX',
@@ -207,7 +207,7 @@ describe('parseCycloneDxSbom', () => {
 
     const result = parseCycloneDxSbom(bom, 'golang1.26-alpine', 'syft.cdx.json');
 
-    expect(result?.toolInfo.name).toBe('syft');
+    expect(result?.toolInfo.name).toBe('Syft');
     expect(result?.toolInfo.version).toBe('1.45.1');
     expect(result?.packages).toHaveLength(2);
     expect(

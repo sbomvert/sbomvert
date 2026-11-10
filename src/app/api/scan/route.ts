@@ -4,6 +4,7 @@ import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { authorizeScanRequest } from '@/lib/auth/scan-auth';
 import { isValidImageRef } from '@sbomvert/core/image';
 import { buildScanFlow, getScanFlows } from '@sbomvert/core/queue';
+import { SBOM_FORMATS } from '@sbomvert/core/tools';
 
 const ScanRequestSchema = z.object({
   image: z.string().refine(isValidImageRef, 'Invalid image reference'),
@@ -11,6 +12,7 @@ const ScanRequestSchema = z.object({
     producers: z.array(z.string()).nonempty(),
     consumers: z.array(z.string()).nonempty(),
   }),
+  formats: z.array(z.enum(SBOM_FORMATS)).nonempty().default([...SBOM_FORMATS]),
 });
 
 // Only queues the scan; the scan worker app (worker/) runs it.

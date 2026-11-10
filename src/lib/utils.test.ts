@@ -1,4 +1,4 @@
-import { cn, getPackageTypeColor, computeJaccard } from '@/lib/utils';
+import { cn, computeJaccard } from '@/lib/utils';
 
 describe('Utils functions', () => {
   describe('cn function', () => {
@@ -20,56 +20,6 @@ describe('Utils functions', () => {
     it('should handle multiple spaces and empty strings', () => {
       const result = cn('class1', '', 'class2', '   ');
       expect(result).toBe('class1 class2');
-    });
-  });
-
-  describe('getPackageTypeColor function', () => {
-    it('should return correct color for os type', () => {
-      const result = getPackageTypeColor('os');
-      expect(result).toContain('bg-purple-100');
-      expect(result).toContain('text-purple-800');
-    });
-
-    it('should return correct color for npm type', () => {
-      const result = getPackageTypeColor('npm');
-      expect(result).toContain('bg-red-100');
-      expect(result).toContain('text-red-800');
-    });
-
-    it('should return correct color for python type', () => {
-      const result = getPackageTypeColor('python');
-      expect(result).toContain('bg-blue-100');
-      expect(result).toContain('text-blue-800');
-    });
-
-    it('should return correct color for maven type', () => {
-      const result = getPackageTypeColor('maven');
-      expect(result).toContain('bg-orange-100');
-      expect(result).toContain('text-orange-800');
-    });
-
-    it('should return correct color for binary type', () => {
-      const result = getPackageTypeColor('binary');
-      expect(result).toContain('bg-gray-100');
-      expect(result).toContain('text-gray-800');
-    });
-
-    it('should return correct color for library type', () => {
-      const result = getPackageTypeColor('library');
-      expect(result).toContain('bg-green-100');
-      expect(result).toContain('text-green-800');
-    });
-
-    it('should return default color for unknown type', () => {
-      const result = getPackageTypeColor('unknown');
-      expect(result).toContain('bg-gray-100');
-      expect(result).toContain('text-gray-800');
-    });
-
-    it('should return default color for undefined type', () => {
-      const result = getPackageTypeColor(undefined);
-      expect(result).toContain('bg-gray-100');
-      expect(result).toContain('text-gray-800');
     });
   });
 

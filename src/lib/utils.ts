@@ -11,18 +11,6 @@ export const TOOL_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6
 
 // Package-type badge colours — now expressed as Tailwind semantic tokens
 // so a single token change in tailwind.config.js ripples through.
-export const getPackageTypeColor = (type?: string): string => {
-  switch (type) {
-    case 'os':      return 'bg-purple-100 text-purple-800';
-    case 'npm':     return 'bg-red-100 text-red-800';
-    case 'python':  return 'bg-blue-100 text-blue-800';
-    case 'maven':   return 'bg-orange-100 text-orange-800';
-    case 'binary':  return 'bg-gray-100 text-gray-800';
-    case 'library': return 'bg-green-100 text-green-800';
-    default:        return 'bg-gray-100 text-gray-800';
-  }
-};
-
 interface IJaccardResult { x: string; y: string; value: number; }
 
 export const computeJaccard = (

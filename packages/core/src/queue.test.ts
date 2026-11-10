@@ -37,6 +37,7 @@ describe('buildScanFlow', () => {
     const flow = buildScanFlow({
       image: 'alpine',
       tools: { producers: ['trivy', 'syft', 'scout'], consumers: ['trivy', 'grype'] },
+      formats: ['spdx', 'cdx'],
     });
     expect(shape(flow)).toEqual([
       'scan',
@@ -44,13 +45,20 @@ describe('buildScanFlow', () => {
       ['cve grype', ['sbom syft']],
       ['sbom scout'],
     ]);
-    expect(flow.children![1].data).toEqual({ image: 'alpine', tool: 'grype', producer: 'syft' });
+    expect(flow.children![1].data).toEqual({
+      image: 'alpine',
+      tool: 'grype',
+      producer: 'syft',
+      formats: ['spdx', 'cdx'],
+    });
+    expect(flow.children![2].data).toEqual({ image: 'alpine', tool: 'scout', formats: ['spdx', 'cdx'] });
   });
 
   test('children never block their parent, and finished jobs are not kept forever', () => {
     const flow = buildScanFlow({
       image: 'alpine',
       tools: { producers: ['syft'], consumers: ['grype'] },
+      formats: ['spdx'],
     });
     const cve = flow.children![0];
     expect(cve.opts).toMatchObject({
@@ -65,6 +73,7 @@ describe('buildScanFlow', () => {
     const flow = buildScanFlow({
       image: 'alpine',
       tools: { producers: ['trivy', 'trivy'], consumers: ['grype', 'trivy', 'trivy'] },
+      formats: ['cdx'],
     });
     expect(shape(flow)).toEqual(['scan', ['cve trivy', ['sbom trivy']]]);
   });

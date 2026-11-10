@@ -1,31 +1,8 @@
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
 import { LicenseInfo, PackageInfo, RichPackage, SbomInfo } from '@/lib/sbom/analyzeTypes';
 import { CycloneDxBom, CycloneDxComponent, CycloneDxLicense } from './types';
-
-const getPackageTypeFromPurl = (purl?: string): ISbomPackage['packageType'] => {
-  const type = purl?.match(/^pkg:([^/]+)\//)?.[1];
-
-  switch (type) {
-    case 'deb':
-    case 'dpkg':
-    case 'apk':
-      return 'os';
-    case 'npm':
-      return 'npm';
-    case 'pypi':
-      return 'python';
-    case 'maven':
-      return 'maven';
-    case 'nuget':
-      return '.net';
-    case 'cargo':
-      return 'rust';
-    case 'gem':
-      return 'library';
-    default:
-      return 'generic';
-  }
-};
+import { capitalizeToolName } from '../utils';
+import { InferPkgTypeFromPurl } from '../purl/converter';
 
 const getLicense = (licenses?: CycloneDxLicense[]): string | undefined => {
   const license = licenses?.[0];
@@ -51,11 +28,6 @@ const getUniquePurlComponents = (components?: CycloneDxComponent[]): CycloneDxCo
   });
 };
 
-const formatToolName = (toolName: string): string => {
-  const baseName = toolName.split('.')[0] || 'Unknown';
-  return baseName.charAt(0).toUpperCase() + baseName.slice(1);
-};
-
 const getTool = (data: CycloneDxBom, toolName: string): IToolInfo => {
   const tools = data.metadata?.tools;
   const firstTool = Array.isArray(tools)
@@ -70,7 +42,7 @@ const getTool = (data: CycloneDxBom, toolName: string): IToolInfo => {
     : undefined;
 
   return {
-    name: firstTool?.name ?? formatToolName(toolName),
+    name: capitalizeToolName(firstTool?.name ?? (toolName.split('.')[0] || 'Unknown')),
     version: firstTool?.version || 'unknown',
     vendor,
     format: 'CycloneDX',
@@ -108,7 +80,7 @@ export const parseCycloneDxSbom = (
       version: component.version || 'unknown',
       supplier: component.supplier?.name,
       license: getLicense(component.licenses),
-      packageType: getPackageTypeFromPurl(component.purl),
+      packageType: InferPkgTypeFromPurl(component.purl ?? ''),
       hash: component.hashes?.[0]
         ? `${component.hashes[0].alg.toLowerCase()}:${component.hashes[0].content}`
         : undefined,
@@ -147,7 +119,7 @@ export const AnalyzeCycloneDX = (
       sourceRef: component['bom-ref'] ?? component.name,
       name: component.name,
       version: component.version || 'unknown',
-      pkgType: getPackageTypeFromPurl(component.purl),
+      pkgType: InferPkgTypeFromPurl(component.purl ?? ''),
       purl: component.purl,
       cpes: getCpes(component),
       license: getLicense(component.licenses),

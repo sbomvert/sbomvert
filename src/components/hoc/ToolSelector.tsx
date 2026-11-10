@@ -29,7 +29,7 @@ export const ToolSelector: React.FC<ToolSelectorProps> = ({
           const isSelected = selectedTools.has(tool.name);
           return (
             <motion.button
-              key={tool.name}
+              key={tool.name + tool.format}
               onClick={() => onToolToggle(tool.name)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

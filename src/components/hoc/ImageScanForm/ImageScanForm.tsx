@@ -1,17 +1,33 @@
 'use client';
 import React, { useState } from 'react';
 import { Button } from '@/components/button/Button';
-import { SupportedTools, SupportedToolsType, ToolConfig } from '@sbomvert/core/tools';
+import {
+  SBOM_FORMATS,
+  SbomFormat,
+  SupportedTools,
+  SupportedToolsType,
+  ToolConfig,
+} from '@sbomvert/core/tools';
+
+const FORMAT_LABELS: Record<SbomFormat, string> = { spdx: 'SPDX', cdx: 'CycloneDX' };
 
 type ImageScanFormProps = {
-  onSubmit: (image: string, tools: { producers: string[]; consumers: string[] }) => Promise<void> | void;
+  onSubmit: (
+    image: string,
+    tools: { producers: string[]; consumers: string[] },
+    formats: SbomFormat[]
+  ) => Promise<void> | void;
   onCancel: () => void;
 };
 
 export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel }) => {
   const [image, setImage]               = useState('');
   const [selectedTools, setSelectedTools] = useState<SupportedToolsType>(SupportedTools);
+  const [formats, setFormats]           = useState<SbomFormat[]>([...SBOM_FORMATS]);
   const [submitting, setSubmitting]     = useState(false);
+
+  const toggleFormat = (format: SbomFormat) =>
+    setFormats(prev => (prev.includes(format) ? prev.filter(f => f !== format) : [...prev, format]));
 
   const toggleProducerTool = (tool: ToolConfig) =>
     setSelectedTools(prev => ({
@@ -31,12 +47,17 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
 
   const handleSubmit = async () => {
     if (!image.trim()) return alert('Please enter an image name');
+    if (formats.length === 0) return alert('Please select at least one SBOM format');
     try {
       setSubmitting(true);
-      await onSubmit(image, {
-        consumers: selectedTools.consumers.map(c => c.name),
-        producers: selectedTools.producers.map(p => p.name),
-      });
+      await onSubmit(
+        image,
+        {
+          consumers: selectedTools.consumers.map(c => c.name),
+          producers: selectedTools.producers.map(p => p.name),
+        },
+        formats
+      );
     } finally {
       setSubmitting(false);
     }
@@ -69,6 +90,23 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
                 size="sm"
               >
                 {tool.name.toUpperCase()}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className={sectionLabel}>SBOM formats:</div>
+          <div className="flex flex-wrap gap-2">
+            {SBOM_FORMATS.map(format => (
+              <Button
+                key={format}
+                type="button"
+                onClick={() => toggleFormat(format)}
+                variant={formats.includes(format) ? 'primary' : 'secondary'}
+                size="sm"
+              >
+                {FORMAT_LABELS[format]}
               </Button>
             ))}
           </div>

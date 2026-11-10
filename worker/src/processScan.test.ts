@@ -48,11 +48,23 @@ describe('sbom job', () => {
     expect(result).toEqual({
       image: 'alpine:3.20',
       sboms: [
-        { tool: 'syft', format: 'cdx', content: '{"file":"syft.cdx.json"}' },
         { tool: 'syft', format: 'spdx', content: '{"file":"syft.spdx.json"}' },
+        { tool: 'syft', format: 'cdx', content: '{"file":"syft.cdx.json"}' },
       ],
       cves: [],
     });
+  });
+
+  test('only the requested formats are generated', async () => {
+    const d = deps(writesOutputs(() => '{}'));
+    const job = fakeJob('sbom', { image: 'alpine', tool: 'syft', formats: ['cdx'] });
+    expect((await run(job, d))!.sboms.map(a => a.format)).toEqual(['cdx']);
+    expect(d.runCommand.mock.calls[0][1]).not.toContain('spdx-json');
+  });
+
+  test('an unknown format is rejected', async () => {
+    const d = deps(async () => '');
+    await expect(run(fakeJob('sbom', { image: 'alpine', tool: 'syft', formats: ['xml'] }), d)).rejects.toThrow('Invalid formats');
   });
 
   test('a format whose run fails is logged and the other format is still returned', async () => {
@@ -102,16 +114,28 @@ describe('cve job', () => {
     },
   };
 
-  test("scans its child's SPDX SBOM from a temp file and returns the report", async () => {
+  test("scans each requested format's SBOM from a temp file, one report per format", async () => {
     const d = deps(async () => JSON.stringify({ matches: [] }));
-    const job = fakeJob('cve', { image: 'alpine', tool: 'grype', producer: 'syft' }, syftSbom);
+    const job = fakeJob(
+      'cve',
+      { image: 'alpine', tool: 'grype', producer: 'syft', formats: ['spdx', 'cdx'] },
+      syftSbom
+    );
     const result = await run(job, d);
     expect(d.runCommand).toHaveBeenCalledWith(
       'grype',
       [expect.stringMatching(/^sbom:.*syft\.spdx\.json$/), '-o=json'],
       1000
     );
-    expect(result!.cves.map(a => [a.tool, a.format])).toEqual([['grype', 'spdx']]);
+    expect(d.runCommand).toHaveBeenCalledWith(
+      'grype',
+      [expect.stringMatching(/^sbom:.*syft\.cdx\.json$/), '-o=json'],
+      1000
+    );
+    expect(result!.cves.map(a => [a.tool, a.format])).toEqual([
+      ['grype', 'spdx'],
+      ['grype', 'cdx'],
+    ]);
     expect(JSON.parse(result!.cves[0].content)).toHaveProperty('vulns_by_package');
   });
 
@@ -121,7 +145,7 @@ describe('cve job', () => {
     expect((await run(job, d))!.cves).toEqual([]);
     expect(logged(job)).toContainEqual({
       level: 'warning',
-      message: 'trivy has no trivy SBOM to scan',
+      message: 'trivy SPDX: no trivy SPDX SBOM to scan',
     });
     expect(d.runCommand).not.toHaveBeenCalled();
   });
@@ -148,7 +172,7 @@ describe('cve job', () => {
     expect((await run(job, d))!.cves).toEqual([]);
     expect(logged(job)).toContainEqual({
       level: 'warning',
-      message: expect.stringContaining('grype CVE scan failed'),
+      message: expect.stringContaining('grype SPDX CVE scan failed'),
     });
   });
 });

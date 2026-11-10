@@ -11,7 +11,10 @@ jest.mock('@/components/button/Button', () => {
 // Mock SupportedTools to a simple list for test stability
 jest.mock('@sbomvert/core/tools', () => {
   const mockTool = { name: 'trivy', description: '' };
-  return { SupportedTools: { producers: [mockTool], consumers: [mockTool] } };
+  return {
+    SBOM_FORMATS: ['spdx', 'cdx'],
+    SupportedTools: { producers: [mockTool], consumers: [mockTool] },
+  };
 });
 
 describe('ImageScanForm component', () => {
@@ -26,6 +29,18 @@ describe('ImageScanForm component', () => {
     fireEvent.change(input, { target: { value: 'myimage:latest' } });
     expect((input as HTMLInputElement).value).toBe('myimage:latest');
 
+  });
+
+  test('submits the chosen formats (both by default)', async () => {
+    render(<ImageScanForm onSubmit={onSubmit} onCancel={onCancel} />);
+    fireEvent.change(screen.getByPlaceholderText('repo/app:tag'), { target: { value: 'alpine' } });
+    fireEvent.click(screen.getByText('SPDX'));
+    fireEvent.click(screen.getByText('Start Scan'));
+    expect(onSubmit).toHaveBeenCalledWith(
+      'alpine',
+      { producers: ['trivy'], consumers: ['trivy'] },
+      ['cdx']
+    );
   });
 
   test('calls onCancel when cancel button clicked', () => {

@@ -1,6 +1,7 @@
 import { InferPkgTypeFromPurl } from "../purl/converter";
 import { LicenseInfo, PackageInfo, RichFile, RichPackage, SbomInfo } from '../analyzeTypes';
 import { SpdxDocument, SpdxPackage } from "./types";
+import { capitalizeToolName } from "../utils";
 
  const skip = new Set(['CONTAINER', 'OPERATING-SYSTEM']);
 
@@ -31,7 +32,7 @@ export function parseCreator(creators: string[]): { tool: string; toolVersion: s
     const toolEntry = creators.find(c => c.startsWith('Tool:'))?.replace('Tool:', '').trim() ?? '';
     const parts = toolEntry.split('-');
     const toolVersion = parts.length > 1 ? (parts.at(-1) ?? '') : '';
-    const tool = parts.length > 1 ? parts.slice(0, -1).join('-') : toolEntry;
+    const tool = capitalizeToolName(parts.length > 1 ? parts.slice(0, -1).join('-') : toolEntry);
     const vendor = creators.find(c => c.startsWith('Organization:'))?.replace('Organization:', '').trim() ?? '';
     return { tool, toolVersion, vendor };
 }

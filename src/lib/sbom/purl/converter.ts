@@ -7,5 +7,6 @@ export function InferPkgTypeFromPurl(purl: string): PkgType {
   if (purl.includes('pkg:maven/')) return 'maven';
   if (purl.includes('pkg:nuget/')) return '.net';
   if (purl.includes('pkg:cargo/')) return 'rust';
+  if (purl.includes('pkg:gem/')) return 'library';
   return 'generic';
 }

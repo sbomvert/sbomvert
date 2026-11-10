@@ -1,27 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Database, Code, Box, Package, FileText, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { PackageMetadataDetails } from './PackageMetadataDetails';
-import { TOOL_COLORS, getPackageTypeColor } from '@/lib/utils';
+import { PackageTypeBadge } from './PackageTypeBadge';
+import { TOOL_COLORS } from '@/lib/utils';
 
 interface PackageDetailsTableProps {
   comparison: IMultiToolComparison;
   filter: string;
   searchTerm?: string;
 }
-
-const getPackageTypeIcon = (type?: string) => {
-  switch (type) {
-    case 'os':      return <Database size={16} />;
-    case 'npm':
-    case 'python':
-    case 'maven':   return <Code size={16} />;
-    case 'binary':  return <Box size={16} />;
-    case 'library': return <Package size={16} />;
-    default:        return <FileText size={16} />;
-  }
-};
 
 const chunkArray = <T,>(array: T[], size: number): T[][] => {
   const chunks: T[][] = [];
@@ -107,10 +96,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-badge text-caption font-medium ${getPackageTypeColor(pkg.packageType)}`}>
-                      {getPackageTypeIcon(pkg.packageType)}
-                      {pkg.packageType || 'unknown'}
-                    </span>
+                    <PackageTypeBadge type={pkg.packageType} />
                   </td>
                   <td className="py-3 px-4 text-foreground-muted font-mono text-body-sm truncate" title={pkg.version}>
                     {pkg.version}
