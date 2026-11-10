@@ -53,6 +53,8 @@ const extractPackageType = (
         return '.net';
       case 'cargo':
         return 'rust';
+      case 'golang':
+        return 'golang';
       case 'gem':
         return 'library';
       case 'github':

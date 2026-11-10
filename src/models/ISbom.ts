@@ -12,7 +12,8 @@ export interface ISbomPackage {
     | 'library'
     | '.net'
     | 'generic'
-    | 'rust';
+    | 'rust'
+    | 'golang';
   hash?: string;
   purl?: string;
   cpe?: string;
