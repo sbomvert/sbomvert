@@ -19,6 +19,8 @@ export const getPackageTypeColor = (type?: string): string => {
     case 'maven':   return 'bg-orange-100 text-orange-800';
     case 'binary':  return 'bg-gray-100 text-gray-800';
     case 'library': return 'bg-green-100 text-green-800';
+    case 'rust':    return 'bg-amber-100 text-amber-800';
+    case '.net':    return 'bg-indigo-100 text-indigo-800';
     default:        return 'bg-gray-100 text-gray-800';
   }
 };

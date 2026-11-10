@@ -54,6 +54,11 @@ describe('Utils functions', () => {
       expect(result).toContain('text-gray-800');
     });
 
+    it('should return their own colors for rust and .net types', () => {
+      expect(getPackageTypeColor('rust')).toContain('bg-amber-100');
+      expect(getPackageTypeColor('.net')).toContain('bg-indigo-100');
+    });
+
     it('should return correct color for library type', () => {
       const result = getPackageTypeColor('library');
       expect(result).toContain('bg-green-100');
