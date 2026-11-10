@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Code, ChevronRight, AlertTriangle } from 'lucide-react';
-import { parsePurl } from '@/lib/parseSbom';
+import { parsePackageUrl } from '@/lib/sbom/purl/packageUrl';
 
 interface PurlAnalysisCardProps {
   purl?: string;
@@ -10,7 +10,7 @@ interface PurlAnalysisCardProps {
 
 export const PurlAnalysisCard: React.FC<PurlAnalysisCardProps> = ({ purl, cpe }) => {
   const [expanded, setExpanded] = useState(false);
-  const parsed = parsePurl(purl);
+  const parsed = purl ? parsePackageUrl(purl) : null;
 
   if (!purl && !cpe) {
     return (
@@ -62,14 +62,12 @@ export const PurlAnalysisCard: React.FC<PurlAnalysisCardProps> = ({ purl, cpe })
               <div className="space-y-2">
                 <div className="text-caption font-semibold text-foreground-muted">pURL Components:</div>
                 <div className="grid grid-cols-2 gap-2 text-caption">
-                  {(['scheme', 'type'] as const).map(k =>
-                    parsed[k] && (
-                      <div key={k}>
-                        <span className="text-foreground-subtle capitalize">{k}:</span>
-                        <span className={`ml-2 px-2 py-0.5 ${badge(k)} rounded font-mono`}>{parsed[k]}</span>
-                      </div>
-                    )
-                  )}
+                  {([['scheme', 'pkg'], ['type', parsed.type]] as const).map(([k, v]) => (
+                    <div key={k}>
+                      <span className="text-foreground-subtle capitalize">{k}:</span>
+                      <span className={`ml-2 px-2 py-0.5 ${badge(k)} rounded font-mono`}>{v}</span>
+                    </div>
+                  ))}
                   {parsed.namespace && (
                     <div>
                       <span className="text-foreground-subtle">Namespace:</span>
@@ -88,13 +86,12 @@ export const PurlAnalysisCard: React.FC<PurlAnalysisCardProps> = ({ purl, cpe })
                       <span className={`ml-2 px-2 py-0.5 ${badge('version')} rounded font-mono`}>{parsed.version}</span>
                     </div>
                   )}
-                  {parsed.qualifiers &&
-                    Object.entries(parsed.qualifiers).map(([k, v]) => (
+                  {Object.entries(parsed.qualifiers).map(([k, v]) => (
                       <div key={k}>
                         <span className="text-foreground-subtle">{k}:</span>
                         <span className={`ml-2 px-2 py-0.5 ${badge('default')} rounded font-mono`}>{v}</span>
                       </div>
-                    ))}
+                  ))}
                 </div>
                 <div className="bg-surface rounded p-2 font-mono text-caption break-all text-foreground">{purl}</div>
               </div>
