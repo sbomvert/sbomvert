@@ -86,7 +86,7 @@ services:
 
   # S3-compatible object storage
   seaweedfs:
-    image: chrislusf/seaweedfs:4.48
+    image: chrislusf/seaweedfs:4.52
     container_name: seaweedfs-dev
     # credentials: S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY from .env.dev, the same pair the app uses
     env_file: .env.dev
@@ -103,7 +103,7 @@ services:
 
   # One-shot: create the bucket the app expects (SBOM/CVE services use `sbomvert`).
   seaweedfs-init:
-    image: chrislusf/seaweedfs:4.48
+    image: chrislusf/seaweedfs:4.52
     container_name: seaweedfs-init-dev
     depends_on:
       - seaweedfs
