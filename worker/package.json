@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@sbomvert/core": "*",
-    "bullmq": "^5.70.1",
+    "bullmq": "^6.5.4",
     "tsx": "4.23.15"
   }
 }
