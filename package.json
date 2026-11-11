@@ -78,7 +78,7 @@
     "@types/react-dom": "^19.0.0",
     "aws-sdk-client-mock": "^2.0.0",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^9.39.1",
+    "eslint": "^10.14.0",
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-unused-imports": "^4.4.1",
