@@ -8,6 +8,8 @@ export const DISTRO_NAMES: Record<string, string> = {
   'ubuntu-18.04': 'bionic',
   'ubuntu-20.04': 'focal',
   'ubuntu-22.04': 'jammy',
+  'ubuntu-24.04': 'noble',
+  'ubuntu-26.04': 'resolute',
   'debian-10': 'buster',
   'debian-11': 'bullseye',
   'debian-12': 'bookworm',
