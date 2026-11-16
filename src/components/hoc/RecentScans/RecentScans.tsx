@@ -1,6 +1,6 @@
 'use client';
 
-import type { ScanLogEntry } from '@sbomvert/core/queue';
+import type { ScanLogEntry } from '@sbomvert/scan/queue';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';

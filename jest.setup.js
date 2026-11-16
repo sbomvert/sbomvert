@@ -58,7 +58,7 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// Configure test environment (jsdom only: tests of Node code, e.g. worker/ and packages/core, run
+// Configure test environment (jsdom only: tests of Node code, e.g. worker/ and packages/, run
 // with `@jest-environment node`, where there is no window)
 if (typeof window !== 'undefined') Object.defineProperty(window, 'matchMedia', {
   writable: true,

@@ -1,6 +1,6 @@
-import { SanitizeContainerImage } from '@sbomvert/core/image';
+import { SanitizeContainerImage } from '@sbomvert/scan/image';
 import type { Job, Queue } from 'bullmq';
-import type { ScanQueueData, ScanResult } from '@sbomvert/core/queue';
+import type { ScanQueueData, ScanResult } from '@sbomvert/scan/queue';
 import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
 import CVEService from '@sbomvert/core/storage/cve/cveStorageService';
 

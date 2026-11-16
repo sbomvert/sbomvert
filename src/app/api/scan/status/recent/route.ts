@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRecentScans, getScanFlows, getScanQueue } from '@sbomvert/core/queue';
+import { getRecentScans, getScanFlows, getScanQueue } from '@sbomvert/scan/queue';
 
 export async function GET() {
   try {

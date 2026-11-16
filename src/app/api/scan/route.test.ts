@@ -1,8 +1,8 @@
 import { POST } from './route';
-import { buildScanFlow, getScanFlows } from '@sbomvert/core/queue';
+import { buildScanFlow, getScanFlows } from '@sbomvert/scan/queue';
 import { authorizeScanRequest } from '@/lib/auth/scan-auth';
 
-jest.mock('@sbomvert/core/queue', () => ({
+jest.mock('@sbomvert/scan/queue', () => ({
   getScanFlows: jest.fn(),
   buildScanFlow: jest.fn(data => ({ name: 'scan', data })),
 }));

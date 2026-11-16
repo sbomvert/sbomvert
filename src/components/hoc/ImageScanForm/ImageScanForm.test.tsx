@@ -9,11 +9,11 @@ jest.mock('@/components/button/Button', () => {
 });
 
 // Mock SupportedTools to a simple list for test stability: trivy writes both formats, amazon CycloneDX only
-jest.mock('@sbomvert/core/tools', () => {
+jest.mock('@sbomvert/scan/tools', () => {
   const mockTool = { name: 'trivy', description: '', supports_spdx: true, supports_cyclonedx: true };
   const cdxOnly = { name: 'amazon', description: '', supports_spdx: false, supports_cyclonedx: true };
   return {
-    ...jest.requireActual('@sbomvert/core/tools'),
+    ...jest.requireActual('@sbomvert/scan/tools'),
     SBOM_FORMATS: ['spdx', 'cdx'],
     SupportedTools: { producers: [mockTool, cdxOnly], consumers: [mockTool] },
   };

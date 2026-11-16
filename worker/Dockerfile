@@ -28,13 +28,15 @@ ENV TRIVY_CACHE_DIR=/cache/dbs/trivy \
 
 WORKDIR /app
 
-# Only the worker workspace and what it uses (packages/core); not the Next.js app's dependencies.
+# Only the worker workspace and what it uses (packages/core, packages/scan); not the Next.js app's dependencies.
 COPY package.json package-lock.json ./
 COPY packages/core/package.json packages/core/
+COPY packages/scan/package.json packages/scan/
 COPY worker/package.json worker/
 RUN npm ci --workspace @sbomvert/scan-worker --include-workspace-root=false --omit=dev --no-audit --no-fund
 
 COPY packages/core packages/core
+COPY packages/scan packages/scan
 COPY worker worker
 
 CMD ["npm", "run", "start", "-w", "@sbomvert/scan-worker"]

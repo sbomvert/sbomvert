@@ -1,7 +1,7 @@
 'use client';
 import { ImageScanForm } from "@/components/hoc/ImageScanForm/ImageScanForm";
 import { RecentScans } from "@/components/hoc/RecentScans/RecentScans";
-import { SbomFormat } from "@sbomvert/core/tools";
+import { SbomFormat } from "@sbomvert/scan/tools";
 import {useState } from "react";
 
 

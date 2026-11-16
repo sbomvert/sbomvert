@@ -8,7 +8,7 @@ import {
   SupportedTools,
   SupportedToolsType,
   ToolConfig,
-} from '@sbomvert/core/tools';
+} from '@sbomvert/scan/tools';
 
 const FORMAT_LABELS: Record<SbomFormat, string> = { spdx: 'SPDX', cdx: 'CycloneDX' };
 

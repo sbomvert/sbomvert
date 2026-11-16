@@ -1,0 +1,13 @@
+{
+  "name": "@sbomvert/scan",
+  "version": "0.0.1",
+  "private": true,
+  "description": "What the web app and the scan worker share to run scans: the scan queue, image references, the tools offered and the commands that run them.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@sbomvert/core": "*",
+    "bullmq": "^5.70.1"
+  }
+}

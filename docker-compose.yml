@@ -44,7 +44,7 @@ services:
     working_dir: /app
 
     volumes:
-      # project files, so worker/ and packages/core reload on change
+      # project files, so worker/ and packages/ reload on change
       - ./:/app
       - /app/node_modules
       # grype/trivy vulnerability databases: an external volume, so `docker compose down -v` keeps them

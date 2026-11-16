@@ -30,6 +30,7 @@
     "@better-auth/api-key": "1.7.18",
     "@cyclonedx/cyclonedx-library": "^10.1.0",
     "@sbomvert/core": "*",
+    "@sbomvert/scan": "*",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-pacer": "^0.23.0",
     "@tanstack/react-query": "^5.102.8",
