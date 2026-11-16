@@ -2,9 +2,12 @@
 import { CycloneDxBom, CycloneDxComponent } from '../cyclonedx/types';
 import { formatPackageUrl, parsePackageUrl } from '../purl/packageUrl';
 import { SpdxDocument, SpdxPackage } from '../spdx/types';
+import { amazonProvider } from './amazon';
 import { anchoreCycloneDxProvider, anchoreSpdxProvider } from './anchore';
 import { dockerCycloneDxProvider, dockerSpdxProvider } from './docker';
-import { CLASSES, EquivalenceClass, OPERATING_SYSTEMS, Representation, Tool } from './equivalenceClasses';
+import { CLASSES, CLOUD_CLASSES, CloudClass, CloudRepresentation, CloudTool, EquivalenceClass, OPERATING_SYSTEMS, Representation, Tool } from './equivalenceClasses';
+import { googleProvider } from './google';
+import { microsoftProvider } from './microsoft';
 import { cycloneDxToSpdx, spdxToCycloneDx } from './formats/convert';
 import { trivyCycloneDxProvider, trivyProvider } from './trivy';
 import { Provider } from './types';
@@ -234,4 +237,138 @@ test.each(OS_CASES)('%s: %s -> %s, %s lists the OS as the target tool does', (_l
     const properties = Object.fromEntries(((os as CycloneDxComponent).properties ?? []).map(p => [p.name, p.value]));
     expect(properties).toEqual(expected.properties);
   }
+});
+
+// The cloud tools, from the SBOMVert dataset: SPDX only, and a Trivy older than the one above
+describe('Google, Amazon Inspector, Microsoft and Trivy (SBOMVert dataset)', () => {
+  // Each class of CLOUD_CLASSES (Google, Inspector, Microsoft and Trivy on the SBOMVert dataset): each tool to itself,
+  // Trivy to each tool and back, and each tool through Syft, Trivy and Scout in CycloneDX and back to SPDX.
+
+  const SPDX: Record<CloudTool, Provider> = { trivy: trivyProvider, google: googleProvider, amazon: amazonProvider, microsoft: microsoftProvider };
+  const CDX = { syft: anchoreCycloneDxProvider, trivy: trivyCycloneDxProvider, scout: dockerCycloneDxProvider } as const;
+  type Through = keyof typeof CDX;
+  const CLOUD_TOOLS = ['google', 'amazon', 'microsoft'] as const;
+
+  // an SBOM of the package (and of the source package Inspector lists apart); Trivy's packages have the purpose Trivy
+  // gives them all
+  const docOf = (rep: CloudRepresentation, tool?: CloudTool): SpdxDocument => ({
+    spdxVersion: 'SPDX-2.3', name: 'x', creationInfo: { creators: [], created: '' },
+    packages: [rep, ...(rep.source ? [rep.source] : [])].map(
+      (r, i): SpdxPackage => ({
+        name: r.name ?? parsePackageUrl(r.purl!)!.name, SPDXID: `SPDXRef-${i}`,
+        ...(tool === 'trivy' && { primaryPackagePurpose: 'LIBRARY' }),
+        ...(r.version !== undefined && { versionInfo: r.version }),
+        ...(r.sourceInfo && { sourceInfo: r.sourceInfo }),
+        ...(r.purl && { externalRefs: [{ referenceCategory: 'PACKAGE-MANAGER', referenceType: 'purl', referenceLocator: r.purl }] }),
+      })
+    ),
+  });
+
+  // the packages of an SBOM, but the OS Trivy lists
+  const repsOf = (doc: SpdxDocument): CloudRepresentation[] =>
+    doc.packages.filter(p => p.primaryPackagePurpose !== 'OPERATING-SYSTEM').map(p => {
+      const purl = p.externalRefs?.find(r => r.referenceType === 'purl')?.referenceLocator;
+      return {
+        ...(purl ? { purl } : { name: p.name }),
+        ...(p.versionInfo !== undefined && { versionInfo: p.versionInfo }),
+        ...(p.sourceInfo?.startsWith('built package from') && { sourceInfo: p.sourceInfo }),
+      } as CloudRepresentation;
+    });
+  const asReps = (rep: CloudRepresentation) =>
+    [rep, ...(rep.source ? [rep.source] : [])].map(({ source: _, version, ...r }) => ({ ...r, ...(version !== undefined && { versionInfo: version }) }));
+
+  // A package compared without what a tool cannot give: these qualifiers, its version or its source
+  type Loss = { qualifiers?: string[]; version?: boolean; source?: boolean; lowerGo?: boolean; composerV?: boolean };
+  const comparable = (rep: CloudRepresentation & { versionInfo?: string }, loss: Loss) => {
+    if (!rep.purl) return `${rep.name} ${loss.version ? '' : rep.versionInfo ?? rep.version}`;
+    const p = parsePackageUrl(rep.purl)!;
+    const q = { ...p.qualifiers };
+    for (const k of loss.qualifiers ?? []) delete q[k];
+    const lower = (s: string) => (loss.lowerGo && p.type === 'golang' ? s.toLowerCase() : s);
+    const v = (s = '') => (loss.version ? '' : loss.composerV && p.type === 'composer' ? s.replace(/^v(?=\d)/, '') : s);
+    const purl = formatPackageUrl({ ...p, namespace: lower(p.namespace), name: lower(p.name), version: v(p.version), qualifiers: q });
+    return `${purl} ${v(rep.versionInfo ?? rep.version)} ${loss.source ? '' : rep.sourceInfo ?? ''}`;
+  };
+
+  const isOs = (c: CloudClass) => /^(deb|apk),/.test(c.label);
+  const trivyArchAll = (c: CloudClass) => /[?&]arch=(all|noarch)(&|$)/.test(c.trivy?.purl ?? '');
+  // Inspector's version and epoch are the source's: they differ from the package's when the source has a version
+  const sourceVersionDiffers = (c: CloudClass) => /other version|and version|binNMU/.test(c.label);
+
+  describe.each(CLOUD_CLASSES.flatMap(c => (Object.keys(SPDX) as CloudTool[]).filter(t => c[t]).map(t => [c.label, t, c] as const)))(
+    '%s: %s -> %s',
+    (_label, tool, c) => {
+      test('comes back unchanged, its purl as the tool spells it', () => {
+        expect(repsOf(SPDX[tool].fromCanonical(SPDX[tool].toCanonical(docOf(c[tool]!, tool))))).toEqual(asReps(c[tool]!));
+      });
+    }
+  );
+
+  const pairs = CLOUD_CLASSES.flatMap(c => CLOUD_TOOLS.filter(t => c[t] && c.trivy).map(t => [c.label, t, c] as const));
+
+  describe.each(pairs)('%s: trivy -> %s', (_label, tool, c) => {
+    // Google and Inspector give an `all` package the image's architecture; Inspector keeps a Go module's case,
+    // which Trivy loses
+    const loss: Loss = { qualifiers: trivyArchAll(c) && tool !== 'microsoft' ? ['arch'] : [], lowerGo: tool === 'amazon', source: true };
+    const written = repsOf(SPDX[tool].fromCanonical(trivyProvider.toCanonical(docOf(c.trivy!, 'trivy'))));
+
+    test('written as the tool writes it, with the source package Inspector lists apart', () => {
+      expect(written.map(r => comparable(r, loss))).toEqual(asReps(c[tool]!).map(r => comparable(r, loss)));
+    });
+  });
+
+  describe.each(pairs)('%s: %s -> trivy', (_label, tool, c) => {
+    // what the tool does not give: Google the minor release (and an `all` package's architecture), a Composer
+    // version's `v`; Inspector the distro and the source (its version and epoch are the source's), a Composer `v`;
+    // Microsoft the architecture, distro and source. And none tells a package without a source (Alpine's virtual
+    // packages, Trivy writes them no `sourceInfo`) from one built from itself.
+    const loss: Loss = {
+      google: { qualifiers: ['distro', ...(trivyArchAll(c) ? ['arch'] : [])], composerV: true, source: !c.trivy!.sourceInfo },
+      amazon: { qualifiers: ['distro', ...(sourceVersionDiffers(c) ? ['epoch'] : [])], source: true, version: sourceVersionDiffers(c), lowerGo: true, composerV: true },
+      microsoft: { qualifiers: ['arch', 'distro'], source: true },
+    }[tool];
+    const written = repsOf(trivyProvider.fromCanonical(SPDX[tool].toCanonical(docOf(c[tool]!))));
+
+    test('written as Trivy writes it', () => {
+      // Microsoft's Alpine package is compared by name and version
+      const main = written[0];
+      const target = c.trivy!;
+      const asNamed = !c[tool]!.purl;
+      if (asNamed) expect(parsePackageUrl(main.purl!)).toMatchObject({ type: 'apk', name: c[tool]!.name, version: target.version });
+      else expect(comparable(main, loss)).toBe(comparable({ ...target, versionInfo: target.version }, loss));
+    });
+  });
+
+  // There and back: from the tool's SPDX through Syft, Trivy or Scout in CycloneDX. What the tool in the middle cannot
+  // hold is lost: Scout the architecture and the source (and it lists a source package apart, which comes back as a
+  // package of its own); Trivy and Scout the case of a Go module.
+  const across = (from: Provider<any, any>, fromSpdx: boolean, to: Provider<any, any>, doc: any) => {
+    const c = from.toCanonical(doc);
+    return to.fromCanonical(fromSpdx ? spdxToCycloneDx(c) : cycloneDxToSpdx(c));
+  };
+  const ROUND = CLOUD_CLASSES.flatMap(c =>
+    CLOUD_TOOLS.filter(t => c[t]).flatMap(t => (Object.keys(CDX) as Through[]).map(through => [c.label, t, through, c] as const))
+  );
+
+  describe.each(ROUND)('%s: %s spdx -> %s cdx -> back', (_label, tool, through, c) => {
+    const loss: Loss = {
+      qualifiers: through === 'scout' ? ['arch', 'upstream'] : [],
+      lowerGo: through !== 'syft',
+    };
+    const reps = asReps(c[tool]!);
+    const back = repsOf(across(CDX[through], false, SPDX[tool], across(SPDX[tool], true, CDX[through], docOf(c[tool]!, tool))));
+
+    test('the same packages come back, but what the tool in the middle cannot hold', () => {
+      expect(back.slice(0, reps.length).map(r => comparable(r, loss))).toEqual(reps.map(r => comparable(r, loss)));
+      if (through !== 'scout') expect(back).toHaveLength(reps.length);
+    });
+  });
+
+  test('every class has Trivy and at least one of the other tools, OS classes all three when Microsoft lists them', () => {
+    for (const c of CLOUD_CLASSES) {
+      expect(c.trivy).toBeDefined();
+      expect(CLOUD_TOOLS.some(t => c[t])).toBe(true);
+      if (isOs(c)) expect(c.google && c.amazon).toBeTruthy();
+    }
+  });
 });
