@@ -22,11 +22,21 @@ export const DISTRO_NAMES: Record<string, string> = {
   'archlinux-rolling': 'rolling',
 };
 
+// Some tools name an rpm's distro by its OS family (`oracle`), while others use the os-release id 
+// shortcut: the four families whose names differ that are known here;
+const RPM_FAMILIES: Record<string, string> = { ol: 'oracle', rhel: 'redhat', amzn: 'amazon', almalinux: 'alma' };
+export const OS_RELEASE_IDS = Object.fromEntries(Object.entries(RPM_FAMILIES).map(([id, family]) => [family, id]));
+export const familyOf = (id: string) => RPM_FAMILIES[id] ?? id;
+
 export const orUndefined = (s?: string) => s || undefined;
 
-export const isOsType = (type: string) => type === 'deb' || type === 'apk';
+// Packages of a Linux distribution, which carry a distro (and, for the tools that read it, an architecture and
+export const isOsType = (type: string) => type === 'deb' || type === 'apk' || type === 'rpm';
 
-// A package that is not from an OS: its purl is the canonical form, whichever tool wrote it.
+// Go's own packages: the canonical form has their version without the `v` of the Go modules.
+export const isGoStdlib = (purl: { type: string; name: string }) => purl.type === 'golang' && purl.name === 'stdlib';
+
+// FIXME(this may not be universally true): A package that is not from an OS: its purl is the canonical form, whichever tool wrote it.
 export const genericCanonical = (purl: PackageUrl): CanonicalPackage => ({
   type: purl.type,
   namespace: purl.namespace,
@@ -53,6 +63,13 @@ export const purlRef = (purl: PackageUrl): SpdxExternalRef => ({
   referenceType: 'purl',
   referenceLocator: formatPackageUrl(purl),
 });
+
+// the purl as written, when it says the same as the one to write (a tool's own spelling: `+` or `:` unescaped)
+export const respelled = (written: string, purl: PackageUrl): string => {
+  const formatted = formatPackageUrl(purl);
+  const parsed = parsePackageUrl(written);
+  return parsed && formatPackageUrl(parsed) === formatted ? written : formatted;
+};
 
 export const parsePurlOrThrow = (locator: string): PackageUrl => {
   const purl = parsePackageUrl(locator);

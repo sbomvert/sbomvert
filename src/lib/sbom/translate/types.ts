@@ -20,6 +20,7 @@ export type CanonicalPackage = {
     codename?: string; // "bookworm"
   };
   upstream?: { name: string; version?: string }; // the source package it was built from
+  stage?: string; // the Dockerfile build stage it was installed in.
 };
 
 // A package as the tool wrote it, with its canonical form when it has a purl. `Pkg` is the package of
@@ -50,8 +51,8 @@ export interface FormatAdapter<Doc, Pkg> {
   withPackages(doc: Doc, packages: Pkg[]): Doc;
   view(pkg: Pkg): PackageView;
   write(pkg: Pkg, write: PackageWrite): Pkg;
-  // a new package made from `pkg`: same supplier, license, ... but its own id and a single purl
-  copy(pkg: Pkg, idSuffix: string): Pkg;
+  // a new package made from `pkg`: same supplier, license, ... but its own id and name and a single purl
+  copy(pkg: Pkg, idSuffix: string, name: string): Pkg;
 }
 
 // One tool's flavor of a single package. `fromCanonical` is absent for tools SBOMs are only read

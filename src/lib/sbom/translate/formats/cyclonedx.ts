@@ -1,4 +1,4 @@
-import { formatPackageUrl } from '../../purl/packageUrl';
+import { keepSpellingIfSame } from '../common';
 import { CycloneDxBom, CycloneDxComponent } from '../../cyclonedx/types';
 import { FormatAdapter } from '../types';
 
@@ -14,14 +14,14 @@ export const cycloneDxAdapter: FormatAdapter<CycloneDxBom, CycloneDxComponent> =
 
   write(c, { purls, version }) {
     if (!c.purl) return c;
-    const written: CycloneDxComponent = { ...c, purl: formatPackageUrl(purls[0]) };
+    const written: CycloneDxComponent = { ...c, purl: keepSpellingIfSame(c.purl, purls[0]) };
     if (version !== undefined) written.version = version;
     return written;
   },
 
   // the nested files and the CPE belong to the original package
-  copy(c, idSuffix) {
+  copy(c, idSuffix, name) {
     const { components: _, cpe: __, ...rest } = c;
-    return c['bom-ref'] ? { ...rest, 'bom-ref': c['bom-ref'] + idSuffix } : rest;
+    return c['bom-ref'] ? { ...rest, name, 'bom-ref': c['bom-ref'] + idSuffix } : { ...rest, name };
   },
 };

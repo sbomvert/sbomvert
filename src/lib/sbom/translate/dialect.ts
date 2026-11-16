@@ -10,7 +10,7 @@ export const converterFor = <Doc, Pkg>(dialect: Dialect, adapter: FormatAdapter<
       const extras = dialect.extras?.(canonical, view) ?? [];
       return [
         adapter.write(pkg, dialect.fromCanonical!(canonical, view)),
-        ...extras.map(w => adapter.write(adapter.copy(pkg, '-source'), w)),
+        ...extras.map(w => adapter.write(adapter.copy(pkg, '-source', w.purls[0].name), w)),
       ];
     }),
 });
