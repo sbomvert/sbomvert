@@ -1,4 +1,4 @@
-import { ISbom } from '@/models/ISbom';
+import { ISbom, SbomFormatName } from '@/models/ISbom';
 import { capitalizeToolName, withFormatInName } from './utils';
 
 describe('capitalizeToolName', () => {
@@ -14,7 +14,7 @@ describe('capitalizeToolName', () => {
 });
 
 describe('withFormatInName', () => {
-  const sbom = (format: 'SPDX' | 'CycloneDX') =>
+  const sbom = (format: SbomFormatName) =>
     ({ tool: 'Trivy', format, toolInfo: { name: 'Trivy', format }, packages: [] }) as unknown as ISbom;
 
   it('gives one tool in two formats two distinct names', () => {

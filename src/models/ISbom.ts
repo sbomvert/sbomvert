@@ -1,19 +1,13 @@
+import { PkgType } from '@sbomvert/core/purl/types';
+
+export type SbomFormatName = 'SPDX' | 'CycloneDX';
+
 export interface ISbomPackage {
   name: string;
   version: string;
   supplier?: string;
   license?: string;
-  packageType:
-    | 'os'
-    | 'npm'
-    | 'python'
-    | 'maven'
-    | 'binary'
-    | 'library'
-    | '.net'
-    | 'generic'
-    | 'rust'
-    | 'golang';
+  packageType: PkgType;
   hash?: string;
   purl?: string;
   cpe?: string;
@@ -26,11 +20,11 @@ export interface IToolInfo {
   name: string;
   version?: string;
   vendor?: string;
-  format?: 'SPDX' | 'CycloneDX';
+  format?: SbomFormatName;
 }
 
 export interface ISbom {
-  format: 'SPDX' | 'CycloneDX';
+  format: SbomFormatName;
   tool: string;
   toolInfo: IToolInfo;
   imageId: string;

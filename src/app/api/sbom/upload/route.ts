@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
+import { SbomFormatName } from '@/models/ISbom';
 import { parseSpdxSbom, parseCycloneDxSbom } from '@/lib/parseSbom';
 
 export async function POST(request: Request) {
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     // Detect SBOM format (SPDX or CycloneDX)
-    let format: 'SPDX' | 'CycloneDX' | null = null;
+    let format: SbomFormatName | null = null;
     let parsedData: any = null;
 
     // Try to detect format by parsing JSON

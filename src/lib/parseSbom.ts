@@ -4,37 +4,7 @@ import { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
 import { capitalizeToolName } from '@/lib/sbom/utils';
 import { parsePackageUrl } from '@sbomvert/core/purl/packageUrl';
 import { comparisonKeys } from '@sbomvert/core/translate/comparisonKeys';
-import { SpdxDocument as TranslatedSpdxDocument } from '@sbomvert/core/spdx/types';
-
-interface SpdxPackage {
-  name: string;
-  SPDXID: string;
-  versionInfo?: string;
-  supplier?: string;
-  licenseConcluded?: string;
-  licenseDeclared?: string;
-  externalRefs?: Array<{
-    referenceCategory: string;
-    referenceType: string;
-    referenceLocator: string;
-  }>;
-  checksums?: Array<{
-    algorithm: string;
-    checksumValue: string;
-  }>;
-  attributionTexts?: string[];
-  primaryPackagePurpose?: string;
-}
-
-export interface SpdxDocument {
-  spdxVersion: string;
-  name: string;
-  creationInfo: {
-    creators: string[];
-    created: string;
-  };
-  packages: SpdxPackage[];
-}
+import { SpdxDocument, SpdxPackage } from '@sbomvert/core/spdx/types';
 
 const extractPackageType = (
   attributionTexts?: string[],
@@ -145,7 +115,7 @@ export const parseSpdxSbom = (
       format: 'SPDX',
     };
 
-    const keyOf = comparisonKeys(data as unknown as TranslatedSpdxDocument);
+    const keyOf = comparisonKeys(data);
     // Filter out container image and operating system packages
     const packages: ISbomPackage[] = getUniqueSpdxPackagesByPurl(data.packages)
       .map(pkg => {
