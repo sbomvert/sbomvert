@@ -1,74 +1,51 @@
 # Translation limitations (16/11/2026)
 
-What is lost or changed when `src/lib/sbom/translate/` translates an SBOM from one tool's form to another's, or from
-SPDX to CycloneDX and back. Scope: **Syft** (Anchore), **Trivy** and **Docker Scout**, in SPDX and CycloneDX.
+`src/lib/sbom/translate/` rewrites an SBOM the way another tool would have written it, and can move it between SPDX and
+CycloneDX. It can only carry what the original tool wrote down: whatever a tool leaves out is lost on the way, and
+the translation never makes it up. This page lists the losses that matter.
 
-Everything here was seen on live scans (Syft 1.54.1, Trivy 0.76.0, Docker Scout 1.18.1) and
-is pinned by the tests: `equivalenceClasses.test.ts` (every class from every tool, in every format, to every tool) and `formats/convert.test.ts`. Each loss the tests accept is listed in `comparable`, `sourceOf` and `lostThrough` there. "Not verified" says what was not checked.
+It covers Syft, Trivy and Docker Scout in both formats, Google Artifact Analysis and Microsoft's sbom-tool in SPDX,
+and Amazon Inspector in its SPDX export and its SBOM Generator's CycloneDX. Syft, Trivy and Scout were checked on our
+own scans; Google, Inspector and Microsoft on the SBOMVert dataset, plus a few scans with Inspector SBOM Generator and
+sbom-tool. The accepted losses are pinned by `equivalenceClasses.test.ts` and `formats/convert.test.ts`.
 
-## At a glance
+## Syft, Trivy and Docker Scout
 
-| From → to | What is lost |
-|---|---|
-| Scout → Syft or Trivy | a deb's or apk's source and architecture, the minor distro release, Go module paths, the `v` of Composer versions; Scout's source packages stay as packages of their own |
-| Trivy → Syft | Go module paths |
-| Syft or Trivy → Scout | the architecture where Scout writes none; Go module paths in lower case; Composer `v`; build stages can't be told apart |
-| SPDX ↔ CycloneDX | each format's fields the other has no place for (see below) |
+Syft writes the most: the whole distro release, the architecture, the source package of every OS package, and in
+CycloneDX the cataloger and source as properties. Translating into Syft fills those in from what the other tool gave.
+Trivy is close to Syft, but lowercases Go module paths, so their original case is lost going from Trivy to Syft.
 
-Going there and back through a tool loses what that tool can't hold: through Scout, the architecture, source and minor release; through Trivy or Scout, the case of Go module paths.
+Scout loses the most. It only writes the major distro release (`13` for Debian 13.7), puts the architecture and source
+on some packages only, lowercases Go module paths and drops the `v` of Composer versions. It also lists a deb's source
+package as a package of its own: translating into Scout adds those, and translating out of Scout keeps them, so a Scout
+SBOM turned into Syft's form has more packages than Syft would list. On images with BuildKit attestations, Scout also
+lists the packages of every build stage; outside Scout's form they can't be told apart from the final image's.
 
-## Docker Scout
+Trivy's rpm form comes from its source code, not from a real Trivy SBOM of an rpm image.
 
-- **No minor release.** Scout writes `os_version=13` for Debian 13.7 and `9` for Oracle Linux 9.8 (Alpine: `3.24`, Ubuntu: the whole `26.04`). From Scout, another tool gets `distro=debian-13` where it would write `debian-13.7`.
-- **No source, and the architecture on some packages only.** Scout puts `arch=` and `upstream=` on part of its deb and apk purls only. Read from Scout, the other packages have no source: Trivy's `sourceInfo` and `Src*` properties and Syft's source properties can't be written for them.
-- **Source packages listed separately.** Scout lists a deb's source package as a package of its own when its name differs (`ncurses` besides `libtinfo6`).
-- **To Scout:** the translation adds that package (`docker.ts` `extras`), once per source, not again when the SBOM already lists it.
-- **From Scout:** Syft and Trivy don't list source packages, but Scout writes them as packages of their own, so a Scout SBOM translated to Syft has more packages than Syft's would.
-- **The copy:** the source package is a copy of the first binary built from it, with its own id, name, purl and version. It also keeps that binary's supplier, license, checksums and copyright (SPDX), or its licenses, hashes and properties (CycloneDX); only the CPE and nested files are dropped.
-- **Go module paths in lower case** (`github.com/defanglabs/...`; Syft: `DefangLabs`). Written as Scout, they are lowercased; from Scout, the case is lost.
-- **Go versions:** without their `v`, except in the purls of Scout's SPDX SBOMs, where every Go version has one, stdlib's too (`pkg:golang/stdlib@v1.26.10`, version `1.26.10`). Read from Scout, a module gets its `v` back and stdlib none, as Syft writes them.
-- **Composer versions without their `v`** (Syft: with one, on about half). From Scout, the `v` is lost.
-- **`UNKNOWN` for a missing version** (seen on golang and maven). Read from Scout, it means no version.
-- **Build stages:** on an image with BuildKit attestations, Scout lists the packages of every Dockerfile stage, marked `stage=<name>`. Written as Scout they keep `stage`; written as another tool they lose it, and can't be told apart from the final image's packages.
+## Google, Amazon Inspector and Microsoft
 
+Google writes only the major Debian release and Alpine's major.minor, folds a package's namespace into its name for
+Go, npm, Composer and Maven, and drops the `v` of Go and Composer versions.
 
-## Trivy
+Inspector's SPDX export gives no distro at all (it's guessed from versions like `+deb12u1`), and gives a deb the
+version and epoch of its source package rather than its own, so the installed version is lost. It also appends `-null`
+to versions without a revision, and lists source packages separately, like Scout. Inspector SBOM Generator's CycloneDX
+is much better: each package has its own version and source, and mainly the minor Debian release is missing.
 
-- **Go module paths in lower case**. From Trivy to Syft the case is lost.
-- A package with no version gets none.
-- **Whole release kept.** Trivy writes `distro=debian-13.7`; Syft and Scout writers take the whole release when there is one.
-- **CycloneDX:** the source is in the `aquasecurity:trivy:SrcName`/`SrcEpoch`/`SrcVersion`/`SrcRelease` properties (an Alpine source has no release), the OS is an `operating-system` component.
-- **Order of properties:** an OS package from another tool keeps that tool's properties, with Trivy's after them.
-- **The OS component** is added first with the id `operating-system` (Trivy's own has a random UUID and isn't always first). Syft's own OS component is kept, so none is added.
-- **Family names:** only four differ from the os-release id (`oracle`/`ol`, `redhat`/`rhel`, `amazon`/`amzn`,`alma`/`almalinux`); others pass through unchanged.
-- **Unknown source:** an rpm whose source rpm isn't known (Syft's `gpg-pubkey`) gets no `sourceInfo` written as Trivy, where Trivy would list the package itself.
-
-## Syft
-
-- **Whole release.** Syft 1.54.1 writes the whole release (`debian-13.7`, `alpine-3.24.4`, `ol-9.8`) in purls and in its OS component, so Trivy → Syft keeps it. Older Syft versions wrote `debian-12` only; the translation writes the newer form.
-- **CycloneDX properties:** Syft gives an OS package's cataloger and source in properties (`syft:package:foundBy`, `type`, `metadataType`; deb `syft:metadata:source`/`sourceVersion`, apk `originPackage`, rpm `epoch`/`release`/`sourceRpm`) and lists the OS as a component with `syft:distro:*` properties. Another tool's OS package written as Syft gets them, from hard-coded cataloger names per type.
-
-
-## Packages not from the OS
-
-The properties of a language package (Syft's cataloger, Trivy's `PkgType` such as `gobinary` or `gomod`) depend on how
-the tool found it, so no writer makes them up: they are lost going to another tool, and through one and back.
+Microsoft's sbom-tool writes a bare purl for Debian packages, with no architecture, distro or source, and no purl at
+all for Alpine packages and rpms. Those are read back by name and version, and whether they're Alpine or rpm is
+decided per SBOM; an rpm's distro isn't known. It lists no language packages.
 
 ## Between SPDX and CycloneDX
 
-
-**Carried over:** ids, names, versions, purls, the first CPE, supplier, hashes, the declared license, files,
-`DEPENDS_ON`, the OS and the image (SPDX's `CONTAINER` package, CycloneDX's metadata component), the tools and the time.
-
-**Lost from SPDX:** relationships other than `DEPENDS_ON` and `DESCRIBES`, `downloadLocation`, `homepage`,
-`copyrightText`, `licenseConcluded` (the declared license is kept), comments, annotations, any CPE after the first.
-
-**Lost from CycloneDX:** properties of packages not from the OS, nested components (Scout's files), evidence, external
-references. A license list becomes one SPDX expression, and a license name a `LicenseRef-`.
-
+Packages, versions, purls, hashes, the supplier, the declared license, files, dependencies, the OS and the image cross
+over. What has no place in the other format is dropped: on the SPDX side mainly other relationships, the download
+location, the copyright text and annotations; on the CycloneDX side the properties of language packages, nested
+components and evidence. A CycloneDX license list becomes a single SPDX expression.
 
 ## Outside the translation
 
-These affect comparing tools, but no translation can fix them:
-
-- **Platform.** With no platform given, the tools don't always scan the same one: on many images, Syft and Scout scanned arm64 and Trivy amd64 (inferred from the purls' `arch`). Packages whose name or version depends on the architecture then don't match; the tests leave `arch` out of the comparison.
+Without a platform, the tools don't always scan the same one (in our scans Syft and Scout often took arm64, Trivy
+amd64), so packages that depend on the architecture differ for reasons no translation can fix. Some tools are also
+unreliable on their own: sbom-tool sometimes reports success with no packages on large images.
