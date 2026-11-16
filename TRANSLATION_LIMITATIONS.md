@@ -1,6 +1,6 @@
 # Translation limitations (16/11/2026)
 
-`src/lib/sbom/translate/` rewrites an SBOM the way another tool would have written it, and can move it between SPDX and
+`packages/core/src/translate/` rewrites an SBOM the way another tool would have written it, and can move it between SPDX and
 CycloneDX. It can only carry what the original tool wrote down: whatever a tool leaves out is lost on the way, and
 the translation never makes it up. This page lists the losses that matter.
 

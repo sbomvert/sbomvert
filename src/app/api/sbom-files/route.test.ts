@@ -1,4 +1,4 @@
-jest.mock('@sbomvert/core/storage/sbom/sbomStorageService', () => ({
+jest.mock('@sbomvert/storage/sbom/sbomStorageService', () => ({
   __esModule: true,
   default: {
     listSboms: jest.fn(),
@@ -6,7 +6,7 @@ jest.mock('@sbomvert/core/storage/sbom/sbomStorageService', () => ({
 }));
 
 import { GET } from './route';
-import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
+import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 
 describe('GET /api/sbom', () => {
   beforeEach(() => {

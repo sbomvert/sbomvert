@@ -1,8 +1,8 @@
 import { GET } from './route';
-import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
+import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 import { NextResponse } from 'next/server';
 
-jest.mock('@sbomvert/core/storage/sbom/sbomStorageService');
+jest.mock('@sbomvert/storage/sbom/sbomStorageService');
 
 const mockedGetFileContent = SBOMService.getFileContent as jest.MockedFunction<typeof SBOMService.getFileContent>;
 

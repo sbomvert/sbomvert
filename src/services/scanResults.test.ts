@@ -1,8 +1,8 @@
 import { storeCompletedScan, storeMissedScans, storeScanResults } from './scanResults';
 
 // the default storage services touch the filesystem when imported
-jest.mock('@sbomvert/core/storage/sbom/sbomStorageService', () => ({ default: {} }));
-jest.mock('@sbomvert/core/storage/cve/cveStorageService', () => ({ default: {} }));
+jest.mock('@sbomvert/storage/sbom/sbomStorageService', () => ({ default: {} }));
+jest.mock('@sbomvert/storage/cve/cveStorageService', () => ({ default: {} }));
 
 test('stores every SBOM and CVE report of a scan under the sanitized image name', async () => {
   const storage = {

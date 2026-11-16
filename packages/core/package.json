@@ -2,11 +2,8 @@
   "name": "@sbomvert/core",
   "version": "0.0.1",
   "private": true,
-  "description": "SBOM, purl and CVE code shared by the web app and the scan worker: CVE report parsers, SBOM and CVE storage.",
+  "description": "The core SBOM, purl and CVE logic, with no dependencies: purl parsing, SPDX and CycloneDX types, translation between tools and formats, CVE report parsers.",
   "exports": {
     "./*": "./src/*.ts"
-  },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.931.0"
   }
 }

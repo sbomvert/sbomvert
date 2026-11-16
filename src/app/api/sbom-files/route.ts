@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
+import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 
 // Initialize the SBOM service
 

@@ -14,11 +14,13 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@sbomvert/core/(.*)$': '<rootDir>/packages/core/src/$1',
     '^@sbomvert/scan/(.*)$': '<rootDir>/packages/scan/src/$1',
+    '^@sbomvert/storage/(.*)$': '<rootDir>/packages/storage/src/$1',
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     'packages/core/src/**/*.ts',
     'packages/scan/src/**/*.ts',
+    'packages/storage/src/**/*.ts',
     'worker/src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import CVEService from '@sbomvert/core/storage/cve/cveStorageService';
+import CVEService from '@sbomvert/storage/cve/cveStorageService';
 
 
 export async function GET(request: Request) {
