@@ -2,7 +2,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
   const { FEATURE_FLAGS } = await import('./lib/featureFlags');
   if (!FEATURE_FLAGS.ENABLE_SCAN_API) return;
-  const { getScanQueue, onScanCompleted } = await import('@sbomvert/core/queue');
+  const { getScanQueue, onScanCompleted } = await import('@sbomvert/scan/queue');
   const { storeCompletedScan, storeMissedScans } = await import('./services/scanResults');
   const queue = getScanQueue();
   onScanCompleted(jobId => storeCompletedScan(queue, jobId));

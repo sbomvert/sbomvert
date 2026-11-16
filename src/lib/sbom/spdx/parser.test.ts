@@ -1,5 +1,5 @@
 import { cleanLicense, parseCreator, AnalyzeSPDX } from "./parser";
-import { SpdxDocument } from "./types";
+import { SpdxDocument } from "@sbomvert/core/spdx/types";
 
 describe('SPDX analysis', () => {
   describe('cleanLicense', () => {

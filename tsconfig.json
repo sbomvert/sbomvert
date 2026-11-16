@@ -21,7 +21,9 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@sbomvert/core/*": ["./packages/core/src/*"]
+      "@sbomvert/core/*": ["./packages/core/src/*"],
+      "@sbomvert/scan/*": ["./packages/scan/src/*"],
+      "@sbomvert/storage/*": ["./packages/storage/src/*"]
     },
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,

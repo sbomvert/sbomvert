@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { authorizeScanRequest } from '@/lib/auth/scan-auth';
-import { isValidImageRef } from '@sbomvert/core/image';
-import { buildScanFlow, getScanFlows } from '@sbomvert/core/queue';
-import { SBOM_FORMATS } from '@sbomvert/core/tools';
+import { isValidImageRef } from '@sbomvert/scan/image';
+import { buildScanFlow, getScanFlows } from '@sbomvert/scan/queue';
+import { SBOM_FORMATS } from '@sbomvert/scan/tools';
 
 const ScanRequestSchema = z.object({
   image: z.string().refine(isValidImageRef, 'Invalid image reference'),

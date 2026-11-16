@@ -1,7 +1,7 @@
 import { SupportedTools, sbomProducerFor } from './tools';
 import { GenerateSBOMsWithTool } from './sbom/generator';
 import { ScanSbomWithTool } from './vuln/scanner';
-import { VULN_EXTRACTORS } from './vuln/vulnutils';
+import { VULN_EXTRACTORS } from '@sbomvert/core/vuln/vulnutils';
 
 // The form offers exactly these tools, so the worker must be able to run every one of them.
 test.each(SupportedTools.producers.map(t => t.name))('producer %s has an SBOM command', tool => {

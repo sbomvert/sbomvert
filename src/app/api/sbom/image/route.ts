@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
+import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

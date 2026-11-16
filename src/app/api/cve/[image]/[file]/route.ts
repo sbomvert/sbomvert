@@ -1,4 +1,4 @@
-import CVEService from '@sbomvert/core/storage/cve/cveStorageService';
+import CVEService from '@sbomvert/storage/cve/cveStorageService';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 

@@ -1,8 +1,8 @@
-import { SanitizeContainerImage } from '@sbomvert/core/image';
+import { SanitizeContainerImage } from '@sbomvert/scan/image';
 import type { Job, Queue } from 'bullmq';
-import type { ScanQueueData, ScanResult } from '@sbomvert/core/queue';
-import SBOMService from '@sbomvert/core/storage/sbom/sbomStorageService';
-import CVEService from '@sbomvert/core/storage/cve/cveStorageService';
+import type { ScanQueueData, ScanResult } from '@sbomvert/scan/queue';
+import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
+import CVEService from '@sbomvert/storage/cve/cveStorageService';
 
 type Storage = {
   saveSbom: (image: string, format: string, tool: string, content: string) => Promise<void>;

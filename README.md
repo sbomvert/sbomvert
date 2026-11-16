@@ -73,7 +73,9 @@ An npm workspaces repo:
 |---|---|---|
 | `/` | `sbom-comparator` | The Next.js app. It queues scans and shows results. |
 | `worker/` | `@sbomvert/scan-worker` | The scan worker: takes jobs from the BullMQ `scan` queue, runs the SBOM and CVE tools, and returns the results as the job's return value. It stores nothing: the web app saves the results as each job completes. Own image (`worker/Dockerfile`); no Docker daemon, since the tools pull images from their registries. Only the vulnerability databases are cached. |
-| `packages/core/` | `@sbomvert/core` | Code both use: tool commands, report parsers, SBOM/CVE storage, the scan queue. Consumed as TypeScript source (`@sbomvert/core/<module>`). |
+| `packages/core/` | `@sbomvert/core` | The core SBOM, purl and CVE logic, with no dependency on React or Next: purl parsing, SPDX and CycloneDX types, translation between tools and formats, CVE report parsers. Consumed as TypeScript source (`@sbomvert/core/<module>`). |
+| `packages/scan/` | `@sbomvert/scan` | What both use to run scans: the scan queue, image references, the tools the scan form offers and the commands that run them. Consumed the same way (`@sbomvert/scan/<module>`). |
+| `packages/storage/` | `@sbomvert/storage` | Where SBOMs and CVE reports are stored: a local folder or S3 (`ARTIFACT_BACKEND_TYPE`). Used by the web app. |
 
 `npm install` at the root installs and links all of them.
 

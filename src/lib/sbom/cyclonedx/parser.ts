@@ -1,9 +1,9 @@
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
 import { LicenseInfo, PackageInfo, RichPackage, SbomInfo } from '@/lib/sbom/analyzeTypes';
-import { CycloneDxBom, CycloneDxComponent, CycloneDxLicense } from './types';
+import { CycloneDxBom, CycloneDxComponent, CycloneDxLicense } from '@sbomvert/core/cyclonedx/types';
 import { capitalizeToolName } from '../utils';
-import { InferPkgTypeFromPurl } from '../purl/converter';
-import { comparisonKeys } from '../translate/comparisonKeys';
+import { InferPkgTypeFromPurl } from '@sbomvert/core/purl/converter';
+import { comparisonKeys } from '@sbomvert/core/translate/comparisonKeys';
 
 const getLicense = (licenses?: CycloneDxLicense[]): string | undefined => {
   const license = licenses?.[0];

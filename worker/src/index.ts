@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { redisConnection, SCAN_QUEUE, ScanQueueData } from '@sbomvert/core/queue';
+import { redisConnection, SCAN_QUEUE, ScanQueueData } from '@sbomvert/scan/queue';
 import { defaultDeps, processScan, runCommand } from './processScan';
 
 // Scans never download or update a database: they use the copies the worker fetches here, at

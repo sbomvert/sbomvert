@@ -16,6 +16,8 @@ WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 # npm workspaces: every workspace's package.json must be present for `npm ci`
 COPY packages/core/package.json packages/core/
+COPY packages/scan/package.json packages/scan/
+COPY packages/storage/package.json packages/storage/
 COPY worker/package.json worker/
 
 # Install project dependencies with frozen lockfile for reproducible builds

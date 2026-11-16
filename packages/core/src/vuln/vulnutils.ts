@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -495,71 +493,6 @@ export const VULN_EXTRACTORS: Record<
   grype: extractAnchoreVulnerabilities,
   //scout: extractDockerVulnerabilities,
 };
-
-// ---------------------------------------------------------------------------
-// PURL mapping helpers
-// ---------------------------------------------------------------------------
-
-export function getPurlMappings(file: string): [Record<string, string>, Record<string, unknown>] {
-  const purlMappings: Record<string, string> = {};
-  const packagesWithoutPurl: Record<string, unknown> = {};
-  const sbom = JSON.parse(fs.readFileSync(file, 'utf-8')) as Record<string, unknown>;
-
-  for (const pkg of sbom['packages'] as Record<string, unknown>[]) {
-    if ('externalRefs' in pkg) {
-      for (const ref of pkg['externalRefs'] as Record<string, string>[]) {
-        const purl = ref['referenceLocator'];
-        if (ref['referenceType'] === 'purl' && !purl.startsWith('pkg:oci')) {
-          const loc = toComparablePurl(purl);
-          if (file.includes('/syft') && (purl.includes('apk') || purl.includes('deb'))) {
-            const sourceInfo = (pkg['sourceInfo'] as string) ?? '';
-            if (
-              sourceInfo.includes('/var/lib/dpkg/status') ||
-              sourceInfo.includes('/lib/apk/db/installed')
-            ) {
-              purlMappings[loc] = purl;
-            }
-          } else {
-            purlMappings[loc] = purl;
-          }
-        }
-      }
-    } else {
-      packagesWithoutPurl[(pkg['name'] as string) ?? ''] = pkg;
-    }
-  }
-
-  return [purlMappings, packagesWithoutPurl];
-}
-
-export function constructPurlMappings(
-  file: string,
-  type: 'alpine' | 'debian' | string
-): Record<string, string> {
-  const purlMappings: Record<string, string> = {};
-  const sbom = JSON.parse(fs.readFileSync(file, 'utf-8')) as Record<string, unknown>;
-  const packages = sbom['packages'] as Record<string, unknown>[];
-
-  if (packages.length < 2) {
-    throw new Error(`SBOM file is empty: ${file}`);
-  }
-
-  const base_os = type === 'alpine' ? 'pkg:apk/alpine' : 'pkg:deb/debian';
-  for (const pkg of packages) {
-    const purl = `${base_os}/${pkg['name']}@${pkg['versionInfo']}`;
-    const loc = toComparablePurl(purl);
-    purlMappings[loc] = purl;
-  }
-  return purlMappings;
-}
-
-export function getTestbeds(directory: string): string[] {
-  const files = fs.readdirSync(directory).filter(f => !f.startsWith('.'));
-  const lastParts = files.map(filename =>
-    filename.split('-').slice(1).join('-').replace('.json', '')
-  );
-  return [...new Set(lastParts)];
-}
 
 // ---------------------------------------------------------------------------
 // Remove / filter helpers

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getScanFlows, getScanQueue, getScanStatus } from '@sbomvert/core/queue';
+import { getScanFlows, getScanQueue, getScanStatus } from '@sbomvert/scan/queue';
 
 export async function GET(_request: NextRequest, context: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await context.params;

@@ -1,7 +1,7 @@
 import { GET } from './route';
-import { getScanStatus } from '@sbomvert/core/queue';
+import { getScanStatus } from '@sbomvert/scan/queue';
 
-jest.mock('@sbomvert/core/queue', () => ({
+jest.mock('@sbomvert/scan/queue', () => ({
   getScanFlows: jest.fn(),
   getScanQueue: jest.fn(),
   getScanStatus: jest.fn(),

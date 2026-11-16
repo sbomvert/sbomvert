@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import type { Job } from 'bullmq';
-import { isValidImageRef } from '@sbomvert/core/image';
+import { isValidImageRef } from '@sbomvert/scan/image';
 import {
   CveJobData,
   logStep,
@@ -13,10 +13,10 @@ import {
   ScanJobData,
   ScanQueueData,
   ScanResult,
-} from '@sbomvert/core/queue';
-import { GenerateSBOMsWithTool } from '@sbomvert/core/sbom/generator';
-import { SBOM_FORMATS, SbomFormat } from '@sbomvert/core/tools';
-import { ScanSbomWithTool } from '@sbomvert/core/vuln/scanner';
+} from '@sbomvert/scan/queue';
+import { GenerateSBOMsWithTool } from '@sbomvert/scan/sbom/generator';
+import { SBOM_FORMATS, SbomFormat } from '@sbomvert/scan/tools';
+import { ScanSbomWithTool } from '@sbomvert/scan/vuln/scanner';
 import { VULN_EXTRACTORS } from '@sbomvert/core/vuln/vulnutils';
 
 export type RunCommand = (cmd: string, args: string[], timeoutMs: number) => Promise<string>;
@@ -78,7 +78,7 @@ function checkFormats(formats: unknown): SbomFormat[] {
   return formats;
 }
 
-// One job of a scan flow (see packages/core/src/queue.ts). Tool failures are logged as warnings
+// One job of a scan flow (see packages/scan/src/queue.ts). Tool failures are logged as warnings
 // and the job still completes with what did work; nothing is stored here: the returned
 // artifacts are stored by the web app.
 export async function processScan(
