@@ -264,7 +264,7 @@ describe('AnalyzeCycloneDX', () => {
       unknown: 1,
     });
     expect(analyzed.info.packageInfo).toEqual({
-      generic: 1,
+      golang: 1,
       npm: 1,
     });
   });

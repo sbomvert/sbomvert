@@ -64,17 +64,21 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               onClick={selectable ? () => onImageSelect(image.id) : undefined}
-              className={`bg-surface rounded-card p-card-p-lg shadow-card text-left ${
+              className={`bg-surface rounded-card p-card-p-lg shadow-card text-left min-w-0 overflow-hidden ${
                 selectable
                   ? 'hover:shadow-card-hover transition-all hover:scale-105 cursor-pointer'
                   : 'opacity-50 cursor-not-allowed'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
-                <Package className="text-primary" size={24} />
-                <h3 className="font-bold text-foreground">{imageName}</h3>
+                <Package className="text-primary shrink-0" size={24} />
+                <h3 className="font-bold text-foreground truncate min-w-0" title={imageName}>
+                  {imageName}
+                </h3>
               </div>
-              <p className="text-body-sm text-foreground-muted">{image.description}</p>
+              <p className="text-body-sm text-foreground-muted truncate" title={image.description}>
+                {image.description}
+              </p>
               <div className="mt-2 space-y-1">
                 {image.toolCount !== undefined && (
                   <p className="text-caption text-foreground-subtle">{image.toolCount} tools available</p>
@@ -88,7 +92,9 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
                   </p>
                 )}
               </div>
-              <p className="text-caption text-foreground-subtle mt-1">Repository: {repository}</p>
+              <p className="text-caption text-foreground-subtle mt-1 truncate" title={repository}>
+                Repository: {repository}
+              </p>
             </motion.button>
           );
         })}
