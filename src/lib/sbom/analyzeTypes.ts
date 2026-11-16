@@ -1,4 +1,4 @@
-import { PkgType } from './purl/types';
+import { PkgType } from '@sbomvert/core/purl/types';
 
 export interface RichPackage {
   raw: unknown;

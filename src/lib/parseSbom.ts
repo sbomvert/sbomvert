@@ -1,10 +1,10 @@
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
-import { CycloneDxBom } from '@/lib/sbom/cyclonedx/types';
+import { CycloneDxBom } from '@sbomvert/core/cyclonedx/types';
 import { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
 import { capitalizeToolName } from '@/lib/sbom/utils';
-import { parsePackageUrl } from '@/lib/sbom/purl/packageUrl';
-import { comparisonKeys } from '@/lib/sbom/translate/comparisonKeys';
-import { SpdxDocument as TranslatedSpdxDocument } from '@/lib/sbom/spdx/types';
+import { parsePackageUrl } from '@sbomvert/core/purl/packageUrl';
+import { comparisonKeys } from '@sbomvert/core/translate/comparisonKeys';
+import { SpdxDocument as TranslatedSpdxDocument } from '@sbomvert/core/spdx/types';
 
 interface SpdxPackage {
   name: string;

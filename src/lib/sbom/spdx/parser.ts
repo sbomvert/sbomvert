@@ -1,6 +1,6 @@
-import { InferPkgTypeFromPurl } from "../purl/converter";
+import { InferPkgTypeFromPurl } from "@sbomvert/core/purl/converter";
 import { LicenseInfo, PackageInfo, RichFile, RichPackage, SbomInfo } from '../analyzeTypes';
-import { SpdxDocument, SpdxPackage } from "./types";
+import { SpdxDocument, SpdxPackage } from "@sbomvert/core/spdx/types";
 import { capitalizeToolName } from "../utils";
 
  const skip = new Set(['CONTAINER', 'OPERATING-SYSTEM']);

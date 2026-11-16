@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Code, ChevronRight, AlertTriangle } from 'lucide-react';
-import { parsePackageUrl } from '@/lib/sbom/purl/packageUrl';
+import { parsePackageUrl } from '@sbomvert/core/purl/packageUrl';
 
 interface PurlAnalysisCardProps {
   purl?: string;
