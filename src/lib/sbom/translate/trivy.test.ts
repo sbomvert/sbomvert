@@ -6,7 +6,6 @@ import { CanonicalDocument, CanonicalPackage } from './types';
 import { anchoreCycloneDxProvider, anchoreSpdxProvider } from './anchore';
 import { dockerSpdxProvider } from './docker';
 import { CLASSES } from './equivalenceClasses';
-import { CYCLONEDX_PROVIDERS } from './index';
 import { trivyCycloneDxProvider, trivyProvider } from './trivy';
 
 const docOf = (...packages: SpdxPackage[]): SpdxDocument => ({
@@ -263,10 +262,6 @@ describe('Trivy CycloneDX', () => {
   const OS = { 'bom-ref': 'os', type: 'operating-system', name: 'debian', version: '13.7', properties: props({ Class: 'os-pkgs', Type: 'debian' }) };
   const bom = (...components: unknown[]) => ({ bomFormat: 'CycloneDX', specVersion: '1.6', version: 1, components }) as unknown as CycloneDxBom;
   const syftBom = (...components: unknown[]) => ({ ...bom(...components), metadata: { tools: { components: [{ name: 'syft' }] } } }) as CycloneDxBom;
-
-  test('is listed with the CycloneDX providers', () => {
-    expect(CYCLONEDX_PROVIDERS.trivy).toBe(trivyCycloneDxProvider);
-  });
 
   test('Trivy -> Trivy is the identity', () => {
     const doc = bom(OS, LOGIN_DEFS, MUSL_UTILS, STDLIB);

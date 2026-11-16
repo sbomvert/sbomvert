@@ -64,8 +64,9 @@ export const purlRef = (purl: PackageUrl): SpdxExternalRef => ({
   referenceLocator: formatPackageUrl(purl),
 });
 
-// the purl as written, when it says the same as the one to write (a tool's own spelling: `+` or `:` unescaped)
-export const respelled = (written: string, purl: PackageUrl): string => {
+// the purl as written when it says the same as the one to write (a tool's own spelling: `+` or `:` unescaped),
+// else the one to write
+export const keepSpellingIfSame = (written: string, purl: PackageUrl): string => {
   const formatted = formatPackageUrl(purl);
   const parsed = parsePackageUrl(written);
   return parsed && formatPackageUrl(parsed) === formatted ? written : formatted;
