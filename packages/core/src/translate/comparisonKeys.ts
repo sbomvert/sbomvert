@@ -8,6 +8,7 @@ import { cycloneDxAdapter } from './formats/cyclonedx';
 import { spdxAdapter } from './formats/spdx';
 import { trivyCycloneDxProvider, trivyProvider } from './trivy';
 import { CanonicalPackage, FormatAdapter, Provider } from './types';
+import { detectTool } from './detectTool';
 
 // The key the compare view matches packages on across tools: type, namespace, name and version, as the tool's
 // translator reads them, so the same whichever tool wrote them. In lower case (Trivy and Scout lowercase Go
@@ -30,25 +31,13 @@ const purlKey = (purl: string): string | undefined => {
   return comparisonKey({ ...p, version: isOsType(p.type) && epoch ? version : p.version });
 };
 
-const SPDX = { syft: anchoreSpdxProvider, trivy: trivyProvider, scout: dockerSpdxProvider };
-const CYCLONEDX = { syft: anchoreCycloneDxProvider, trivy: trivyCycloneDxProvider, scout: dockerCycloneDxProvider };
+// The tools whose translators the compare view matches packages with
+const SPDX = { anchore: anchoreSpdxProvider, trivy: trivyProvider, docker: dockerSpdxProvider };
+const CYCLONEDX = { anchore: anchoreCycloneDxProvider, trivy: trivyCycloneDxProvider, docker: dockerCycloneDxProvider };
 type Tool = keyof typeof SPDX;
-
-// The tool that made the SBOM, among those with a translator: SPDX `Tool: syft-1.54.1`, CycloneDX `metadata.tools`
-// (a list in CycloneDX 1.4, `tools.components` after)
 const toolOf = (doc: SpdxDocument | CycloneDxBom): Tool | undefined => {
-  const tools = 'spdxVersion' in doc ? doc.creationInfo?.creators ?? [] : cycloneDxTools(doc);
-  const names = tools.join(' ').toLowerCase();
-  if (names.includes('syft')) return 'syft';
-  if (names.includes('trivy')) return 'trivy';
-  if (names.includes('docker-scout')) return 'scout';
-  return undefined;
-};
-
-const cycloneDxTools = (bom: CycloneDxBom): string[] => {
-  const tools = bom.metadata?.tools as unknown;
-  const list = Array.isArray(tools) ? tools : ((tools as { components?: unknown[] } | undefined)?.components ?? []);
-  return list.map(t => String((t as { name?: string }).name ?? ''));
+  const tool = detectTool(doc);
+  return tool && tool in SPDX ? (tool as Tool) : undefined;
 };
 
 // each purl of an SBOM the translator reads, with its key

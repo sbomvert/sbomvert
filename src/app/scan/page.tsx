@@ -1,6 +1,7 @@
 'use client';
 import { ImageScanForm } from "@/components/hoc/ImageScanForm/ImageScanForm";
 import { RecentScans } from "@/components/hoc/RecentScans/RecentScans";
+import { PageTitle } from "@/components/Title/Title";
 import { SbomFormat } from "@sbomvert/scan/tools";
 import {useState } from "react";
 
@@ -42,6 +43,7 @@ const Page = () => {
 
   return (
     <>
+      <PageTitle title="Scan Image" subtitle="Generate SBOMs and CVE reports for a container image." />
       <ImageScanForm
         onSubmit={handleScanSubmit} onCancel={function (): void {
           throw new Error("Function not implemented.");

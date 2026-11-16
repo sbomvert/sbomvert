@@ -7,6 +7,7 @@ import { googleProvider } from './google';
 import { microsoftProvider } from './microsoft';
 import { trivyCycloneDxProvider, trivyProvider } from './trivy';
 import { Provider } from './types';
+import { detectTool } from './detectTool';
 
 export type { CanonicalDocument, CanonicalEntry, CanonicalPackage, Provider } from './types';
 // From one format to the other: an SBOM read in SPDX written by a tool in CycloneDX, and the other way
@@ -41,17 +42,10 @@ export const providerFromName = (name: string): Provider => {
 
 // The tool that made an SPDX document, from its creators ("Tool: syft-1.12.2").
 export const detectProvider = (doc: SpdxDocument): Provider => {
-  const creators = doc.creationInfo?.creators ?? [];
-  if (creators.length === 0) throw new Error('SPDX document missing creation info');
-  for (const creator of creators.map(c => c.toLowerCase())) {
-    if (creator.includes('syft')) return anchoreSpdxProvider;
-    if (creator.includes('trivy')) return trivyProvider;
-    if (creator.includes('docker-scout')) return dockerSpdxProvider;
-    if (creator.includes('google')) return googleProvider;
-    if (creator.includes('amazon inspector')) return amazonProvider;
-    if (creator.includes('microsoft.sbomtool')) return microsoftProvider;
-  }
-  throw new Error('Unable to detect provider from creators');
+  if (!doc.creationInfo?.creators?.length) throw new Error('SPDX document missing creation info');
+  const tool = detectTool(doc);
+  if (!tool) throw new Error('Unable to detect provider from creators');
+  return PROVIDERS[tool];
 };
 
 // Translates an SPDX document into the form another tool writes. `from` defaults to the tool that made it.
