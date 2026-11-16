@@ -12,10 +12,14 @@ export interface ISbomPackage {
     | 'library'
     | '.net'
     | 'generic'
-    | 'rust';
+    | 'rust'
+    | 'golang';
   hash?: string;
   purl?: string;
   cpe?: string;
+  // what the compare view matches the package on across tools (lib/sbom/translate/comparisonKeys.ts); without one,
+  // its name and version
+  key?: string;
 }
 
 export interface IToolInfo {

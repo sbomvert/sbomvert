@@ -48,11 +48,15 @@ describe('InferPkgTypeFromPurl', () => {
       expect(InferPkgTypeFromPurl('pkg:cargo/serde')).toBe('rust');
       expect(InferPkgTypeFromPurl('pkg:gem/rails')).toBe('library');
     });
+
+    it('should detect golang packages', () => {
+      expect(InferPkgTypeFromPurl('pkg:golang/github.com/spf13/cobra')).toBe('golang');
+    });
   });
 
   describe('Default / fallback', () => {
     it('should return generic for unknown package types', () => {
-      expect(InferPkgTypeFromPurl('pkg:golang/github.com/foo/bar')).toBe('generic');
+      expect(InferPkgTypeFromPurl('pkg:hex/phoenix')).toBe('generic');
     });
 
     it('should return generic for empty string', () => {

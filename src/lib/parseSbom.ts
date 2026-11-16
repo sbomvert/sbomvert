@@ -1,51 +1,10 @@
-import { IPurl } from '@/models/IPurl';
 import { ISbom, ISbomPackage, IToolInfo } from '@/models/ISbom';
 import { CycloneDxBom } from '@/lib/sbom/cyclonedx/types';
 import { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
 import { capitalizeToolName } from '@/lib/sbom/utils';
-
-export const parsePurl = (purlString?: string): IPurl | null => {
-  if (!purlString) return null;
-
-  try {
-    const match = purlString.match(/^pkg:([^/]+)\/([^/]+)\/([^@]+)@([^?#]+)(\?[^#]+)?(#.+)?$/);
-    if (!match) {
-      const simpleMatch = purlString.match(/^pkg:([^/]+)\/([^@]+)@(.+)$/);
-      if (simpleMatch) {
-        return {
-          scheme: 'pkg',
-          type: simpleMatch[1],
-          name: simpleMatch[2],
-          version: simpleMatch[3],
-        };
-      }
-      return null;
-    }
-
-    const [, type, namespace, name, version, qualifiersStr, subpath] = match;
-    const qualifiers: Record<string, string> = {};
-
-    if (qualifiersStr) {
-      const pairs = qualifiersStr.substring(1).split('&');
-      pairs.forEach(pair => {
-        const [key, value] = pair.split('=');
-        qualifiers[decodeURIComponent(key)] = decodeURIComponent(value);
-      });
-    }
-
-    return {
-      scheme: 'pkg',
-      type,
-      namespace,
-      name: decodeURIComponent(name),
-      version,
-      qualifiers: Object.keys(qualifiers).length > 0 ? qualifiers : undefined,
-      subpath: subpath?.substring(1),
-    };
-  } catch {
-    return null;
-  }
-};
+import { parsePackageUrl } from '@/lib/sbom/purl/packageUrl';
+import { comparisonKeys } from '@/lib/sbom/translate/comparisonKeys';
+import { SpdxDocument as TranslatedSpdxDocument } from '@/lib/sbom/spdx/types';
 
 interface SpdxPackage {
   name: string;
@@ -85,8 +44,7 @@ const extractPackageType = (
   // Try to infer from attribution texts if provided
 
   if (purl) {
-    const thepurl = parsePurl(purl);
-    switch (thepurl?.type) {
+    switch (parsePackageUrl(purl)?.type) {
       case 'deb':
       case 'dpkg':
       case 'apk':
@@ -97,6 +55,8 @@ const extractPackageType = (
         return '.net';
       case 'cargo':
         return 'rust';
+      case 'golang':
+        return 'golang';
       case 'gem':
         return 'library';
       case 'github':
@@ -185,6 +145,7 @@ export const parseSpdxSbom = (
       format: 'SPDX',
     };
 
+    const keyOf = comparisonKeys(data as unknown as TranslatedSpdxDocument);
     // Filter out container image and operating system packages
     const packages: ISbomPackage[] = getUniqueSpdxPackagesByPurl(data.packages)
       .map(pkg => {
@@ -224,6 +185,7 @@ export const parseSpdxSbom = (
           hash,
           purl,
           cpe: cpeRef?.referenceLocator,
+          key: keyOf(purl),
         };
       });
 

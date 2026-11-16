@@ -27,7 +27,7 @@ test('only the requested formats are generated', () => {
   expect(GenerateSBOMsWithTool('scout', 'nginx', OUT, ['cdx'])!.runs[0].args).toContain('--format=cyclonedx');
 });
 
-test('trivy pulls from the registry, never updates its databases, keeps no layer cache, one run per format', () => {
+test('trivy pulls from the registry, never updates its databases, keeps no layer cache, has a 15 minute deadline, one run per format', () => {
   const plan = GenerateSBOMsWithTool('trivy', 'nginx:1.27', OUT)!;
   expect(plan.runs).toStrictEqual([
     {
@@ -40,6 +40,8 @@ test('trivy pulls from the registry, never updates its databases, keeps no layer
         '--skip-java-db-update',
         '--cache-backend',
         'memory',
+        '--timeout',
+        '15m',
         '--format',
         'spdx-json',
         '--output',
@@ -57,6 +59,8 @@ test('trivy pulls from the registry, never updates its databases, keeps no layer
         '--skip-java-db-update',
         '--cache-backend',
         'memory',
+        '--timeout',
+        '15m',
         '--format',
         'cyclonedx',
         '--output',

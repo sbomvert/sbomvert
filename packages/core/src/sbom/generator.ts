@@ -46,6 +46,8 @@ export function GenerateSBOMsWithTool(
           '--skip-java-db-update',
           '--cache-backend',
           'memory',
+          '--timeout',
+          '15m',
           '--format',
           format,
           '--output',

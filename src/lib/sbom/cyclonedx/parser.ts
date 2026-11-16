@@ -3,6 +3,7 @@ import { LicenseInfo, PackageInfo, RichPackage, SbomInfo } from '@/lib/sbom/anal
 import { CycloneDxBom, CycloneDxComponent, CycloneDxLicense } from './types';
 import { capitalizeToolName } from '../utils';
 import { InferPkgTypeFromPurl } from '../purl/converter';
+import { comparisonKeys } from '../translate/comparisonKeys';
 
 const getLicense = (licenses?: CycloneDxLicense[]): string | undefined => {
   const license = licenses?.[0];
@@ -75,6 +76,7 @@ export const parseCycloneDxSbom = (
     if (data.bomFormat !== 'CycloneDX') return null;
 
     const toolInfo = getTool(data, toolName);
+    const keyOf = comparisonKeys(data);
     const packages: ISbomPackage[] = getUniquePurlComponents(data.components).map(component => ({
       name: component.name,
       version: component.version || 'unknown',
@@ -86,6 +88,7 @@ export const parseCycloneDxSbom = (
         : undefined,
       purl: component.purl,
       cpe: component.cpe,
+      key: keyOf(component.purl),
     }));
 
     return {

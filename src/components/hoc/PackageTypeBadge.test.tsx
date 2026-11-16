@@ -32,8 +32,9 @@ describe('getPackageTypeColor function', () => {
     expect(result).toContain('text-gray-800');
   });
 
-  it('should return their own colors for rust and .net types', () => {
+  it('should return their own colors for rust, golang and .net types', () => {
     expect(getPackageTypeColor('rust')).toContain('bg-amber-100');
+    expect(getPackageTypeColor('golang')).toContain('bg-cyan-100');
     expect(getPackageTypeColor('.net')).toContain('bg-indigo-100');
   });
 
