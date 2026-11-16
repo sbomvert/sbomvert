@@ -2,6 +2,8 @@
 import { CycloneDxBom } from '../cyclonedx/types';
 import { SpdxDocument, SpdxPackage } from '../spdx/types';
 import { anchoreCycloneDxProvider, anchoreSpdxProvider } from './anchore';
+import { dockerCycloneDxProvider } from './docker';
+import { trivyCycloneDxProvider } from './trivy';
 import { Provider } from './types';
 
 // Anchore (Syft) -> canonical -> Anchore must give back the same SBOM, in SPDX and in CycloneDX.
@@ -83,6 +85,18 @@ const SPDX: Format<SpdxDocument, SpdxPackage> = {
   untouchedByPurl: p => !p.externalRefs?.some(r => r.referenceType === 'purl'),
 };
 
+const SYFT_OS = {
+  'bom-ref': 'os:debian@13.7',
+  type: 'operating-system',
+  name: 'debian',
+  version: '13.7',
+  properties: [
+    { name: 'syft:distro:id', value: 'debian' },
+    { name: 'syft:distro:versionCodename', value: 'trixie' },
+    { name: 'syft:distro:versionID', value: '13.7' },
+  ],
+};
+
 const CYCLONEDX: Format<CycloneDxBom, any> = {
   name: 'CycloneDX',
   provider: anchoreCycloneDxProvider,
@@ -98,6 +112,7 @@ const CYCLONEDX: Format<CycloneDxBom, any> = {
           purl,
           properties: [
             { name: 'syft:package:foundBy', value: 'cataloger' },
+            { name: 'syft:package:type', value: purl.slice(4, purl.indexOf('/')) },
             ...cpes.slice(1).map(c => ({ name: 'syft:cpe23', value: c })),
           ],
         }
@@ -112,7 +127,8 @@ const CYCLONEDX: Format<CycloneDxBom, any> = {
         tools: { components: [{ type: 'application', author: 'anchore', name: 'syft', version: '1.12.2' }] },
         component: { 'bom-ref': 'image', type: 'container', name: 'alpine', purl: 'pkg:oci/alpine@sha256%3A1829893486be257df5049ab3b7fc95afbd0fc09d89803cbc580bda1ba5386b29?arch=arm64&tag=3.24.4' },
       },
-      components,
+      // Syft lists the OS as a component of its own
+      components: [...components, SYFT_OS],
       dependencies: [{ ref: 'image', dependsOn: components.map((c: any) => c['bom-ref']) }],
     }) as unknown as CycloneDxBom,
   purlOf: c => c.purl,
@@ -239,12 +255,62 @@ describe('Anchore CycloneDX', () => {
   test('the properties and the CPE of a component are kept', () => {
     const [c] = roundTrip(CYCLONEDX.doc(CYCLONEDX.pkg(CLASSES[0]))).components!;
     expect(c.cpe).toBe('cpe:2.3:a:apt:apt:3.0.4:*:*:*:*:*:*:*');
-    expect(c.properties).toEqual([{ name: 'syft:package:foundBy', value: 'cataloger' }]);
+    expect(c.properties).toEqual([{ name: 'syft:package:foundBy', value: 'cataloger' }, { name: 'syft:package:type', value: 'deb' }]);
   });
 
   test('an SBOM without components stays without them', () => {
     const bom = { bomFormat: 'CycloneDX', specVersion: '1.7', version: 1 } as unknown as CycloneDxBom;
     expect(anchoreCycloneDxProvider.fromCanonical(anchoreCycloneDxProvider.toCanonical(bom))).toEqual(bom);
+  });
+
+  // Syft's properties and OS component, as on every Syft SBOM of public/sbom
+  describe('another tool to Syft', () => {
+    const P = 'aquasecurity:trivy:';
+    const trivyBom = (...components: unknown[]) => ({ bomFormat: 'CycloneDX', specVersion: '1.6', version: 1, components }) as unknown as CycloneDxBom;
+    const props = (c: any) => Object.fromEntries((c.properties ?? []).map((p: any) => [p.name, p.value]));
+
+    test('Trivy: a deb gets Syft\'s cataloger and source, Trivy\'s OS component Syft\'s distro', () => {
+      const out = anchoreCycloneDxProvider.fromCanonical(
+        trivyCycloneDxProvider.toCanonical(
+          trivyBom(
+            { 'bom-ref': 'os-uuid', type: 'operating-system', name: 'debian', version: '13.7', properties: [{ name: `${P}Class`, value: 'os-pkgs' }] },
+            {
+              'bom-ref': 'x', type: 'library', name: 'libcap-ng0', version: '0.8.5-4+b1',
+              purl: 'pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=amd64&distro=debian-13.7',
+              properties: [{ name: `${P}SrcName`, value: 'libcap-ng' }, { name: `${P}SrcRelease`, value: '4' }, { name: `${P}SrcVersion`, value: '0.8.5' }],
+            }
+          )
+        )
+      );
+      const [os, deb] = out.components!;
+      expect(os['bom-ref']).toBe('os-uuid');
+      expect(props(os)).toMatchObject({ 'syft:distro:id': 'debian', 'syft:distro:versionCodename': 'trixie', 'syft:distro:versionID': '13.7' });
+      expect(props(deb)).toMatchObject({
+        'syft:package:foundBy': 'dpkg-db-cataloger', 'syft:package:type': 'deb', 'syft:package:metadataType': 'dpkg-db-entry',
+        'syft:metadata:source': 'libcap-ng', 'syft:metadata:sourceVersion': '0.8.5-4',
+      });
+    });
+
+    test('Scout: the OS component is made; an apk is its own origin, an rpm gets its release, epoch and source rpm', () => {
+      const scout = trivyBom(
+        { 'bom-ref': 'a', type: 'library', name: 'zlib', version: '1.3.2-r0', purl: 'pkg:apk/alpine/zlib@1.3.2-r0?os_name=alpine&os_version=3.24' },
+        {
+          'bom-ref': 'b', type: 'library', name: 'findutils', version: '1:4.8.0-7.el9',
+          purl: 'pkg:rpm/oraclelinux/findutils@1%3A4.8.0-7.el9?os_name=oraclelinux&os_version=9&upstream=findutils-4.8.0-7.el9.src.rpm',
+        }
+      );
+      const out = anchoreCycloneDxProvider.fromCanonical(dockerCycloneDxProvider.toCanonical(scout));
+      const [apk, rpm, os] = out.components!;
+      expect(props(apk)).toMatchObject({ 'syft:package:type': 'apk', 'syft:metadata:originPackage': 'zlib' });
+      expect(props(rpm)).toMatchObject({
+        'syft:package:foundBy': 'rpm-db-cataloger', 'syft:metadata:epoch': '1', 'syft:metadata:release': '7.el9',
+        'syft:metadata:sourceRpm': 'findutils-4.8.0-7.el9.src.rpm',
+      });
+      expect(os).toEqual({
+        'bom-ref': 'os:alpine@3.24', type: 'operating-system', name: 'alpine', version: '3.24',
+        properties: [{ name: 'syft:distro:id', value: 'alpine' }, { name: 'syft:distro:versionID', value: '3.24' }],
+      });
+    });
   });
 
   function roundTrip(d: CycloneDxBom) {
