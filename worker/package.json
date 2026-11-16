@@ -10,7 +10,7 @@
   "dependencies": {
     "@sbomvert/core": "*",
     "@sbomvert/scan": "*",
-    "bullmq": "^5.70.1",
+    "bullmq": "^6.7.6",
     "tsx": "4.23.15"
   }
 }

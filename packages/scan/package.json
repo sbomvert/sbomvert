@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "@sbomvert/core": "*",
-    "bullmq": "^5.70.1"
+    "bullmq": "^6.7.6"
   }
 }
