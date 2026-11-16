@@ -1,7 +1,7 @@
 'use client';
 import { useSession } from '@better-auth-ui/react';
 import { useRouter } from 'next/navigation';
-import { Shield, ShieldX, Scale, Home, FileChartColumnIncreasing, Upload, ScanText, LogIn } from 'lucide-react';
+import { Shield, ShieldX, Scale, Home, FileChartColumnIncreasing, Upload, ScanText, LogIn, ArrowLeftRight } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { UserButton } from '@/components/auth/user/user-button';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
@@ -39,6 +39,7 @@ export default function Sidebar({ scanEnabled = false }: { scanEnabled?: boolean
     { icon: FileChartColumnIncreasing, label: 'SBOM Analysis', href: '/compare/analyze' },
     { icon: Scale,                   label: 'SBOM Comparison', href: '/compare/sbom' },
     { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve' },
+    { icon: ArrowLeftRight,          label: 'Translate SBOM',  href: '/translate' },
     ...(scanEnabled ? [{ icon: ScanText, label: 'Scan', href: '/scan' }] : []),
 
     ...(FEATURE_FLAGS.ENABLE_SBOM_UPLOAD

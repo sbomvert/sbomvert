@@ -73,23 +73,30 @@ describe('Sidebar', () => {
     render(<Sidebar />);
 
     expect(screen.queryByText('Login')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button')).toHaveLength(4);
+    expect(screen.getAllByRole('button')).toHaveLength(5);
     // useSession needs the AuthProvider, which is not rendered without auth
     expect(useSessionMock).not.toHaveBeenCalled();
   });
 
-  it('renders 5 buttons when scan API is disabled', () => {
+  it('renders 6 buttons when scan API is disabled', () => {
     render(<Sidebar />);
 
-    expect(screen.getAllByRole('button')).toHaveLength(5);
+    expect(screen.getAllByRole('button')).toHaveLength(6);
   });
 
-  it('renders 6 buttons when scanning is enabled (passed in by the server layout)', () => {
+  it('renders 7 buttons when scanning is enabled (passed in by the server layout)', () => {
     render(<Sidebar scanEnabled />);
 
-    expect(screen.getAllByRole('button')).toHaveLength(6);
+    expect(screen.getAllByRole('button')).toHaveLength(7);
     expect(screen.getByRole('button', { name: /scan/i })).toBeInTheDocument();
   });
+  it('links to the Translate SBOM page', () => {
+    render(<Sidebar />);
+
+    fireEvent.click(screen.getByText('Translate SBOM'));
+    expect(pushMock).toHaveBeenCalledWith('/translate');
+  });
+
   it('calls router.push with correct route on click', () => {
     render(<Sidebar />);
 

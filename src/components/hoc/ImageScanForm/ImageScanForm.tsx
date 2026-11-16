@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Button } from '@/components/button/Button';
+import { Card } from '@/components/card/Card';
 import {
   producesFormat,
   SBOM_FORMATS,
@@ -69,23 +70,26 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
     formats.filter(f => !producesFormat(tool, f)).map(f => `${tool.name.toUpperCase()} cannot generate ${FORMAT_LABELS[f]} SBOMs`)
   );
 
-  const sectionLabel = 'text-body-sm font-medium text-foreground mb-2';
+  // the translate page's look
+  const sectionLabel = 'block text-body-sm font-medium text-foreground-muted mb-1';
 
   return (
-    <div className="p-6 border border-border rounded-card-lg shadow-card bg-surface text-foreground max-w-md mx-auto mb-6 transition-all animate-in fade-in slide-in-from-top-4">
-      <h2 className="text-heading font-semibold mb-4">Scan Container Image</h2>
+    <Card className="flex flex-col gap-5 max-w-2xl mb-6">
+      <div>
+        <label htmlFor="scan-image" className={sectionLabel}>Image</label>
+        <input
+          id="scan-image"
+          type="text"
+          placeholder="repo/app:tag"
+          className="w-full rounded-input border border-border px-3 py-2 text-body-sm bg-surface text-foreground placeholder:text-foreground-subtle"
+          value={image}
+          onChange={e => setImage(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="repo/app:tag"
-        className="w-full border border-border p-2 mb-4 rounded-input bg-input text-foreground focus:ring-2 focus:ring-ring focus:outline-hidden placeholder:text-foreground-subtle"
-        value={image}
-        onChange={e => setImage(e.target.value)}
-      />
-
-      <div className="mb-4 space-y-3">
+      <div className="space-y-3">
         <div>
-          <div className={sectionLabel}>SBOM generators:</div>
+          <div className={sectionLabel}>SBOM generators</div>
           <div className="flex flex-wrap gap-2">
             {SupportedTools.producers.map(tool => (
               <Button
@@ -102,7 +106,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
         </div>
 
         <div>
-          <div className={sectionLabel}>SBOM formats:</div>
+          <div className={sectionLabel}>SBOM formats</div>
           <div className="flex flex-wrap gap-2">
             {SBOM_FORMATS.map(format => (
               <Button
@@ -119,7 +123,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
         </div>
 
         <div>
-          <div className={sectionLabel}>CVE scanners:</div>
+          <div className={sectionLabel}>CVE scanners</div>
           <div className="flex flex-wrap gap-2">
             {SupportedTools.consumers.map(tool => (
               <Button
@@ -137,7 +141,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
       </div>
 
       {cannot.length > 0 && (
-        <div role="status" className="mb-4 p-3 rounded-input border border-warning bg-warning-subtle text-warning-fg text-body-sm">
+        <div role="status" className="p-3 rounded-input border border-warning bg-warning-subtle text-warning-fg text-body-sm">
           {cannot.map(message => (
             <p key={message}>{message}: none will be made.</p>
           ))}
@@ -150,6 +154,6 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
           {submitting ? 'Starting…' : 'Start Scan'}
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };
