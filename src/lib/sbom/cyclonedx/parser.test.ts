@@ -61,6 +61,7 @@ describe('parseCycloneDxSbom', () => {
         hash: 'sha-256:abc123',
         purl: 'pkg:apk/alpine/alpine-baselayout@3.7.2-r1?arch=x86_64',
         cpe: 'cpe:2.3:a:alpine-baselayout:alpine-baselayout:3.7.2-r1:*:*:*:*:*:*:*',
+        key: 'apk/alpine/alpine-baselayout@3.7.2-r1',
       },
     ]);
   });

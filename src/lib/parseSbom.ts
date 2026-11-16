@@ -3,6 +3,8 @@ import { CycloneDxBom } from '@/lib/sbom/cyclonedx/types';
 import { parseCycloneDxSbom } from '@/lib/sbom/cyclonedx/parser';
 import { capitalizeToolName } from '@/lib/sbom/utils';
 import { parsePackageUrl } from '@/lib/sbom/purl/packageUrl';
+import { comparisonKeys } from '@/lib/sbom/translate/comparisonKeys';
+import { SpdxDocument as TranslatedSpdxDocument } from '@/lib/sbom/spdx/types';
 
 interface SpdxPackage {
   name: string;
@@ -143,6 +145,7 @@ export const parseSpdxSbom = (
       format: 'SPDX',
     };
 
+    const keyOf = comparisonKeys(data as unknown as TranslatedSpdxDocument);
     // Filter out container image and operating system packages
     const packages: ISbomPackage[] = getUniqueSpdxPackagesByPurl(data.packages)
       .map(pkg => {
@@ -182,6 +185,7 @@ export const parseSpdxSbom = (
           hash,
           purl,
           cpe: cpeRef?.referenceLocator,
+          key: keyOf(purl),
         };
       });
 

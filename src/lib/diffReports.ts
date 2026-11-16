@@ -30,6 +30,8 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
       packageType: ISbomPackage['packageType'];
       foundInTools: string[];
       metadataByTool: Map<string, IPackageMetadata>;
+      keyed: boolean; // matched on its comparison key
+      withoutPurl: boolean; // only packages without a purl: their type is not known
     }
   >();
   const infoByTool: Record<string, { packages: string[]; purls: string[] }> = {};
@@ -43,12 +45,14 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
         .filter((purl): purl is string => purl !== undefined && purl !== ''),
     };
     sbom.packages.forEach(pkg => {
-      const key = `${pkg.name}@${pkg.version}`;
+      const key = pkg.key ?? `${pkg.name}@${pkg.version}`;
       const existing = packageMap.get(key);
 
       if (existing) {
-        existing.foundInTools.push(sbom.tool);
+        // a tool can list two packages with the same key (two copies of a library): it found the package once
+        if (!existing.foundInTools.includes(sbom.tool)) existing.foundInTools.push(sbom.tool);
         existing.metadataByTool.set(sbom.tool, extractMetadata(pkg));
+        existing.withoutPurl &&= !pkg.purl;
       } else {
         const metadataByTool = new Map<string, IPackageMetadata>();
         metadataByTool.set(sbom.tool, extractMetadata(pkg));
@@ -59,9 +63,31 @@ export const compareMultipleTools = (sboms: ISbom[]): IMultiToolComparison => {
           packageType: pkg.packageType,
           foundInTools: [sbom.tool],
           metadataByTool,
+          keyed: pkg.key !== undefined,
+          withoutPurl: !pkg.purl,
         });
       }
     });
+  });
+
+  // A package without a purl (Microsoft's Alpine and rpm packages) has no type, so no comparison key: it joins the
+  // keyed package of its name and version, when there is exactly one and its tools did not list it already.
+  const nameVersion = (name: string, version: string) => `${name}@${version.replace(/^\d+:/, '').replace(/^v(?=\d)/, '')}`.toLowerCase();
+  const keyedByNameVersion = new Map<string, string[]>();
+  packageMap.forEach((pkg, key) => {
+    if (!pkg.keyed) return;
+    // a key ends in `<name>@<version>`, the name has no `/`
+    const tail = key.slice(key.lastIndexOf('/') + 1);
+    keyedByNameVersion.set(tail, [...(keyedByNameVersion.get(tail) ?? []), key]);
+  });
+  packageMap.forEach((pkg, key) => {
+    if (!pkg.withoutPurl) return;
+    const matches = keyedByNameVersion.get(nameVersion(pkg.name, pkg.version)) ?? [];
+    const target = matches.length === 1 ? packageMap.get(matches[0])! : undefined;
+    if (!target || pkg.foundInTools.some(tool => target.foundInTools.includes(tool))) return;
+    target.foundInTools.push(...pkg.foundInTools);
+    pkg.metadataByTool.forEach((metadata, tool) => target.metadataByTool.set(tool, metadata));
+    packageMap.delete(key);
   });
 
   // Second pass: analyze metadata and create final package comparisons
