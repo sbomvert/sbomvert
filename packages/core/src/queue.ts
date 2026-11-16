@@ -100,6 +100,8 @@ const cache = globalThis as typeof globalThis & {
 export function getScanQueue(): Queue<ScanQueueData> {
   return (cache.__sbomvertScanQueue ??= new Queue<ScanQueueData>(SCAN_QUEUE, {
     connection: redisConnection(),
+    // a `completed` event carries the job's whole return value (SBOMs): keep only few events
+    streams: { events: { maxLen: 100 } },
   }));
 }
 

@@ -68,3 +68,6 @@ export const SupportedTools: SupportedToolsType = {
 // The scanner reads the SBOM of this producer (grype reads syft's).
 export const sbomProducerFor = (consumer: string) =>
   SupportedTools.consumers.find(t => t.name === consumer)?.sbom_from ?? consumer;
+
+// Whether a producer can write SBOMs in a given format
+export const producesFormat = (tool: ToolConfig, format: SbomFormat) => (format === 'spdx' ? tool.supports_spdx : tool.supports_cyclonedx);

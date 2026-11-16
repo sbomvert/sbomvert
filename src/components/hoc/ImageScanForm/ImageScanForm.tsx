@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/button/Button';
 import {
+  producesFormat,
   SBOM_FORMATS,
   SbomFormat,
   SupportedTools,
@@ -62,6 +63,11 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
       setSubmitting(false);
     }
   };
+
+  // the selected generators that cannot write a selected format: that SBOM will not be made
+  const cannot = selectedTools.producers.flatMap(tool =>
+    formats.filter(f => !producesFormat(tool, f)).map(f => `${tool.name.toUpperCase()} cannot generate ${FORMAT_LABELS[f]} SBOMs`)
+  );
 
   const sectionLabel = 'text-body-sm font-medium text-foreground mb-2';
 
@@ -129,6 +135,14 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
           </div>
         </div>
       </div>
+
+      {cannot.length > 0 && (
+        <div role="status" className="mb-4 p-3 rounded-input border border-warning bg-warning-subtle text-warning-fg text-body-sm">
+          {cannot.map(message => (
+            <p key={message}>{message}: none will be made.</p>
+          ))}
+        </div>
+      )}
 
       <div className="flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel}    disabled={submitting}>Cancel</Button>
