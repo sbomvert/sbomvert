@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { isSafeName, pathIn } from '../safePath';
 import type { ISbomService, SbomFile, Container, SbomListResponse } from './sbomService.types';
 
 /**
@@ -51,7 +52,8 @@ export class LocalSbomService implements ISbomService {
    * Get files for a specific container.
    */
   private getContainerFiles(containerName: string): SbomFile[] {
-    const containerPath = path.join(this.sbomDir, containerName);
+    if (!isSafeName(containerName)) return [];
+    const containerPath = pathIn(this.sbomDir, containerName);
 
     try {
       if (!fs.existsSync(containerPath) || !fs.statSync(containerPath).isDirectory()) {
@@ -108,7 +110,8 @@ export class LocalSbomService implements ISbomService {
    * Get content of a specified file.
    */
   async getFileContent(containerName: string, fileName: string): Promise<string> {
-    const filePath = path.join(this.sbomDir, containerName, fileName);
+    if (!isSafeName(containerName) || !isSafeName(fileName)) throw new Error('SBOM file not found');
+    const filePath = pathIn(this.sbomDir, containerName, fileName);
 
     return new Promise((resolve, reject) => {
       fs.readFile(filePath, 'utf8', (err, data) => {
@@ -135,8 +138,7 @@ export class LocalSbomService implements ISbomService {
    * Save an SBOM for a given image, type, and tool.
    */
   async saveSBOM(image: string, type: string, tool: string, content: string): Promise<void> {
-    const fileName = `${image}/${tool}.${type.toLowerCase()}.json`;
-    const fullPath = path.join(this.sbomDir, fileName);
+    const fullPath = pathIn(this.sbomDir, image, `${tool}.${type.toLowerCase()}.json`);
     const dir = path.dirname(fullPath);
 
     if (!fs.existsSync(dir)) {

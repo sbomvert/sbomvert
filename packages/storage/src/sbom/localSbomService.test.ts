@@ -73,3 +73,26 @@ test('getFileContent throws when file missing', async () => {
     'SBOM file not found'
   );
 });
+
+describe('names from a request cannot leave the SBOM directory', () => {
+  beforeEach(() => {
+    vol.mkdirSync('/secret', { recursive: true });
+    vol.writeFileSync('/secret/key.json', '{"secret":true}');
+    vol.mkdirSync(path.join(tempDir, 'app'), { recursive: true });
+  });
+
+  test('getFileContent', async () => {
+    await expect(service.getFileContent('..', 'secret/key.json')).rejects.toThrow('SBOM file not found');
+    await expect(service.getFileContent('app', '../../secret/key.json')).rejects.toThrow('SBOM file not found');
+  });
+
+  test('listFiles', async () => {
+    expect(await service.listFiles('../secret')).toEqual([]);
+  });
+
+  test('saveSBOM', async () => {
+    await expect(service.saveSBOM('../secret', 'spdx', 'syft', '{}')).rejects.toThrow('Invalid name');
+    await expect(service.saveSBOM('app', 'spdx', '../../secret/x', '{}')).rejects.toThrow('Invalid name');
+    expect(vol.readdirSync('/secret')).toEqual(['key.json']);
+  });
+});

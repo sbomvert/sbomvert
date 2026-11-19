@@ -3,6 +3,8 @@ import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { SbomFormatName } from '@/models/ISbom';
 import { parseSpdxSbom, parseCycloneDxSbom } from '@/lib/parseSbom';
+import { reverseFormatContainerName } from '@/lib/container/containerUtils';
+import { isSafeName } from '@sbomvert/storage/safePath';
 
 export async function POST(request: Request) {
   // Check if SBOM upload is enabled via feature flag
@@ -75,7 +77,12 @@ export async function POST(request: Request) {
     // Expected pattern: <tool>.<type>.json
     const tool = parts[0] ?? 'unknown';
     const type = (parts[1] ?? 'unknown').toLowerCase();
-    await SBOMService.saveSBOM(containerName, type, tool, content);
+    // stored like the other SBOMs (`libraryslashnginxtwodots1.2`); a name that is not a plain name could leave the SBOM directory
+    const folder = reverseFormatContainerName(containerName);
+    if (![folder, tool, type].every(isSafeName)) {
+      return NextResponse.json({ error: 'Invalid container or file name' }, { status: 400 });
+    }
+    await SBOMService.saveSBOM(folder, type, tool, content);
 
 
     return NextResponse.json({

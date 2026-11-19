@@ -257,4 +257,29 @@ describe('POST /api/sbom/upload', () => {
     const data = await response.json();
     expect(data.error).toBe('Failed to upload SBOM file');
   });
+
+  describe('names that would leave the SBOM directory', () => {
+    const upload = (containerName: string, fileName: string) => {
+      const file = new File([JSON.stringify({ spdxVersion: 'SPDX-2.3' })], fileName, { type: 'application/json' });
+      mockRequest.formData = jest.fn().mockResolvedValue(mockFormData);
+      mockFormData.get.mockImplementation((key: string) => (key === 'file' ? file : key === 'containerName' ? containerName : null));
+      (parseSpdxSbom as jest.Mock).mockReturnValue({ name: 'test' });
+      (SBOMService.saveSBOM as jest.Mock).mockResolvedValue(undefined);
+      return POST(mockRequest);
+    };
+
+    it('rejects a container name or file name that is not a plain name', async () => {
+      for (const [containerName, fileName] of [['..', 'syft.spdx.json'], ['.', 'syft.spdx.json'], ['app', '../../x.spdx.json'], ['app', 'a\\b.spdx.json']]) {
+        const response = await upload(containerName, fileName);
+        expect(response.status).toBe(400);
+      }
+      expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+    });
+
+    it('stores an image name the way the other SBOMs are stored', async () => {
+      const response = await upload('library/nginx:1.2', 'syft.spdx.json');
+      expect(response.status).toBe(200);
+      expect(SBOMService.saveSBOM).toHaveBeenCalledWith('libraryslashnginxtwodots1.2', 'spdx', 'syft', expect.any(String));
+    });
+  });
 });
