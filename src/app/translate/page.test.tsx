@@ -32,6 +32,11 @@ const choose = async (name: string, text: string) => {
   fireEvent.change(screen.getByLabelText('File'), { target: { files: [fileOf(name, text)] } });
   await waitFor(() => expect(screen.getByLabelText('From')).not.toBeDisabled());
 };
+// the page opens on Paste JSON
+const renderFileMode = () => {
+  render(<TranslatePage />);
+  fireEvent.click(screen.getByLabelText('File from my computer'));
+};
 const targetLabels = () => within(screen.getByLabelText('Translate to')).getAllByRole('option').map(o => o.textContent);
 const readBlob = (blob: Blob) =>
   new Promise<string>(resolve => {
@@ -56,7 +61,7 @@ afterEach(() => jest.restoreAllMocks());
 
 describe('Translate SBOM page', () => {
   test('detects the tool and offers only supported targets', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('trivy.cdx.json', JSON.stringify(TRIVY_CDX));
     expect(screen.getByLabelText('From')).toHaveValue('trivy');
     expect(screen.getByText(/detected/)).toBeInTheDocument();
@@ -68,7 +73,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('shows a button to choose the file, then the chosen file name', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     expect(screen.getByText('Choose a JSON file')).toBeInTheDocument();
     expect(screen.getByText('No file chosen')).toBeInTheDocument();
     await choose('alpine.spdx.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
@@ -76,7 +81,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('downloads the translation', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('alpine.spdx.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
     fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:cdx' } });
     fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
@@ -85,7 +90,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('lets the user change the detected tool', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
     fireEvent.change(screen.getByLabelText('From'), { target: { value: 'anchore' } });
     expect(targetLabels()).not.toContain('Syft · SPDX');
@@ -93,7 +98,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('requires a source tool when none is detected', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: unknown-1')));
     const button = screen.getByRole('button', { name: 'Translate & download' });
     expect(screen.getByLabelText('From')).toHaveValue('');
@@ -104,7 +109,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('clears a target that is no longer offered', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
     fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:spdx' } });
     fireEvent.change(screen.getByLabelText('From'), { target: { value: 'anchore' } });
@@ -113,7 +118,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('rejects a file that is not an SBOM', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     fireEvent.change(screen.getByLabelText('File'), { target: { files: [fileOf('a.json', '{"a":1}')] } });
     expect(await screen.findByRole('alert')).toHaveTextContent('Not an SPDX or CycloneDX SBOM');
     fireEvent.change(screen.getByLabelText('File'), { target: { files: [fileOf('b.json', 'panic')] } });
@@ -126,7 +131,7 @@ describe('Translate SBOM page', () => {
     (translation.translateSbom as jest.Mock).mockImplementationOnce(() => {
       throw new Error('boom');
     });
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
     fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:spdx' } });
     fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
@@ -135,7 +140,7 @@ describe('Translate SBOM page', () => {
   });
 
   test('warns when the chosen tool is not the detected one', async () => {
-    render(<TranslatePage />);
+    renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
     expect(screen.queryByText(/not the detected tool/i)).toBeNull();
     fireEvent.change(screen.getByLabelText('From'), { target: { value: 'google' } });
@@ -145,7 +150,7 @@ describe('Translate SBOM page', () => {
   test('keeps the download link alive until the download has started', async () => {
     jest.useFakeTimers();
     try {
-      render(<TranslatePage />);
+      renderFileMode();
       await choose('alpine.spdx.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
       fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:cdx' } });
       fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
@@ -253,5 +258,18 @@ describe('Translate SBOM page', () => {
       await pick();
       expect(await screen.findByRole('alert')).toHaveTextContent('404');
     });
+  });
+
+  test('translates pasted JSON into the output box', () => {
+    render(<TranslatePage />);
+    expect(screen.getByLabelText('Paste JSON')).toBeChecked();
+    fireEvent.change(screen.getByLabelText('SBOM'), { target: { value: '{' } });
+    expect(screen.getByRole('alert')).toHaveTextContent('not valid JSON');
+    fireEvent.change(screen.getByLabelText('SBOM'), { target: { value: JSON.stringify(spdx('Tool: trivy-0.76.0')) } });
+    expect(screen.getByLabelText('From')).toHaveValue('trivy');
+    fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:cdx' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Translate' }));
+    expect(JSON.parse((screen.getByLabelText('Translation') as HTMLTextAreaElement).value)).toMatchObject({ bomFormat: 'CycloneDX' });
+    expect(downloads).toEqual([]);
   });
 });
