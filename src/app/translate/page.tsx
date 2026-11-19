@@ -25,6 +25,7 @@ const FORMAT_LABELS: Record<SbomFormat, string> = { spdx: 'SPDX', cdx: 'CycloneD
 
 type Input = { doc: SpdxDocument | CycloneDxBom; format: SbomFormat; name: string; detected?: ToolId };
 type Container = { name: string; files: { name: string }[] };
+type Mode = 'file' | 'stored' | 'paste';
 
 const selectClass = 'w-full rounded-input border border-border px-3 py-2 text-body-sm bg-surface text-foreground disabled:opacity-60';
 const labelClass = 'block text-body-sm font-medium text-foreground-muted mb-1';
@@ -57,7 +58,7 @@ const download = (fileName: string, doc: unknown) => {
 };
 
 export default function TranslatePage() {
-  const [mode, setMode] = useState<'file' | 'stored'>('file');
+  const [mode, setMode] = useState<Mode>('paste');
   const [input, setInput] = useState<Input | null>(null);
   const [source, setSource] = useState<ToolId | ''>('');
   const [target, setTarget] = useState('');
@@ -67,6 +68,8 @@ export default function TranslatePage() {
   const [image, setImage] = useState('');
   const [storedFile, setStoredFile] = useState('');
   const [fileName, setFileName] = useState('');
+  const [pasted, setPasted] = useState('');
+  const [output, setOutput] = useState('');
 
   // by tool name; the sort is stable, so each tool keeps SPDX before CycloneDX
   const targets = useMemo(
@@ -80,15 +83,17 @@ export default function TranslatePage() {
     setSource(next.detected ?? '');
     setTarget('');
     setError('');
+    setOutput('');
   };
   const fail = (message: string) => {
     setInput(null);
     setSource('');
     setError(message);
+    setOutput('');
   };
 
   // the other mode's input, selection and error go: what is translated is what the page shows
-  const switchMode = (next: 'file' | 'stored') => {
+  const switchMode = (next: Mode) => {
     setMode(next);
     setInput(null);
     setSource('');
@@ -98,6 +103,24 @@ export default function TranslatePage() {
     setStoredFile('');
     setSearch('');
     setFileName('');
+    setPasted('');
+    setOutput('');
+  };
+
+  const onPaste = (text: string) => {
+    setPasted(text);
+    if (!text.trim()) {
+      setInput(null);
+      setSource('');
+      setError('');
+      setOutput('');
+      return;
+    }
+    try {
+      load(readSbom(text, 'sbom'));
+    } catch (err) {
+      fail((err as Error).message);
+    }
   };
 
   // what the user types in the Image field: an image once it names one, a search until then
@@ -167,7 +190,8 @@ export default function TranslatePage() {
     const [tool, format] = targetValue.split(':') as [ToolId, SbomFormat];
     try {
       const out = translateSbom(input.doc, { tool: source, format: input.format }, { tool, format });
-      download(`${input.name}.${FILE_IDS[tool] ?? tool}.${format}.json`, out);
+      if (mode === 'paste') setOutput(JSON.stringify(out, null, 2));
+      else download(`${input.name}.${FILE_IDS[tool] ?? tool}.${format}.json`, out);
       setError('');
     } catch (err) {
       setError((err as Error).message);
@@ -180,10 +204,14 @@ export default function TranslatePage() {
     <>
       <PageTitle title="Translate SBOM" subtitle="Convert an SBOM to the output of another tool or format." />
 
-      <Card className="flex flex-col gap-5 max-w-2xl">
+      <Card className={cn('flex flex-col gap-5', mode !== 'paste' && 'max-w-2xl')}>
         <fieldset className="flex flex-col gap-3">
           <legend className={labelClass}>Source</legend>
           <div className="flex gap-6 text-body-sm">
+            <label className="flex items-center gap-2">
+              <input type="radio" name="mode" checked={mode === 'paste'} onChange={() => switchMode('paste')} />
+              Paste JSON
+            </label>
             <label className="flex items-center gap-2">
               <input type="radio" name="mode" checked={mode === 'file'} onChange={() => switchMode('file')} />
               File from my computer
@@ -216,7 +244,7 @@ export default function TranslatePage() {
                 <span className="text-body-sm text-foreground-muted truncate">{fileName || 'No file chosen'}</span>
               </div>
             </div>
-          ) : (
+          ) : mode === 'stored' ? (
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="translate-image" className={labelClass}>Image</label>
@@ -242,7 +270,7 @@ export default function TranslatePage() {
                 </select>
               </div>
             </div>
-          )}
+          ) : null}
         </fieldset>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -274,6 +302,33 @@ export default function TranslatePage() {
           </div>
         </div>
 
+        {mode === 'paste' && (
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div>
+              <label htmlFor="translate-input" className={labelClass}>SBOM</label>
+              <textarea
+                id="translate-input"
+                spellCheck={false}
+                className={cn(selectClass, 'h-[60vh] font-mono text-caption')}
+                value={pasted}
+                onChange={e => onPaste(e.target.value)}
+                placeholder="Paste an SPDX or CycloneDX JSON SBOM"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="translate-output" className={labelClass}>Translation</label>
+                {output && (
+                  <button type="button" className="text-caption text-primary mb-1" onClick={() => navigator.clipboard?.writeText(output)}>
+                    Copy
+                  </button>
+                )}
+              </div>
+              <textarea id="translate-output" readOnly spellCheck={false} className={cn(selectClass, 'h-[60vh] font-mono text-caption')} value={output} />
+            </div>
+          </div>
+        )}
+
         {error && (
           <p role="alert" className={cn('text-body-sm rounded-input border border-danger px-3 py-2 text-danger')}>
             {error}
@@ -282,7 +337,7 @@ export default function TranslatePage() {
 
         <div className="flex justify-end">
           <Button size="sm" onClick={translate} disabled={!input || !source || !targetValue}>
-            Translate &amp; download
+            {mode === 'paste' ? 'Translate' : <>Translate &amp; download</>}
           </Button>
         </div>
       </Card>
