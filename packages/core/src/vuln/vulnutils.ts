@@ -177,8 +177,6 @@ export function extractTrivyVulnerabilities(obj: Record<string, unknown>, _: unk
     for (const vulnerability of result['Vulnerabilities'] as Record<string, unknown>[]) {
       const purl = (vulnerability['PkgIdentifier'] as Record<string, string>)['PURL'];
       const id = vulnerability['VulnerabilityID'] as string;
-      if (isDebian(purl)) continue;
-
       const comparablePurl = toComparablePurl(purl);
       report.purl_mapping[comparablePurl] = purl;
       if (!report.vulns_by_package[comparablePurl]) {
