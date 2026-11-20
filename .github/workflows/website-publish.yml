@@ -45,14 +45,9 @@ jobs:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/docs-ci.yml
 
-  static-app:
-    name: Build static app
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
-    uses: ./.github/workflows/static-app-ci.yml
-
   helm-publish:
     name: Package and Publish Helm Chart
-    needs: [docs, static-app]
+    needs: docs
     runs-on: ubuntu-latest
     # Docs-only when triggered by a docs push, or by a manual run with the
     # docs_only box checked. A workflow_run (post-Release) always packages a chart.
@@ -186,21 +181,13 @@ jobs:
           name: docs-site
           path: docs-site-dist
 
-      - name: Download built static app
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: static-app
-          path: static-app-dist
-
       - name: Assemble Pages artifact
         run: |
-          # Docs site at the root, Helm chart repo under /charts, static app under /app.
+          # Docs site at the root, Helm chart repo under /charts.
           mkdir -p public
           cp -r docs-site-dist/. public/
           mkdir -p public/charts
           cp .helm-repo/* public/charts/
-          mkdir -p public/app
-          cp -r static-app-dist/. public/app/
           touch public/.nojekyll
 
       - name: Setup Pages
