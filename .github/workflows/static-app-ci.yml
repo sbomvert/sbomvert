@@ -1,0 +1,35 @@
+name: Static app - Build
+
+# The backend-free build of the app (npm run build:static), served by
+# website-publish under /sbomvert/app. Pull requests check it in ci.yml.
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build static app
+        run: npm run build:static
+        env:
+          NEXT_PUBLIC_BASE_PATH: /sbomvert/app
+
+      # Make the built site available to callers (e.g. website-publish).
+      - name: Upload static app build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: static-app
+          path: out
+          if-no-files-found: error
