@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "NEXT_PUBLIC_STATIC_MODE=true next build",
     "start": "next start",
     "lint": "eslint .",
     "test": "jest",

@@ -34,18 +34,19 @@ function SidebarAccount() {
 export default function Sidebar({ scanEnabled = false }: { scanEnabled?: boolean }) {
   const router = useRouter();
 
+  // server: the page is not in the static build
   const navItems = [
     { icon: Home,                    label: 'Home',            href: '/' },
     { icon: FileChartColumnIncreasing, label: 'SBOM Analysis', href: '/compare/analyze' },
-    { icon: Scale,                   label: 'SBOM Comparison', href: '/compare/sbom' },
-    { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve' },
+    { icon: Scale,                   label: 'SBOM Comparison', href: '/compare/sbom', server: true },
+    { icon: ShieldX,                 label: 'CVE Comparison',  href: '/compare/cve', server: true },
     { icon: ArrowLeftRight,          label: 'Translate SBOM',  href: '/translate' },
     ...(scanEnabled ? [{ icon: ScanText, label: 'Scan', href: '/scan' }] : []),
 
     ...(FEATURE_FLAGS.ENABLE_SBOM_UPLOAD
       ? [{ icon: Upload, label: 'Upload SBOM', href: '/compare/upload/sbom' }]
       : []),
-  ];
+  ].filter(item => !(FEATURE_FLAGS.STATIC_MODE && item.server));
 
   return (
     <aside className="w-64 bg-background border-r-4 border-border flex flex-col">

@@ -39,7 +39,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
       <div className="text-center py-12">
         <Package className="mx-auto h-12 w-12 text-foreground-subtle mb-4" />
         <p className="text-foreground-muted">
-          No container images found. Please add SBOM files to the public/sbom directory.
+          No container images found. Please add SBOMs 
         </p>
       </div>
     );
