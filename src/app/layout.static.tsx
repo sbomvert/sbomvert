@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Sidebar from '@/components/layout/Sidebar';
+import { StaticHeader } from '@/components/layout/StaticHeader';
 import { Providers } from '@/components/providers';
 import { connection } from 'next/server';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
@@ -26,9 +27,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body>
         <Providers>
-          {/* one column of chrome: the sidebar carries the logo, the links and the theme switch */}
-          <div className="min-h-screen flex bg-background">
-            <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />
+          {/* one piece of chrome: the sidebar carries the logo, the links and the theme switch; the static build,
+              with three pages, has a bar instead */}
+          <div className={`min-h-screen flex bg-background ${FEATURE_FLAGS.STATIC_MODE ? 'flex-col' : ''}`}>
+            {FEATURE_FLAGS.STATIC_MODE ? <StaticHeader /> : <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />}
 
             <div className="flex flex-1 min-w-0 min-h-0 flex-col">
               <main className="flex-1 overflow-y-auto">

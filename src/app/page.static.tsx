@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 import { toolColor } from '@/lib/utils';
 
-// The comparison of docker:29.9.3 from public/sbom, as the compare page computes it (compareMultipleTools).
-// ponytail: copied by hand, update it when that image's SBOMs are regenerated
-const PREVIEW = {
-  image: 'docker:29.9.3',
+// Real results for docker:29.9.3 from public/sbom, copied by hand.
+// ponytail: update them when that image's SBOMs are regenerated
+// The comparison of its 9 SBOMs, as the compare page computes it (compareMultipleTools)
+const COMPARISON = {
   total: 600,
   common: 51,
   tools: [
@@ -23,6 +23,24 @@ const PREVIEW = {
     ['Microsoft.SBOMTool (SPDX)', 54],
   ] as const,
 };
+// Syft's SPDX SBOM of it alone, as the analysis reads it (parseSbom): what the static build can show
+const ANALYSIS = {
+  total: 455,
+  licensed: 54,
+  types: [['golang', 401], ['apk', 53], ['oci', 1]] as const,
+};
+
+// one row of the preview: a label, a thin bar out of the total, the count
+const Row = ({ label, count, total, color, dot, className = 'flex' }: { label: string; count: number; total: number; color: string; dot?: boolean; className?: string }) => (
+  <li className={`items-center gap-3 text-caption ${className}`}>
+    {dot && <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: color }} aria-hidden />}
+    <span className="w-44 truncate text-foreground-muted">{label}</span>
+    <span className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+      <span className="block h-full rounded-full" style={{ width: `${(count / total) * 100}%`, backgroundColor: color }} />
+    </span>
+    <span className="w-8 text-right font-mono text-foreground tabular-nums">{count}</span>
+  </li>
+);
 
 const primaryAction =
   'inline-flex items-center h-11 px-5 rounded-button bg-primary text-primary-foreground text-body-sm font-medium transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -67,33 +85,49 @@ export default function HomePage() {
         </div>
       </motion.div>
 
-      {/* the product's own result: how far apart the tools are on one real image */}
+      {/* the product's own result on one real image */}
       <motion.figure
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.06 }}
         className="bg-surface rounded-card border border-border shadow-card p-card-p-lg min-w-0"
       >
-        <div className="flex items-baseline justify-between gap-4 mb-5">
-          <span className="font-mono text-body-sm text-foreground truncate">{PREVIEW.image}</span>
-          <span className="font-mono text-caption text-foreground-subtle shrink-0">{PREVIEW.tools.length} SBOMs</span>
-        </div>
-        <ol className="space-y-2.5" aria-label="Packages found by each tool">
-          {PREVIEW.tools.map(([tool, count], i) => (
-            <li key={tool} className={`items-center gap-3 text-caption ${i >= 5 ? 'hidden sm:flex' : 'flex'}`}>
-              <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: toolColor(tool) }} aria-hidden />
-              <span className="w-44 truncate text-foreground-muted">{tool}</span>
-              <span className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                <span className="block h-full rounded-full" style={{ width: `${(count / PREVIEW.total) * 100}%`, backgroundColor: toolColor(tool) }} />
-              </span>
-              <span className="w-8 text-right font-mono text-foreground tabular-nums">{count}</span>
-            </li>
-          ))}
-        </ol>
-        <figcaption className="mt-5 pt-4 border-t border-border text-body-sm text-foreground-muted">
-          <span className="text-foreground font-medium tabular-nums">{PREVIEW.common}</span> of{' '}
-          <span className="tabular-nums">{PREVIEW.total}</span> packages are found by every tool
-        </figcaption>
+        {isStatic ? (
+          // the static build analyzes one SBOM: show what that gives
+          <>
+            <div className="flex items-baseline justify-between gap-4 mb-5">
+              <span className="font-mono text-body-sm text-foreground truncate">docker:29.9.3 · syft.spdx.json</span>
+              <span className="font-mono text-caption text-foreground-subtle shrink-0">SPDX 2.3</span>
+            </div>
+            <p className="text-caption text-foreground-subtle mb-3">Packages by type</p>
+            <ol className="space-y-2.5" aria-label="Packages by type">
+              {ANALYSIS.types.map(([type, count]) => (
+                <Row key={type} label={type} count={count} total={ANALYSIS.total} color="var(--primary)" />
+              ))}
+            </ol>
+            <figcaption className="mt-5 pt-4 border-t border-border text-body-sm text-foreground-muted">
+              <span className="text-foreground font-medium tabular-nums">{ANALYSIS.licensed}</span> of{' '}
+              <span className="tabular-nums">{ANALYSIS.total}</span> packages state a license
+            </figcaption>
+          </>
+        ) : (
+          // the full app compares tools: how far apart they are on one real image
+          <>
+            <div className="flex items-baseline justify-between gap-4 mb-5">
+              <span className="font-mono text-body-sm text-foreground truncate">docker:29.9.3</span>
+              <span className="font-mono text-caption text-foreground-subtle shrink-0">{COMPARISON.tools.length} SBOMs</span>
+            </div>
+            <ol className="space-y-2.5" aria-label="Packages found by each tool">
+              {COMPARISON.tools.map(([tool, count], i) => (
+                <Row key={tool} label={tool} count={count} total={COMPARISON.total} color={toolColor(tool)} dot className={i >= 5 ? 'hidden sm:flex' : 'flex'} />
+              ))}
+            </ol>
+            <figcaption className="mt-5 pt-4 border-t border-border text-body-sm text-foreground-muted">
+              <span className="text-foreground font-medium tabular-nums">{COMPARISON.common}</span> of{' '}
+              <span className="tabular-nums">{COMPARISON.total}</span> packages are found by every tool
+            </figcaption>
+          </>
+        )}
       </motion.figure>
     </div>
   );
