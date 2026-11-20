@@ -12,7 +12,7 @@ describe('vulnutils extraction functions', () => {
             },
             {
               VulnerabilityID: 'CVE-5678',
-              PkgIdentifier: { PURL: 'pkg:deb/debian/openssl@1.0' }, // Debian, should be skipped
+              PkgIdentifier: { PURL: 'pkg:deb/debian/openssl@1.0' }, // Debian, kept like the other tools do
             },
           ],
         },
@@ -20,8 +20,8 @@ describe('vulnutils extraction functions', () => {
     } as any;
     const report = extractTrivyVulnerabilities(sample, null);
     expect(report.cves).toContain('CVE-1234');
-    expect(report.cves).not.toContain('CVE-5678');
-    expect(report.totalCVEs).toBe(1);
+    expect(report.cves).toContain('CVE-5678');
+    expect(report.totalCVEs).toBe(2);
     expect(report.purl_mapping['pkg:npm/lodash']).toBe('pkg:npm/lodash@4.17.21');
   });
 
