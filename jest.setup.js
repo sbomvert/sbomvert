@@ -78,3 +78,14 @@ if (typeof window !== 'undefined') Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// jsdom's Blob/File have no text(); the app reads chosen files with it
+if (typeof Blob !== 'undefined' && !Blob.prototype.text) {
+  Blob.prototype.text = function () {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsText(this);
+    });
+  };
+}

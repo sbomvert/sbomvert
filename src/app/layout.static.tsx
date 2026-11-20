@@ -8,12 +8,16 @@ import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 export const metadata: Metadata = {
   title: 'SBOMVert',
-  description: 'Compare SBOM tool outputs for container images',
+  description: FEATURE_FLAGS.STATIC_MODE
+    ? 'Analyze and translate container image SBOMs in your browser'
+    : 'Compare SBOM tool outputs for container images',
+  icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/favicon.ico` },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // render per request, not at build time, so the scan flag comes from the running environment
-  await connection();
+  // render per request, not at build time, so the scan flag comes from the running environment.
+  // The static build has no server: rendered once, at build time.
+  if (!FEATURE_FLAGS.STATIC_MODE) await connection();
   return (
     <html lang="en" suppressHydrationWarning>
       <body>

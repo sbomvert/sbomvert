@@ -1,14 +1,17 @@
 'use client';
 
-import { SbomUploadForm } from "@/components/hoc/SbomUploadForm";
+import { SbomDetails, SbomUploadForm } from "@/components/hoc/SbomUploadForm";
 import { PageTitle } from "@/components/Title/Title";
 
 // the form reports the outcome: a failed upload throws
-const handleUpload = async (name: string, containerName: string, file: File) => {
+const handleUpload = async (name: string, containerName: string, file: File, details: SbomDetails) => {
   const formData = new FormData();
   formData.append('name', name);
   formData.append('containerName', containerName);
   formData.append('file', file);
+  // stored as <tool>.<format>.json, like the other SBOMs: "Docker Scout" -> docker-scout
+  formData.append('tool', details.tool.toLowerCase().replace(/\s+/g, '-'));
+  formData.append('format', details.format);
 
   const response = await fetch('/api/sbom/upload', {
     method: 'POST',

@@ -12,7 +12,7 @@ export default function AnalyzeLocalWrapper() {
   // Guard: prevent empty access
   useEffect(() => {
     if (!info || packages.length === 0) {
-      router.replace('/analyze');
+      router.replace('/compare/analyze');
     }
   }, [info, packages, router]);
 

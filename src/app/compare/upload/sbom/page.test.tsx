@@ -11,7 +11,7 @@ jest.mock('@/components/hoc/SbomUploadForm', () => {
         <>
           <button
             onClick={() =>
-              onUpload('test-name', 'test-container', new File(['data'], 'file.txt')).then(
+              onUpload('test-name', 'test-container', new File(['data'], 'file.txt'), { format: 'cdx', tool: 'Docker Scout' }).then(
                 () => setOutcome('ok'),
                 (err: Error) => setOutcome(err.message)
               )
@@ -46,6 +46,9 @@ describe('UploadPage', () => {
     expect(init.method).toBe('POST');
     expect(init.body).toBeInstanceOf(FormData);
     expect(init.body.get('containerName')).toBe('test-container');
+    // stored as <tool>.<format>.json, whatever the file is called
+    expect(init.body.get('tool')).toBe('docker-scout');
+    expect(init.body.get('format')).toBe('cdx');
   });
 
   test.each([

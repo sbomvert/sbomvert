@@ -67,6 +67,15 @@ describe('Sidebar', () => {
     expect(screen.getByText('Login')).toBeInTheDocument();
   });
 
+  it('lists only the pages of the static build in static mode', () => {
+    process.env.NEXT_PUBLIC_STATIC_MODE = 'true';
+    process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD = 'true';
+
+    render(<Sidebar />);
+
+    expect(screen.getAllByRole('button').map(b => b.textContent)).toEqual(['Home', 'SBOM Analysis', 'Translate SBOM']);
+  });
+
   it('has no login or account controls when auth is disabled', () => {
     process.env.NEXT_PUBLIC_ENABLE_AUTH = 'false';
 

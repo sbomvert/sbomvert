@@ -50,3 +50,17 @@ describe('ENABLE_SCAN_API', () => {
     expect(FEATURE_FLAGS.ENABLE_SCAN_API).toBe(false);
   });
 });
+
+describe('STATIC_MODE', () => {
+  const keys = ['NEXT_PUBLIC_STATIC_MODE', 'NEXT_PUBLIC_ENABLE_SBOM_UPLOAD', 'NEXT_PUBLIC_ENABLE_SCAN_API', 'NEXT_PUBLIC_ENABLE_AUTH'];
+  const original = keys.map(k => process.env[k]);
+  afterEach(() => keys.forEach((k, i) => (original[i] === undefined ? delete process.env[k] : (process.env[k] = original[i]))));
+
+  it('turns off the features that need a server, even when enabled', () => {
+    keys.forEach(k => (process.env[k] = 'true'));
+    expect(FEATURE_FLAGS.STATIC_MODE).toBe(true);
+    expect(FEATURE_FLAGS.ENABLE_SBOM_UPLOAD).toBe(false);
+    expect(FEATURE_FLAGS.ENABLE_SCAN_API).toBe(false);
+    expect(FEATURE_FLAGS.ENABLE_AUTH).toBe(false);
+  });
+});

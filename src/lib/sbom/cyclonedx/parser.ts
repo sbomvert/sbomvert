@@ -29,7 +29,7 @@ const getUniquePurlComponents = (components?: CycloneDxComponent[]): CycloneDxCo
   });
 };
 
-const getTool = (data: CycloneDxBom, toolName: string): IToolInfo => {
+export const getTool = (data: CycloneDxBom, toolName: string): IToolInfo => {
   const tools = data.metadata?.tools;
   const firstTool = Array.isArray(tools)
     ? tools[0]

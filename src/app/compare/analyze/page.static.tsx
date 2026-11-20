@@ -9,10 +9,12 @@ import { SearchBar } from '@/components/searchbar/SearchBar';
 import { Card } from '@/components/card/Card';
 import { List } from '@/components/list/List';
 import { Button } from '@/components/button/Button';
-import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
+import { SbomDetails, SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 import { Dialog } from '@/components/dialog/Dialog';
 import { AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
+import { AnalyzeCycloneDX } from '@/lib/sbom/cyclonedx/parser';
 import { useSbomStore } from '@/store/useSbomStore';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 interface SbomFile { name: string; }
 interface Container { name: string; files: SbomFile[]; }
@@ -21,6 +23,13 @@ async function fetchContainers(page: number, search: string) {
   const res = await fetch(`/api/sbom-files?page=${page}&search=${encodeURIComponent(search)}`);
   if (!res.ok) return { containers: [], pagination: { totalPages: 1 } };
   return res.json();
+}
+
+// the image or software the SBOM is about, when it says so
+function subjectOf(doc: { metadata?: { component?: { name?: string; version?: string } }; name?: string }): string | undefined {
+  const component = doc.metadata?.component;
+  if (component?.name) return component.version ? `${component.name}:${component.version}` : component.name;
+  return doc.name;
 }
 
 function toolLabel(filename: string): string {
@@ -49,6 +58,8 @@ export default function AnalyzePage() {
   }, [search]);
 
   useEffect(() => {
+    // the static build has no stored SBOMs
+    if (FEATURE_FLAGS.STATIC_MODE) return;
     fetchContainers(1, debouncedSearch)
       .then(d => setContainers(d.containers ?? []))
       .catch(() => setContainers([]))
@@ -61,16 +72,29 @@ export default function AnalyzePage() {
     router.push(`/compare/analyze/${encodeURIComponent(imageSlug)}/${toolSlug}`);
   };
 
-  const handleUpload = async (name: string, containerName: string, file: File) => {
-    const text = await file.text();
-    const json = JSON.parse(text);
+  // the form has checked the SBOM: its format, and the tool as the user confirmed it
+  const handleUpload = async (name: string, containerName: string, file: File, details: SbomDetails) => {
+    const json = JSON.parse(await file.text());
+    const parsed = details.format === 'cdx' ? AnalyzeCycloneDX(json, 'Local SBOM', file.name) : AnalyzeSPDX(json, 'Local SBOM');
 
-    const parsed = AnalyzeSPDX(json, 'Local SBOM');
-
-    setSbom({ ...parsed, name, containerName });
+    setSbom({
+      ...parsed,
+      info: { ...parsed.info, tool: details.tool },
+      // not asked in the static build: what the SBOM says (e.g. "docker-scout.cdx.json", "docker:29.9.3")
+      name: name || `${details.tool.toLowerCase().replace(/\s+/g, '-')}.${details.format}.json`,
+      containerName: containerName || subjectOf(json) || 'Local SBOM',
+    });
 
     router.push(`/compare/analyze/local`);
+  };
 
+  if (FEATURE_FLAGS.STATIC_MODE) {
+    return (
+      <>
+        <PageTitle title="Analyze SBOM" subtitle="Open an SPDX or CycloneDX SBOM from your computer to inspect its full package manifest." />
+        <SbomUploadForm submitText="Load SBOM" allowPaste askNames={false} onUpload={handleUpload} />
+      </>
+    );
   }
 
   return (
@@ -86,13 +110,14 @@ export default function AnalyzePage() {
         </div>
       </div>
 
-      <Dialog open={loadModalOpen} onOpenChange={setLoadModalOpen} title="Load SBOM" description="Open an SPDX SBOM from your computer to analyze it.">
+      <Dialog open={loadModalOpen} onOpenChange={setLoadModalOpen} title="Load SBOM" description="Open an SPDX or CycloneDX SBOM from your computer to analyze it.">
         <SbomUploadForm
           submitText="Load SBOM"
+          allowPaste
           className="p-0 shadow-none bg-transparent max-w-none"
-          onUpload={async (name, containerName, file) => {
+          onUpload={async (name, containerName, file, details) => {
             // a failure throws to the form, which shows it; the dialog stays open
-            await handleUpload(name, containerName, file);
+            await handleUpload(name, containerName, file, details);
             setLoadModalOpen(false);
           }}
           onCancel={() => setLoadModalOpen(false)}
