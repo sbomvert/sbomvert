@@ -1,5 +1,6 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import * as translation from '@sbomvert/core/translate/translateSbom';
+import userEvent from '@testing-library/user-event';
 import TranslatePage from './page';
 
 jest.mock('@sbomvert/core/translate/translateSbom', () => {
@@ -37,7 +38,17 @@ const renderFileMode = () => {
   render(<TranslatePage />);
   fireEvent.click(screen.getByLabelText('File from my computer'));
 };
-const targetLabels = () => within(screen.getByLabelText('Translate to')).getAllByRole('option').map(o => o.textContent);
+// the dropdowns are Selectors: picking opens the menu and clicks the option
+const pick = async (label: string, option: string | RegExp) => {
+  await userEvent.click(screen.getByLabelText(label));
+  await userEvent.click(await screen.findByRole('option', { name: option }));
+};
+const targetLabels = async () => {
+  await userEvent.click(screen.getByLabelText('Translate to'));
+  const labels = (await screen.findAllByRole('option')).map(o => o.textContent);
+  await userEvent.keyboard('{Escape}');
+  return labels;
+};
 const readBlob = (blob: Blob) =>
   new Promise<string>(resolve => {
     const reader = new FileReader();
@@ -63,9 +74,9 @@ describe('Translate SBOM page', () => {
   test('detects the tool and offers only supported targets', async () => {
     renderFileMode();
     await choose('trivy.cdx.json', JSON.stringify(TRIVY_CDX));
-    expect(screen.getByLabelText('From')).toHaveValue('trivy');
+    expect(screen.getByLabelText('From')).toHaveTextContent('Trivy');
     expect(screen.getByText(/detected/)).toBeInTheDocument();
-    const labels = targetLabels().filter(l => l !== 'Choose a target');
+    const labels = (await targetLabels());
     expect(labels).toHaveLength(9);
     expect(labels).toContain('Google · SPDX');
     expect(labels).not.toContain('Google · CycloneDX');
@@ -83,7 +94,7 @@ describe('Translate SBOM page', () => {
   test('downloads the translation', async () => {
     renderFileMode();
     await choose('alpine.spdx.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
-    fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:cdx' } });
+    await pick('Translate to', 'Syft · CycloneDX');
     fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
     await waitFor(() => expect(downloads).toEqual(['alpine.syft.cdx.json']));
     expect(JSON.parse(await readBlob(blobs[0]))).toMatchObject({ bomFormat: 'CycloneDX' });
@@ -92,28 +103,28 @@ describe('Translate SBOM page', () => {
   test('lets the user change the detected tool', async () => {
     renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
-    fireEvent.change(screen.getByLabelText('From'), { target: { value: 'anchore' } });
-    expect(targetLabels()).not.toContain('Syft · SPDX');
-    expect(targetLabels()).toContain('Trivy · SPDX');
+    await pick('From', /^Syft/);
+    expect(await targetLabels()).not.toContain('Syft · SPDX');
+    expect(await targetLabels()).toContain('Trivy · SPDX');
   });
 
   test('requires a source tool when none is detected', async () => {
     renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: unknown-1')));
     const button = screen.getByRole('button', { name: 'Translate & download' });
-    expect(screen.getByLabelText('From')).toHaveValue('');
+    expect(screen.getByLabelText('From')).toHaveTextContent('Choose the tool');
     expect(button).toBeDisabled();
-    fireEvent.change(screen.getByLabelText('From'), { target: { value: 'trivy' } });
-    fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:spdx' } });
+    await pick('From', /^Trivy/);
+    await pick('Translate to', 'Syft · SPDX');
     expect(button).not.toBeDisabled();
   });
 
   test('clears a target that is no longer offered', async () => {
     renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
-    fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:spdx' } });
-    fireEvent.change(screen.getByLabelText('From'), { target: { value: 'anchore' } });
-    expect(screen.getByLabelText('Translate to')).toHaveValue('');
+    await pick('Translate to', 'Syft · SPDX');
+    await pick('From', /^Syft/);
+    expect(screen.getByLabelText('Translate to')).toHaveTextContent('Choose a target');
     expect(screen.getByRole('button', { name: 'Translate & download' })).toBeDisabled();
   });
 
@@ -133,7 +144,7 @@ describe('Translate SBOM page', () => {
     });
     renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
-    fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:spdx' } });
+    await pick('Translate to', 'Syft · SPDX');
     fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('boom');
     expect(downloads).toEqual([]);
@@ -143,16 +154,16 @@ describe('Translate SBOM page', () => {
     renderFileMode();
     await choose('x.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
     expect(screen.queryByText(/not the detected tool/i)).toBeNull();
-    fireEvent.change(screen.getByLabelText('From'), { target: { value: 'google' } });
+    await pick('From', /^Google/);
     expect(screen.getByText(/not the detected tool \(Trivy\)/i)).toBeInTheDocument();
   });
 
   test('keeps the download link alive until the download has started', async () => {
+    renderFileMode();
+    await choose('alpine.spdx.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
+    await pick('Translate to', 'Syft · CycloneDX');
     jest.useFakeTimers();
     try {
-      renderFileMode();
-      await choose('alpine.spdx.json', JSON.stringify(spdx('Tool: trivy-0.76.0')));
-      fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:cdx' } });
       fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
       expect(downloads).toEqual(['alpine.syft.cdx.json']);
       expect(URL.revokeObjectURL).not.toHaveBeenCalled();
@@ -172,14 +183,14 @@ describe('Translate SBOM page', () => {
     // the images the Image field suggests while typing
     const suggestions = () => Array.from(document.querySelectorAll('#translate-images option')).map(o => (o as HTMLOptionElement).value);
     const type = (text: string) => fireEvent.change(screen.getByLabelText('Image'), { target: { value: text } });
-    const pick = async () => {
+    const pickStored = async () => {
       render(<TranslatePage />);
       fireEvent.click(screen.getByLabelText('Stored SBOM'));
       type('alpine');
       await waitFor(() => expect(suggestions()).toEqual(['alpine:3.24.4']));
       type('alpine:3.24.4');
       await waitFor(() => expect(screen.getByLabelText('Stored file')).not.toBeDisabled());
-      fireEvent.change(screen.getByLabelText('Stored file'), { target: { value: 'trivy.cdx.json' } });
+      await pick('Stored file', 'trivy.cdx.json');
     };
 
     test('suggests images while the user types, by their name as shown', async () => {
@@ -197,18 +208,18 @@ describe('Translate SBOM page', () => {
 
     test('loads it and names the download after the image', async () => {
       stored(TRIVY_CDX);
-      await pick();
-      await waitFor(() => expect(screen.getByLabelText('From')).toHaveValue('trivy'));
+      await pickStored();
+      await waitFor(() => expect(screen.getByLabelText('From')).toHaveTextContent('Trivy'));
       expect(global.fetch).toHaveBeenCalledWith('/api/sbom/alpinetwodots3.24.4/trivy.cdx.json');
-      fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:spdx' } });
+      await pick('Translate to', 'Syft · SPDX');
       fireEvent.click(screen.getByRole('button', { name: 'Translate & download' }));
       await waitFor(() => expect(downloads).toEqual(['alpine-3.24.4.syft.spdx.json']));
     });
 
     test('switching to a local file drops the stored SBOM', async () => {
       stored(TRIVY_CDX);
-      await pick();
-      await waitFor(() => expect(screen.getByLabelText('From')).toHaveValue('trivy'));
+      await pickStored();
+      await waitFor(() => expect(screen.getByLabelText('From')).toHaveTextContent('Trivy'));
       fireEvent.click(screen.getByLabelText('File from my computer'));
       expect(screen.getByLabelText('From')).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Translate & download' })).toBeDisabled();
@@ -219,14 +230,14 @@ describe('Translate SBOM page', () => {
       (global.fetch as jest.Mock).mockImplementation((url: string) =>
         url.startsWith('/api/sbom-files') ? Promise.resolve({ ok: true, json: async () => list }) : new Promise(r => (resolve = r))
       );
-      await pick();
+      await pickStored();
       fireEvent.click(screen.getByLabelText('File from my computer'));
       await choose('local.spdx.json', JSON.stringify(spdx('Tool: syft-1.54.1')));
       const text = jest.fn(async () => JSON.stringify(TRIVY_CDX));
       resolve({ ok: true, text });
       await waitFor(() => expect(text).toHaveBeenCalled());
       await act(async () => new Promise(r => setTimeout(r, 10)));
-      expect(screen.getByLabelText('From')).toHaveValue('anchore');
+      expect(screen.getByLabelText('From')).toHaveTextContent('Syft');
     });
 
     test('an older suggestion list does not replace a newer one', async () => {
@@ -248,26 +259,26 @@ describe('Translate SBOM page', () => {
 
     test('changing the typed image unselects the previous one', async () => {
       stored(TRIVY_CDX);
-      await pick();
+      await pickStored();
       type('alpine:3.24');
       await waitFor(() => expect(screen.getByLabelText('Stored file')).toBeDisabled());
     });
 
     test('shows an error when it cannot be loaded', async () => {
       stored({ ok: false, status: 404 } as Response);
-      await pick();
+      await pickStored();
       expect(await screen.findByRole('alert')).toHaveTextContent('404');
     });
   });
 
-  test('translates pasted JSON into the output box', () => {
+  test('translates pasted JSON into the output box', async () => {
     render(<TranslatePage />);
     expect(screen.getByLabelText('Paste JSON')).toBeChecked();
     fireEvent.change(screen.getByLabelText('SBOM'), { target: { value: '{' } });
     expect(screen.getByRole('alert')).toHaveTextContent('not valid JSON');
     fireEvent.change(screen.getByLabelText('SBOM'), { target: { value: JSON.stringify(spdx('Tool: trivy-0.76.0')) } });
-    expect(screen.getByLabelText('From')).toHaveValue('trivy');
-    fireEvent.change(screen.getByLabelText('Translate to'), { target: { value: 'anchore:cdx' } });
+    expect(screen.getByLabelText('From')).toHaveTextContent('Trivy');
+    await pick('Translate to', 'Syft · CycloneDX');
     fireEvent.click(screen.getByRole('button', { name: 'Translate' }));
     expect(JSON.parse((screen.getByLabelText('Translation') as HTMLTextAreaElement).value)).toMatchObject({ bomFormat: 'CycloneDX' });
     expect(downloads).toEqual([]);

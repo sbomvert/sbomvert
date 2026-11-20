@@ -1,30 +1,30 @@
 'use client';
 
 import { SbomUploadForm } from "@/components/hoc/SbomUploadForm";
+import { PageTitle } from "@/components/Title/Title";
 
+// the form reports the outcome: a failed upload throws
+const handleUpload = async (name: string, containerName: string, file: File) => {
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('containerName', containerName);
+  formData.append('file', file);
+
+  const response = await fetch('/api/sbom/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok)
+    // the body of an error may not be JSON (e.g. a proxy's HTML page)
+    throw new Error((await response.json().catch(() => ({}))).error || 'Upload failed');
+};
 
 export default function UploadPage() {
-  const handleUpload = async (name: string, containerName: string, file: File) => {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('containerName', containerName);
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/sbom/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok)
-        throw new Error((await response.json()).error || 'Upload failed');
-
-      alert(`SBOM "${name}" uploaded successfully`);
-    } catch (error) {
-      alert(`Failed to upload SBOM: ${(error as Error).message}`);
-    } 
-  };
-
   return (
-  <SbomUploadForm onUpload={handleUpload} />)
+    <>
+      <PageTitle title="Upload SBOM" subtitle="Add an SPDX or CycloneDX SBOM of a container image to the stored SBOMs." />
+      <SbomUploadForm onUpload={handleUpload} />
+    </>
+  );
 }

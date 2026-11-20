@@ -4,68 +4,67 @@ import React, { useState } from 'react';
 import { Button } from '@/components/button/Button';
 import { Input } from '@/components/input/Input';
 import { Card } from '@/components/card/Card';
-import { CardHeader } from '@/components/card/CardHeader';
 import { CardTitle } from '@/components/card/CardTitle';
-import { CardContent } from '@/components/card/CardContent';
 import { FileUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { FilePicker } from '@/components/input/FilePicker';
+import { labelClass } from '@/components/input/fieldStyles';
 
 interface SbomUploadFormProps {
+  // a heading inside the card, for when the page has none (e.g. in a dialog)
   title?: string;
   submitText?: string;
-  onUpload: (name: string, containerName: string, file: File) => void;
+  // throws to report a failed upload
+  onUpload: (name: string, containerName: string, file: File) => void | Promise<void>;
   onCancel?: () => void;
+  // the card's classes: e.g. no card look inside a dialog
+  className?: string;
 }
 
-export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title = 'Upload SBOM File', submitText = 'Upload SBOM', onUpload, onCancel }) => {
+
+export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitText = 'Upload SBOM', onUpload, onCancel, className }) => {
   const [name, setName] = useState('');
   const [containerName, setContainerName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [error, setError] = useState('');
+  const [uploaded, setUploaded] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !containerName) {
-      alert('Please fill all fields and select a file');
+    setUploaded('');
+    if (!name || !containerName || !file) {
+      setError('Fill in every field and choose a file');
       return;
     }
-    let fileToUpload = file;
-    if (!fileToUpload) {
-      const input = document.getElementById('file-input') as HTMLInputElement | null;
-      if (input?.files?.[0]) fileToUpload = input.files[0];
-    }
-    if (!fileToUpload) {
-      alert('Please fill all fields and select a file');
-      return;
-    }
+    setError('');
     setIsSubmitting(true);
     try {
-      onUpload(name, containerName, fileToUpload);
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Failed to upload SBOM file');
+      await onUpload(name, containerName, file);
+      setUploaded(`SBOM "${name}" uploaded`);
+      // a second submit must not upload the same SBOM again
+      setName('');
+      setContainerName('');
+      setFile(null);
+    } catch (err) {
+      setError(`Failed to upload the SBOM: ${(err as Error).message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setFile(e.target.files[0]);
-  };
-
-  const labelClass = 'block text-body-sm font-medium text-foreground-muted mb-1';
-
   return (
-    <Card >
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileUp size={20} />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <div className="ml-2">
+    <Card className={cn('max-w-2xl', className)}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+        {title && (
+          <CardTitle className="flex items-center gap-2">
+            <FileUp size={20} />
+            {title}
+          </CardTitle>
+        )}
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
             <label htmlFor="name" className={labelClass}>SBOM Name</label>
             <Input
               id="name"
@@ -77,7 +76,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title = 'Upload 
             />
           </div>
 
-          <div className="ml-2">
+          <div>
             <label htmlFor="containerName" className={labelClass}>Container Name</label>
             <Input
               id="containerName"
@@ -85,47 +84,38 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title = 'Upload 
               value={containerName}
               onChange={e => setContainerName(e.target.value)}
               required
-              placeholder="Enter the container name"
+              placeholder="e.g. alpine:3.24"
             />
           </div>
+        </div>
 
-          <div className="ml-2">
-            <label htmlFor="file-input" className={labelClass}>SBOM File (JSON)</label>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size='Sm'
-                variant="outline-solid"
-                onClick={() => document.getElementById('file-input')?.click()}
-              >
-                Choose File
-              </Button>
-              <input
-                id="file-input"
-                type="file"
-                accept=".json"
-                onChange={handleFileChange}
-                required
-                className="hidden"
-              />
-              {file && (
-                <span className="text-body-sm text-foreground-muted truncate max-w-xs">
-                  {file.name}
-                </span>
-              )}
-            </div>
-          </div>
+        <div>
+          <label htmlFor="file-input" className={labelClass}>SBOM File (JSON)</label>
+          <FilePicker id="file-input" fileName={file?.name} onFile={f => setFile(f ?? null)} />
+        </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" size='Sm' variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Loading…' : submitText}
-            </Button>
-            <Button type="button" size='Sm' variant="outline-solid" onClick={onCancel}>
+        {error && (
+          <p role="alert" className="text-body-sm rounded-input border border-danger px-3 py-2 text-danger">
+            {error}
+          </p>
+        )}
+        {uploaded && (
+          <p role="status" className="text-body-sm rounded-input border border-success px-3 py-2 text-success-fg">
+            {uploaded}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          {onCancel && (
+            <Button type="button" size="sm" variant="outline-solid" onClick={onCancel}>
               Cancel
             </Button>
-          </div>
-        </form>
-      </CardContent>
+          )}
+          <Button type="submit" size="sm" disabled={isSubmitting}>
+            {isSubmitting ? 'Uploading…' : submitText}
+          </Button>
+        </div>
+      </form>
     </Card>
   );
 };

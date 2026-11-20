@@ -10,10 +10,11 @@ import { loadSbomsForImage } from '@/lib/sbomLoader';
 import { useRouter } from 'next/navigation';
 import { TOOL_COLORS } from '@/lib/utils';
 import { useArtifactStore } from '@/store/useArtifactStore';
-import { ViewSwitch } from '@/components/hoc/ViewSwitch';
+import { PageTitle } from '@/components/Title/Title';
+import { ViewSwitch } from '@/components/viewSwitch/ViewSwitch';
 import { ChartView } from '@/components/hoc/ChartView';
 import { ExportButtons } from '@/components/hoc/ExportButtons';
-import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { LoadingSpinner } from '@/components/spinner/LoadingSpinner';
 import { SummaryView } from '@/components/hoc/SBOMSummaryView';
 import { TableView } from '@/components/hoc/TableView';
 import { ToolSelector } from '@/components/hoc/ToolSelector';
@@ -117,17 +118,9 @@ export default function Home() {
     <>
       <BackButton />
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-label font-semibold uppercase tracking-widest text-primary mb-1">
-            SBOM Comparison
-          </p>
-          <h1 className="text-heading-lg font-bold text-foreground truncate max-w-xl">
-            {selectedImage}
-          </h1>
-        </div>
+      <PageTitle eyebrow="SBOM Comparison" title={selectedImage ?? ''}>
         <ViewSwitch modes={['summary', 'table']} selected={viewMode} onChange={setViewMode} />
-      </div>
+      </PageTitle>
       {loading && <LoadingSpinner message="Loading SBOMs ..." />}
 
       {/* ------------------------------------------------------------

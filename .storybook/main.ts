@@ -21,7 +21,14 @@ const config: StorybookConfig = {
       alias: {
         ...((config.resolve?.alias as Record<string, string>) ?? {}),
         '@': path.resolve(__dirname, '../src'),
+        'next/navigation': path.resolve(__dirname, 'mocks/next-navigation.ts'),
+        'next/image': path.resolve(__dirname, 'mocks/next-image.tsx'),
       },
+    };
+    // feature flags read process.env, which only Next fills in: show the flagged UI
+    config.define = {
+      ...config.define,
+      'process.env': JSON.stringify({ NEXT_PUBLIC_CVE_MAPPING_ENABLED: 'true', NEXT_PUBLIC_ENABLE_SBOM_UPLOAD: 'true' }),
     };
     return config;
   },

@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import AnalyzePage from './page';
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
@@ -25,5 +26,16 @@ describe('Analyze page loading and empty state', () => {
     fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ containers: [], pagination: { totalPages: 1 } }) });
     render(<AnalyzePage />);
     await waitFor(() => expect(screen.getByText(/No SBOMs found/i)).toBeInTheDocument());
+  });
+
+  test('opens the Load SBOM dialog and closes it on Cancel', async () => {
+    // @ts-ignore
+    fetch.mockResolvedValue({ ok: true, json: async () => ({ containers: [], pagination: { totalPages: 1 } }) });
+    render(<AnalyzePage />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load SBOM' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Load SBOM' });
+    expect(dialog).toContainElement(screen.getByLabelText('SBOM File (JSON)'));
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 });

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { mockComparison } from '@/components/hoc/storyFixtures';
 import { SummaryView } from '@/components/hoc/SBOMSummaryView';
 
 const meta: Meta<typeof SummaryView> = {
@@ -11,4 +12,4 @@ const meta: Meta<typeof SummaryView> = {
 export default meta;
 type Story = StoryObj<typeof SummaryView>;
 
-export const Default: Story = { args: { comparison: {} as any } };
+export const Default: Story = { args: { comparison: mockComparison } };

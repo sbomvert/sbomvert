@@ -4,14 +4,6 @@ import { Meta } from '@storybook/react';
 const meta: Meta<typeof Home> = {
   title: 'Pages/Compare',
   component: Home,
-      parameters: {
-      nextjs: {
-        appDirectory: true,
-              router: {
-        basePath: '/profile',
-      },
-
-      }}
 };
 
 export default meta;

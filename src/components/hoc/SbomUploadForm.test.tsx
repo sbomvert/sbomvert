@@ -1,58 +1,54 @@
 import { render, screen } from '@/test-utils';
 import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 
-// Mock the FEATURE_FLAGS to control behavior
-jest.mock('@/lib/featureFlags', () => ({
-  FEATURE_FLAGS: {
-    ENABLE_SBOM_UPLOAD: true, // Default to enabled for this test
-  },
-}));
+const fill = async (user: ReturnType<typeof render>['user']) => {
+  await user.type(screen.getByLabelText('SBOM Name'), 'mine');
+  await user.type(screen.getByLabelText('Container Name'), 'alpine:3.24');
+  await user.upload(screen.getByLabelText('SBOM File (JSON)'), new File(['{}'], 'sbom.json', { type: 'application/json' }));
+};
 
 describe('SbomUploadForm', () => {
-  const mockOnUpload = jest.fn();
-  const mockOnCancel = jest.fn();
-
-  beforeEach(() => {
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
-    mockOnUpload.mockClear();
-    mockOnCancel.mockClear();
-  });
-
-  it('renders the upload form with all required fields when feature flag is enabled', () => {
-    // Mock that feature flag is enabled
-    (require('@/lib/featureFlags').FEATURE_FLAGS as any).ENABLE_SBOM_UPLOAD = true;
-
-    render(<SbomUploadForm onUpload={mockOnUpload} onCancel={mockOnCancel} />);
-
-    expect(screen.getByText('Upload SBOM File')).toBeInTheDocument();
+  it('renders the fields, and a title and Cancel only when given', () => {
+    const { rerender } = render(<SbomUploadForm onUpload={jest.fn()} />);
     expect(screen.getByLabelText('SBOM Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Container Name')).toBeInTheDocument();
     expect(screen.getByLabelText('SBOM File (JSON)')).toBeInTheDocument();
-    expect(screen.getByText('Upload SBOM')).toBeInTheDocument();
+    expect(screen.getByText('No file chosen')).toBeInTheDocument();
+    expect(screen.queryByText('Cancel')).toBeNull();
+    rerender(<SbomUploadForm title="Load SBOM" onUpload={jest.fn()} onCancel={jest.fn()} />);
+    expect(screen.getByText('Load SBOM')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
-  it('shows validation error when fields are empty when feature flag is enabled', async () => {
-    // Mock that feature flag is enabled
-    (require('@/lib/featureFlags').FEATURE_FLAGS as any).ENABLE_SBOM_UPLOAD = true;
-
-    const { user } = render(<SbomUploadForm onUpload={mockOnUpload} onCancel={mockOnCancel} />);
-
-    // Try to submit without filling fields
+  it('asks for every field before uploading', async () => {
+    const onUpload = jest.fn();
+    const { user } = render(<SbomUploadForm onUpload={onUpload} />);
     await user.click(screen.getByText('Upload SBOM'));
-
-    // Should show validation error (alert is triggered)
-    expect(mockOnUpload).not.toHaveBeenCalled();
+    expect(onUpload).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Fill in every field');
   });
 
-  it('calls onCancel when cancel button is clicked when feature flag is enabled', async () => {
-    // Mock that feature flag is enabled
-    (require('@/lib/featureFlags').FEATURE_FLAGS as any).ENABLE_SBOM_UPLOAD = true;
+  it('uploads and says so', async () => {
+    const onUpload = jest.fn(async () => {});
+    const { user } = render(<SbomUploadForm onUpload={onUpload} />);
+    await fill(user);
+    expect(screen.getByText('sbom.json')).toBeInTheDocument();
+    await user.click(screen.getByText('Upload SBOM'));
+    expect(onUpload).toHaveBeenCalledWith('mine', 'alpine:3.24', expect.any(File));
+    expect(await screen.findByRole('status')).toHaveTextContent('SBOM "mine" uploaded');
+  });
 
-    const { user } = render(<SbomUploadForm onUpload={mockOnUpload} onCancel={mockOnCancel} />);
+  it('shows why an upload failed', async () => {
+    const { user } = render(<SbomUploadForm onUpload={async () => { throw new Error('Invalid SBOM'); }} />);
+    await fill(user);
+    await user.click(screen.getByText('Upload SBOM'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid SBOM');
+  });
 
+  it('calls onCancel', async () => {
+    const onCancel = jest.fn();
+    const { user } = render(<SbomUploadForm onUpload={jest.fn()} onCancel={onCancel} />);
     await user.click(screen.getByText('Cancel'));
-
-    expect(mockOnCancel).toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalled();
   });
 });

@@ -71,7 +71,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
-                <Package className="text-primary shrink-0" size={24} />
+                <Package className="text-primary-fg shrink-0" size={24} />
                 <h3 className="font-bold text-foreground truncate min-w-0" title={imageName}>
                   {imageName}
                 </h3>

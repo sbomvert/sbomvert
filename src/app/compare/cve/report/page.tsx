@@ -4,133 +4,19 @@ import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { CVEReport, loadCVEsForImage } from '@/lib/vuln/vulnLoader';
 import { TOOL_COLORS } from '@/lib/utils';
-import { PackageRow, getUniqueCVEs, getVulnerablePackages, buildPackageRows } from '@/lib/vuln/cveSummary';
-import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { getUniqueCVEs, getVulnerablePackages, buildPackageRows } from '@/lib/vuln/cveSummary';
+import { LoadingSpinner } from '@/components/spinner/LoadingSpinner';
 import { CVEToolSelector } from '@/components/hoc/CVEToolSelector/CVEToolSelector';
 import { CVEStatCard } from '@/components/hoc/CVEStatCard/cveStatCard';
 import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
-import { ViewSwitch } from '@/components/hoc/ViewSwitch';
+import { ViewSwitch } from '@/components/viewSwitch/ViewSwitch';
 import { BackButton } from '@/components/button/BackButton';
+import { PackageTableRow } from '@/components/hoc/CVEPackageTableRow/CVEPackageTableRow';
+import { PageTitle } from '@/components/Title/Title';
+import { Card } from '@/components/card/Card';
+import { SearchBar } from '@/components/searchbar/SearchBar';
+import { FilterPill } from '@/components/pill/FilterPill';
 
-function cveLink(cveId: string) {
-  return `https://nvd.nist.gov/vuln/detail/${cveId}`;
-}
-
-function CVEChip({ cveId }: { cveId: string }) {
-  return (
-    <a
-      href={cveLink(cveId)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-caption font-mono text-primary hover:underline"
-    >
-      {cveId}
-    </a>
-  );
-}
-
-function PackageTableRow({
-  row, tools, toolColors, isExpanded, onToggle,
-}: {
-  row: PackageRow;
-  tools: string[];
-  toolColors: Record<string, string>;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const onlyIn = row.detectedBy.size === 1 ? Array.from(row.detectedBy)[0] : null;
-  const colSpanTotal = 2 + tools.length + (tools.length === 2 ? 1 : 0);
-
-  return (
-    <>
-      <tr
-        onClick={onToggle}
-        className={`border-b border-border-subtle cursor-pointer transition-colors ${
-          isExpanded ? 'bg-info-subtle' : 'hover:bg-surface-alt'
-        }`}
-      >
-        <td className="py-3 px-4 font-mono text-body-sm text-foreground max-w-xs">
-          <div className="flex items-center gap-2">
-            <svg
-              className={`w-3.5 h-3.5 text-foreground-subtle shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-              viewBox="0 0 20 20" fill="currentColor"
-            >
-              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-            </svg>
-            <span className="truncate">{row.pkg}</span>
-          </div>
-        </td>
-        <td className="py-3 px-4">
-          {onlyIn ? (
-            <span
-              className="text-label font-semibold px-2 py-0.5 rounded-pill border capitalize"
-              style={{ color: toolColors[onlyIn], borderColor: toolColors[onlyIn], background: `${toolColors[onlyIn]}18` }}
-            >
-              only {onlyIn}
-            </span>
-          ) : (
-            <span className="text-label text-foreground-subtle">shared</span>
-          )}
-        </td>
-        {tools.map(tool => {
-          const count = row.byCve[tool]?.length ?? 0;
-          return (
-            <td key={tool} className="py-3 px-4 text-center tabular-nums">
-              {count > 0 ? (
-                <span
-                  className="inline-block text-body-sm font-semibold rounded-pill min-w-7 py-0.5 px-2"
-                  style={{ background: `${toolColors[tool]}22`, color: toolColors[tool] }}
-                >
-                  {count}
-                </span>
-              ) : (
-                <span className="text-foreground-subtle text-body-sm">—</span>
-              )}
-            </td>
-          );
-        })}
-        {tools.length === 2 && (
-          <td className="py-3 px-4 text-center">
-            {(() => {
-              const d = (row.byCve[tools[0]]?.length ?? 0) - (row.byCve[tools[1]]?.length ?? 0);
-              if (d === 0) return <span className="text-foreground-subtle text-body-sm">0</span>;
-              return (
-                <span className={`text-body-sm font-semibold ${d > 0 ? 'text-warning' : 'text-success'}`}>
-                  {d > 0 ? `+${d}` : d}
-                </span>
-              );
-            })()}
-          </td>
-        )}
-      </tr>
-      {isExpanded && (
-        <tr className="bg-info-subtle border-b border-border-subtle">
-          <td colSpan={colSpanTotal} className="py-4 px-8">
-            <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${tools.length}, 1fr)` }}>
-              {tools.map(tool => {
-                const list = row.byCve[tool] ?? [];
-                return (
-                  <div key={tool}>
-                    <p className="text-caption font-semibold uppercase tracking-wider mb-2 capitalize" style={{ color: toolColors[tool] }}>
-                      {tool} ({list.length})
-                    </p>
-                    {list.length === 0 ? (
-                      <p className="text-caption text-foreground-subtle italic">Not detected</p>
-                    ) : (
-                      <div className="flex flex-col gap-1">
-                        {list.map(cve => <CVEChip key={cve} cveId={cve} />)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
-  );
-}
 
 export default function CVEPage() {
   const router = useRouter();
@@ -218,14 +104,9 @@ export default function CVEPage() {
     <>
       <BackButton />
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-label font-semibold uppercase tracking-widest text-primary mb-1">CVE Comparison</p>
-          <h1 className="text-heading-lg font-bold text-foreground truncate max-w-xl">{selectedImage}</h1>
-        </div>
+      <PageTitle eyebrow="CVE Comparison" title={selectedImage ?? ''}>
         <ViewSwitch modes={['summary', 'table']} selected={viewMode} onChange={setViewMode} />
-      </div>
-      <div className="mb-6" />
+      </PageTitle>
 
       <CVEToolSelector allTools={allTools} selectedTools={selectedTools} toolColors={toolColors} onToggle={handleToolToggle} />
       <div className="mb-6" />
@@ -257,7 +138,7 @@ export default function CVEPage() {
                 ))}
               </div>
 
-              <div className="bg-surface rounded-card-lg shadow-panel border border-border-subtle p-card-p">
+              <Card className="shadow-panel border border-border-subtle p-card-p">
                 <h3 className="text-body-sm font-semibold text-foreground-muted mb-4">
                   Exclusive vulnerable packages
                   <span className="ml-2 text-caption font-normal text-foreground-subtle">packages seen by only one tool</span>
@@ -271,7 +152,7 @@ export default function CVEPage() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             </section>
           )}
 
@@ -279,40 +160,25 @@ export default function CVEPage() {
           {viewMode === 'table' && (
             <section className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Search packages…"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-body-sm bg-surface border border-border rounded-input text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring placeholder:text-foreground-subtle"
-                  />
-                </div>
+                <SearchBar
+                  value={search}
+                  onChange={setSearch}
+                  placeholder="Search packages…"
+                  className="mb-0 flex-1 max-w-sm w-full"
+                  iconClassName="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle"
+                  size={16}
+                />
                 <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => setFilterExclusive(null)}
-                    className={`text-caption px-3 py-1.5 rounded-pill border transition-colors font-medium ${
-                      !filterExclusive ? 'bg-primary text-white border-primary' : 'border-border text-foreground-muted hover:border-primary'
-                    }`}
-                  >
-                    All
-                  </button>
+                  <FilterPill active={!filterExclusive} onClick={() => setFilterExclusive(null)}>All</FilterPill>
                   {activeTools.map(tool => (
-                    <button
+                    <FilterPill
                       key={tool}
+                      active={filterExclusive === tool}
+                      color={toolColors[tool]}
                       onClick={() => setFilterExclusive(filterExclusive === tool ? null : tool)}
-                      className="text-caption px-3 py-1.5 rounded-pill border transition-colors font-medium capitalize"
-                      style={
-                        filterExclusive === tool
-                          ? { background: toolColors[tool], borderColor: toolColors[tool], color: '#fff' }
-                          : { borderColor: toolColors[tool], color: toolColors[tool] }
-                      }
                     >
                       only {tool}
-                    </button>
+                    </FilterPill>
                   ))}
                 </div>
                 <p className="text-caption text-foreground-muted ml-auto shrink-0">
@@ -320,7 +186,7 @@ export default function CVEPage() {
                 </p>
               </div>
 
-              <div className="bg-surface rounded-card-lg shadow-panel border border-border-subtle overflow-hidden">
+              <Card className="shadow-panel border border-border-subtle overflow-hidden p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-body-sm">
                     <thead>
@@ -358,7 +224,7 @@ export default function CVEPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
             </section>
           )}
         </>

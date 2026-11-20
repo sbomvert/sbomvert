@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { loadSbomImagesFromPublic } from '@/lib/sbomLoader';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
-import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { LoadingSpinner } from '@/components/spinner/LoadingSpinner';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { ImageInfo, ImageSelector } from '@/components/hoc/ImageSelector';
 import { PageTitle } from '@/components/Title/Title';

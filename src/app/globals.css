@@ -7,6 +7,8 @@
 @theme {
   --color-primary: #4f46e5;
   --color-primary-hover: #4338ca;
+  /* primary as text or an outline: the fill is too dark to read on the dark background */
+  --color-primary-fg: var(--color-primary-fg);
   --color-alt: #ea580c;
   --color-background: var(--color-background);
   --color-background-alt: var(--color-background-alt);
@@ -193,6 +195,8 @@
     --color-info: #6366f1;
     --color-info-subtle: #e0e7ff;
     --color-info-fg: #3730a3;
+
+    --color-primary-fg: #4f46e5;
   }
 
   /* ────────────────────────────────────────────────────────────────────────── */
@@ -228,6 +232,8 @@
     --color-info: #818cf8;
     --color-info-subtle: rgba(55, 48, 163, 0.3);
     --color-info-fg: #c7d2fe;
+
+    --color-primary-fg: #818cf8;
   }
 
   /* ────────────────────────────────────────────────────────────────────────── */

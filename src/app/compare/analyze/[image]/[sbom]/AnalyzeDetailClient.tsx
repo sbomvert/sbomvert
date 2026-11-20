@@ -2,14 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, ChevronRight } from 'lucide-react';
-import { cn, TOOL_COLORS } from '@/lib/utils';
+import { ChevronRight } from 'lucide-react';
+import { TOOL_COLORS } from '@/lib/utils';
 import { PackageTypeBadge } from '@/components/hoc/PackageTypeBadge';
 import { BackButton } from '@/components/button/BackButton';
 import { Card } from '@/components/card/Card';
 import { SbomInfo, RichPackage } from '@/lib/sbom/analyzeTypes';
 import { CopyButton } from '@/components/button/CopyButton';
-import { PackageDrawer } from './components';
+import { SearchBar } from '@/components/searchbar/SearchBar';
+import { FilterPill } from '@/components/pill/FilterPill';
+import { PackageDrawer } from '@/components/hoc/PackageDrawer/PackageDrawer';
 import { PageTitle } from '@/components/Title/Title';
 import {
   ResponsiveContainer,
@@ -199,53 +201,29 @@ export default function AnalyzeDetailClient({
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-          <input
-            ref={searchRef}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search packages… (⌘K)"
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-xl"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
-            >
-              <X size={13} />
-            </button>
-          )}
-        </div>
+        <SearchBar
+          ref={searchRef}
+          value={search}
+          onChange={setSearch}
+          placeholder="Search packages… (⌘K)"
+          className="mb-0 flex-1 max-w-sm w-full"
+          iconClassName="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle"
+          size={14}
+        />
 
         <div className="flex gap-1.5 flex-wrap">
-          <button
-            onClick={() => setTypeFilter('all')}
-            className={cn(
-              'text-xs px-3 py-1.5 rounded-full border',
-              typeFilter === 'all' && 'bg-indigo-600 text-white'
-            )}
-          >
+          <FilterPill active={typeFilter === 'all'} onClick={() => setTypeFilter('all')}>
             All ({packages.length})
-          </button>
+          </FilterPill>
 
           {typeOptions.map(([type, count]) => (
-            <button
-              key={type}
-              onClick={() =>
-                setTypeFilter(typeFilter === type ? 'all' : type)
-              }
-              className={cn(
-                'text-xs px-3 py-1.5 rounded-full border capitalize',
-                typeFilter === type && 'bg-indigo-600 text-white'
-              )}
-            >
+            <FilterPill key={type} active={typeFilter === type} onClick={() => setTypeFilter(typeFilter === type ? 'all' : type)}>
               {type} ({count})
-            </button>
+            </FilterPill>
           ))}
         </div>
 
-        <p className="text-xs text-gray-400 ml-auto">
+        <p className="text-caption text-foreground-subtle ml-auto">
           {filtered.length} / {packages.length}
         </p>
       </div>

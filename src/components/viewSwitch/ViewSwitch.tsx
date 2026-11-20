@@ -5,8 +5,9 @@ type ViewSwitchProps = {
 };
 
 export function ViewSwitch({ modes, selected, onChange }: ViewSwitchProps) {
+  // input gray, not surface-alt: in the light theme that is the page background, and the switch disappears
   return (
-    <div className="flex gap-1 bg-surface-alt rounded-card p-1 self-start sm:self-auto">
+    <div className="flex gap-1 bg-input border border-border rounded-card p-1 self-start sm:self-auto">
       {modes.map(mode => (
         <button
           key={mode}

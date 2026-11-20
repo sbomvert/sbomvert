@@ -1,5 +1,5 @@
 import { render, screen } from '@/test-utils';
-import { LoadingSpinner } from '@/components/hoc/LoadingSpinner';
+import { LoadingSpinner } from '@/components/spinner/LoadingSpinner';
 
 test('renders with default message', () => {
   render(<LoadingSpinner />);
