@@ -13,6 +13,7 @@ import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 import { Dialog } from '@/components/dialog/Dialog';
 import { AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
 import { useSbomStore } from '@/store/useSbomStore';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 interface SbomFile { name: string; }
 interface Container { name: string; files: SbomFile[]; }
@@ -49,6 +50,8 @@ export default function AnalyzePage() {
   }, [search]);
 
   useEffect(() => {
+    // the static build has no stored SBOMs
+    if (FEATURE_FLAGS.STATIC_MODE) return;
     fetchContainers(1, debouncedSearch)
       .then(d => setContainers(d.containers ?? []))
       .catch(() => setContainers([]))
@@ -71,6 +74,15 @@ export default function AnalyzePage() {
 
     router.push(`/compare/analyze/local`);
 
+  }
+
+  if (FEATURE_FLAGS.STATIC_MODE) {
+    return (
+      <>
+        <PageTitle title="Analyze SBOM" subtitle="Open an SPDX SBOM from your computer to inspect its full package manifest. It never leaves your browser." />
+        <SbomUploadForm submitText="Load SBOM" onUpload={handleUpload} />
+      </>
+    );
   }
 
   return (

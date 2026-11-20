@@ -12,8 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // render per request, not at build time, so the scan flag comes from the running environment
-  await connection();
+  // render per request, not at build time, so the scan flag comes from the running environment.
+  // The static build has no server: rendered once, at build time.
+  if (!FEATURE_FLAGS.STATIC_MODE) await connection();
   return (
     <html lang="en" suppressHydrationWarning>
       <body>

@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import * as translation from '@sbomvert/core/translate/translateSbom';
 import userEvent from '@testing-library/user-event';
-import TranslatePage from './page';
+import TranslatePage from './page.static';
 
 jest.mock('@sbomvert/core/translate/translateSbom', () => {
   const actual = jest.requireActual('@sbomvert/core/translate/translateSbom');
@@ -282,5 +282,16 @@ describe('Translate SBOM page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Translate' }));
     expect(JSON.parse((screen.getByLabelText('Translation') as HTMLTextAreaElement).value)).toMatchObject({ bomFormat: 'CycloneDX' });
     expect(downloads).toEqual([]);
+  });
+});
+
+describe('Translate SBOM page in the static build', () => {
+  beforeEach(() => (process.env.NEXT_PUBLIC_STATIC_MODE = 'true'));
+  afterEach(() => delete process.env.NEXT_PUBLIC_STATIC_MODE);
+
+  test('offers no stored SBOMs', () => {
+    render(<TranslatePage />);
+    expect(screen.queryByLabelText('Stored SBOM')).toBeNull();
+    expect(screen.getByLabelText('Paste JSON')).toBeInTheDocument();
   });
 });

@@ -12,6 +12,7 @@ import { Selector } from '@/components/select/Selector';
 import { FilePicker } from '@/components/input/FilePicker';
 import { fieldClass, fieldSelectorClass, labelClass } from '@/components/input/fieldStyles';
 import { cn } from '@/lib/utils';
+import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 const LABELS: Record<ToolId, string> = {
   anchore: 'Syft',
@@ -217,10 +218,13 @@ export default function TranslatePage() {
               <input type="radio" name="mode" checked={mode === 'file'} onChange={() => switchMode('file')} />
               File from my computer
             </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="mode" checked={mode === 'stored'} onChange={() => switchMode('stored')} />
-              Stored SBOM
-            </label>
+            {/* the static build has no stored SBOMs */}
+            {!FEATURE_FLAGS.STATIC_MODE && (
+              <label className="flex items-center gap-2">
+                <input type="radio" name="mode" checked={mode === 'stored'} onChange={() => switchMode('stored')} />
+                Stored SBOM
+              </label>
+            )}
           </div>
 
           {mode === 'file' ? (

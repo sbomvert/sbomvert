@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import AnalyzePage from './page';
+import AnalyzePage from './page.static';
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
@@ -37,5 +37,21 @@ describe('Analyze page loading and empty state', () => {
     expect(dialog).toContainElement(screen.getByLabelText('SBOM File (JSON)'));
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+});
+
+describe('Analyze page in the static build', () => {
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_STATIC_MODE = 'true';
+    // @ts-ignore
+    fetch.mockReset();
+  });
+  afterEach(() => delete process.env.NEXT_PUBLIC_STATIC_MODE);
+
+  test('shows the Load SBOM form on the page and asks no server', () => {
+    render(<AnalyzePage />);
+    expect(screen.getByLabelText('SBOM File (JSON)')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

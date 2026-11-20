@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import RootLayout from '@/app/layout';
+import RootLayout from '@/app/layout.static';
 import '@testing-library/jest-dom'; // ensures DOM matchers are available
 
 // Mock Navbar to avoid rendering the actual component
