@@ -8,7 +8,9 @@ import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
 export const metadata: Metadata = {
   title: 'SBOMVert',
-  description: 'Compare SBOM tool outputs for container images',
+  description: FEATURE_FLAGS.STATIC_MODE
+    ? 'Analyze and translate container image SBOMs in your browser'
+    : 'Compare SBOM tool outputs for container images',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

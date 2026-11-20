@@ -221,6 +221,25 @@ describe('POST /api/sbom/upload', () => {
     expect(SBOMService.saveSBOM).toHaveBeenCalled();
   });
 
+  it.each([
+    ['stores the SBOM under the tool and format the form sent', 'docker-scout', 'cdx', 200],
+    ['refuses a tool that is not a plain name', '../etc', 'cdx', 400],
+  ])('%s', async (_, tool, format, status) => {
+    const mockFile = new File([JSON.stringify({ bomFormat: 'CycloneDX' })], 'pasted.json', { type: 'application/json' });
+    mockRequest.formData = jest.fn().mockResolvedValue(mockFormData);
+    mockFormData.get.mockImplementation((key: string) =>
+      ({ file: mockFile, containerName: 'alpine:3.24', tool, format } as Record<string, unknown>)[key] ?? null
+    );
+    (parseCycloneDxSbom as jest.Mock).mockReturnValue({});
+    (SBOMService.saveSBOM as jest.Mock).mockClear().mockResolvedValue(undefined);
+
+    const response = await POST(mockRequest);
+
+    expect(response.status).toBe(status);
+    if (status === 200) expect(SBOMService.saveSBOM).toHaveBeenCalledWith('alpinetwodots3.24', 'cdx', 'docker-scout', expect.any(String));
+    else expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+  });
+
   it('should return 500 when saving file fails', async () => {
     const mockSpdxData = {
       spdxVersion: 'SPDX-2.2',

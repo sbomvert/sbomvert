@@ -72,11 +72,11 @@ export async function POST(request: Request) {
 
     // Save the file using the existing storage service
     // Save the file using the new saveSBOM method
-    // Determine type and tool from filename (e.g., "trivy.spdx.json")
+    // tool and type as the form detected them, else from the file name (e.g. "trivy.spdx.json")
     const parts = file.name.split('.');
     // Expected pattern: <tool>.<type>.json
-    const tool = parts[0] ?? 'unknown';
-    const type = (parts[1] ?? 'unknown').toLowerCase();
+    const tool = (formData.get('tool') as string | null) || (parts[0] ?? 'unknown');
+    const type = ((formData.get('format') as string | null) || (parts[1] ?? 'unknown')).toLowerCase();
     // stored like the other SBOMs (`libraryslashnginxtwodots1.2`); a name that is not a plain name could leave the SBOM directory
     const folder = reverseFormatContainerName(containerName);
     if (![folder, tool, type].every(isSafeName)) {
