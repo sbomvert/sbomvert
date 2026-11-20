@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description: FEATURE_FLAGS.STATIC_MODE
     ? 'Analyze and translate container image SBOMs in your browser'
     : 'Compare SBOM tool outputs for container images',
+  icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/favicon.ico` },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

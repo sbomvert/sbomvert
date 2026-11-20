@@ -20,7 +20,8 @@ export const Navbar: React.FC = () => {
             onClick={onLogoClick}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <Image src="/logo.svg" width={24} height={24} alt="logo" className="w-8 h-8" />
+            {/* next/image does not add the base path to a file of public/ */}
+            <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo.svg`} width={24} height={24} alt="logo" className="w-8 h-8" />
             <h1 className="text-heading text-foreground">SBOMVert</h1>
           </button>
 
