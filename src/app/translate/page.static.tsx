@@ -8,6 +8,7 @@ import { formatContainerName, reverseFormatContainerName } from '@/lib/container
 import { PageTitle } from '@/components/Title/Title';
 import { Card } from '@/components/card/Card';
 import { Button } from '@/components/button/Button';
+import { BackButton } from '@/components/button/BackButton';
 import { Selector } from '@/components/select/Selector';
 import { FilePicker } from '@/components/input/FilePicker';
 import { fieldClass, fieldSelectorClass, labelClass } from '@/components/input/fieldStyles';
@@ -204,6 +205,8 @@ export default function TranslatePage() {
 
   return (
     <>
+      {/* the static build's home links here: give a way back to it */}
+      {FEATURE_FLAGS.STATIC_MODE && <BackButton href="/" />}
       <PageTitle title="Translate SBOM" subtitle="Convert an SBOM to the output of another tool or format." />
 
       <Card className={cn('flex flex-col gap-5', mode !== 'paste' && 'max-w-2xl')}>

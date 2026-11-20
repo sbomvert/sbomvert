@@ -25,7 +25,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="min-h-screen flex flex-col transition-colors duration-300">
             <Navbar />
             <div className="flex flex-1 min-h-0 bg-background">
-              <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />
+              {/* the static build's home page links to its two pages */}
+              {!FEATURE_FLAGS.STATIC_MODE && <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />}
 
               <div className="flex flex-1 min-h-0 flex-col">
                 <main className="flex-1 overflow-y-auto">

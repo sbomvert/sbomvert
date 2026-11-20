@@ -9,6 +9,7 @@ import { SearchBar } from '@/components/searchbar/SearchBar';
 import { Card } from '@/components/card/Card';
 import { List } from '@/components/list/List';
 import { Button } from '@/components/button/Button';
+import { BackButton } from '@/components/button/BackButton';
 import { SbomDetails, SbomUploadForm } from '@/components/hoc/SbomUploadForm';
 import { Dialog } from '@/components/dialog/Dialog';
 import { AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
@@ -91,6 +92,7 @@ export default function AnalyzePage() {
   if (FEATURE_FLAGS.STATIC_MODE) {
     return (
       <>
+        <BackButton href="/" />
         <PageTitle title="Analyze SBOM" subtitle="Open an SPDX or CycloneDX SBOM from your computer to inspect its full package manifest." />
         <SbomUploadForm submitText="Load SBOM" allowPaste askNames={false} onUpload={handleUpload} />
       </>
