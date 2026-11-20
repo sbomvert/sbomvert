@@ -1,5 +1,11 @@
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+
+// The custom font sizes in globals.css (`--text-body`…): without them tailwind-merge takes `text-body` for a color and
+// drops the `text-white` before it
+const twMerge = extendTailwindMerge({
+  extend: { theme: { text: ['label', 'caption', 'body-sm', 'body', 'heading-sm', 'heading', 'heading-lg', 'display', 'display-lg'] } },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

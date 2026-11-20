@@ -1,6 +1,6 @@
 import {ImageScanForm} from './ImageScanForm';
 
-export const meta = {
+const meta = {
   title: 'HOC/ImageScanForm',
   component: ImageScanForm,
 };

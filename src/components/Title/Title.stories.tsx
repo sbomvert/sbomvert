@@ -3,7 +3,7 @@ import {PageTitle} from './Title';
 
 
 export const Default = () => <PageTitle title='Sample Title'></PageTitle>;
-export const meta = {
+const meta = {
   title: 'Misc/Title',
   component: PageTitle,
 };

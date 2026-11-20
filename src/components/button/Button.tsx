@@ -29,11 +29,11 @@ export const Button: React.FC<ButtonProps> = ({
       (withHover ? 'hover:bg-border' : ''),
 
     "outline-solid":
-      'border-2 border-primary text-primary focus:ring-ring ' +
+      'border-2 border-primary-fg text-primary-fg focus:ring-ring ' +
       (withHover ? 'hover:bg-info-subtle' : ''),
 
     unfocused:
-      'border-2 border-primary text-foreground-muted ' +
+      'border-2 border-primary-fg text-foreground-muted ' +
       (withHover ? 'hover:text-foreground' : ''),
 
     disabled:

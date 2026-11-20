@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { mockComparison } from '@/components/hoc/storyFixtures';
 import { PackageDetailsTable } from '@/components/hoc/PackageDetailsTable';
 
 const meta: Meta<typeof PackageDetailsTable> = {
@@ -11,4 +12,4 @@ const meta: Meta<typeof PackageDetailsTable> = {
 export default meta;
 type Story = StoryObj<typeof PackageDetailsTable>;
 
-export const Default: Story = { args: { comparison: {} as any, filter: '' } };
+export const Default: Story = { args: { comparison: mockComparison, filter: '' } };

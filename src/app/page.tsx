@@ -17,7 +17,7 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          SBOM<p className="text-primary inline">Vert</p>
+          SBOM<p className="text-primary-fg inline">Vert</p>
         </motion.h1>
 
         <motion.p

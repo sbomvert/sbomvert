@@ -1,0 +1,26 @@
+import React from 'react';
+import { cn } from '@/lib/utils';
+
+interface FilterPillProps {
+  active: boolean;
+  onClick: () => void;
+  // a tool's color: the pill is drawn in it instead of the primary color
+  color?: string;
+  children: React.ReactNode;
+}
+
+// A toggle in a row of filters: "All", "only syft", "npm (12)"…
+export const FilterPill: React.FC<FilterPillProps> = ({ active, onClick, color, children }) => (
+  <button
+    type="button"
+    aria-pressed={active}
+    onClick={onClick}
+    className={cn(
+      'text-caption px-3 py-1.5 rounded-pill border transition-colors font-medium capitalize',
+      !color && (active ? 'bg-primary text-white border-primary' : 'border-border text-foreground-muted hover:border-primary-fg'),
+    )}
+    style={color ? (active ? { background: color, borderColor: color, color: '#fff' } : { borderColor: color, color }) : undefined}
+  >
+    {children}
+  </button>
+);

@@ -10,6 +10,7 @@ import { Card } from '@/components/card/Card';
 import { List } from '@/components/list/List';
 import { Button } from '@/components/button/Button';
 import { SbomUploadForm } from '@/components/hoc/SbomUploadForm';
+import { Dialog } from '@/components/dialog/Dialog';
 import { AnalyzeSPDX } from '@/lib/sbom/spdx/parser';
 import { useSbomStore } from '@/store/useSbomStore';
 
@@ -37,7 +38,6 @@ export default function AnalyzePage() {
   const [containers, setContainers] = useState<Container[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadModalOpen, setLoadModalOpen] = useState(false);
-  // <SbomUploadForm onUpload={handleUpload} />
   const [openContainer, setOpenContainer] = useState<string | null>(null);
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,7 +78,7 @@ export default function AnalyzePage() {
       <PageTitle title="Analyze SBOM" subtitle="Select an image and scanner to inspect its full package manifest." />
 
       <div className="flex items-start">
-        <SearchBar value={search} onChange={e => setSearch(e)} placeholder='Filter artifacts…' classname="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle" size={15} />
+        <SearchBar value={search} onChange={e => setSearch(e)} placeholder='Filter artifacts…' iconClassName="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle" size={15} />
         <div className="ml-auto">
           <Button size='sm' onClick={() => setLoadModalOpen(true)}>
             Load SBOM
@@ -86,23 +86,18 @@ export default function AnalyzePage() {
         </div>
       </div>
 
-      {loadModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="rounded-lg p-6 w-full max-w-md">
-            <SbomUploadForm
-              onUpload={(name, containerName, file) => {
-                handleUpload(name, containerName, file);
-                setLoadModalOpen(false);
-              }}
-              onCancel={() => setLoadModalOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+      <Dialog open={loadModalOpen} onOpenChange={setLoadModalOpen} title="Load SBOM" description="Open an SPDX SBOM from your computer to analyze it.">
+        <SbomUploadForm
+          submitText="Load SBOM"
+          className="p-0 shadow-none bg-transparent max-w-none"
+          onUpload={async (name, containerName, file) => {
+            // a failure throws to the form, which shows it; the dialog stays open
+            await handleUpload(name, containerName, file);
+            setLoadModalOpen(false);
+          }}
+          onCancel={() => setLoadModalOpen(false)}
+        />
+      </Dialog>
 
       {loading ? (
         <div className="flex items-center gap-2 text-body-sm text-foreground-muted py-10 justify-center">

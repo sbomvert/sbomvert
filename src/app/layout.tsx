@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       href="https://github.com/sbomvert/sbomvert"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:text-primary-hover transition-colors"
+                      className="text-primary-fg hover:text-primary-hover transition-colors"
                     >
                       GitHub Repository
                     </a>

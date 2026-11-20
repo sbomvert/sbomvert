@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ViewSwitch } from '@/components/hoc/ViewSwitch';
+import { ViewSwitch } from '@/components/viewSwitch/ViewSwitch';
 
 describe('ViewSwitch component', () => {
   const modes = ['list', 'grid'];

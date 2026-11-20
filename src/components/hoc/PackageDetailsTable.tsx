@@ -123,7 +123,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                   <td className="py-3 px-4">
                     <button
                       onClick={() => setExpandedPackage(expandedPackage === key ? null : key)}
-                      className="text-primary hover:text-primary-hover text-body-sm font-medium whitespace-nowrap"
+                      className="text-primary-fg hover:text-primary-hover text-body-sm font-medium whitespace-nowrap"
                     >
                       {expandedPackage === key ? 'Hide' : 'Details'}
                     </button>

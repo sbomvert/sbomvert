@@ -8,8 +8,10 @@ import { formatContainerName, reverseFormatContainerName } from '@/lib/container
 import { PageTitle } from '@/components/Title/Title';
 import { Card } from '@/components/card/Card';
 import { Button } from '@/components/button/Button';
+import { Selector } from '@/components/select/Selector';
+import { FilePicker } from '@/components/input/FilePicker';
+import { fieldClass, fieldSelectorClass, labelClass } from '@/components/input/fieldStyles';
 import { cn } from '@/lib/utils';
-import { FileUp } from 'lucide-react';
 
 const LABELS: Record<ToolId, string> = {
   anchore: 'Syft',
@@ -27,8 +29,7 @@ type Input = { doc: SpdxDocument | CycloneDxBom; format: SbomFormat; name: strin
 type Container = { name: string; files: { name: string }[] };
 type Mode = 'file' | 'stored' | 'paste';
 
-const selectClass = 'w-full rounded-input border border-border px-3 py-2 text-body-sm bg-surface text-foreground disabled:opacity-60';
-const labelClass = 'block text-body-sm font-medium text-foreground-muted mb-1';
+
 
 // The input SBOM: JSON, SPDX or CycloneDX, with the tool that made it when it says so
 const readSbom = (text: string, name: string): Input => {
@@ -225,24 +226,7 @@ export default function TranslatePage() {
           {mode === 'file' ? (
             <div>
               <label htmlFor="translate-file" className={labelClass}>File</label>
-              {/* the native input is hidden; its label is the button */}
-              <input
-                id="translate-file"
-                type="file"
-                accept=".json,application/json"
-                className="peer sr-only"
-                onChange={e => onFile(e.target.files?.[0])}
-              />
-              <div className="flex items-center gap-3">
-                <label
-                  htmlFor="translate-file"
-                  className="inline-flex items-center gap-2 rounded-button border-2 border-primary bg-primary px-3 py-1.5 text-sm font-semibold text-white shadow-button cursor-pointer hover:bg-primary-hover peer-focus-visible:ring-2 peer-focus-visible:ring-ring"
-                >
-                  <FileUp size={16} />
-                  Choose a JSON file
-                </label>
-                <span className="text-body-sm text-foreground-muted truncate">{fileName || 'No file chosen'}</span>
-              </div>
+              <FilePicker id="translate-file" fileName={fileName} onFile={onFile} />
             </div>
           ) : mode === 'stored' ? (
             <div className="grid gap-3 sm:grid-cols-2">
@@ -253,7 +237,7 @@ export default function TranslatePage() {
                   id="translate-image"
                   list="translate-images"
                   autoComplete="off"
-                  className={selectClass}
+                  className={fieldClass}
                   value={search}
                   onChange={e => onImageTyped(e.target.value)}
                   placeholder="Type an image, e.g. alpine:3.24"
@@ -264,10 +248,16 @@ export default function TranslatePage() {
               </div>
               <div>
                 <label htmlFor="translate-stored" className={labelClass}>Stored file</label>
-                <select id="translate-stored" className={selectClass} value={storedFile} disabled={!image} onChange={e => setStoredFile(e.target.value)}>
-                  <option value="">Choose a file</option>
-                  {files.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
-                </select>
+                <Selector
+                  id="translate-stored"
+                  variant="unfocused"
+                  className={fieldSelectorClass}
+                  value={storedFile || null}
+                  disabled={!image}
+                  onValueChange={setStoredFile}
+                  placeholder="Choose a file"
+                  options={files.map(f => ({ value: f.name, label: f.name }))}
+                />
               </div>
             </div>
           ) : null}
@@ -276,10 +266,16 @@ export default function TranslatePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="translate-source" className={labelClass}>From</label>
-            <select id="translate-source" className={selectClass} value={source} disabled={!input} onChange={e => setSource(e.target.value as ToolId | '')}>
-              <option value="">Choose the tool</option>
-              {input && sourceTools(input.format).map(t => <option key={t} value={t}>{`${LABELS[t]} · ${FORMAT_LABELS[input.format]}`}</option>)}
-            </select>
+            <Selector
+              id="translate-source"
+              variant="unfocused"
+              className={fieldSelectorClass}
+              value={source || null}
+              disabled={!input}
+              onValueChange={v => setSource(v as ToolId)}
+              placeholder="Choose the tool"
+              options={input ? sourceTools(input.format).map(t => ({ value: t, label: `${LABELS[t]} · ${FORMAT_LABELS[input.format]}` })) : []}
+            />
             {input && (
               <p className="text-caption text-foreground-subtle mt-1">
                 {input.detected && source === input.detected ? 'Tool detected' : input.detected ? '' : 'Tool not detected: choose it'}
@@ -293,12 +289,16 @@ export default function TranslatePage() {
           </div>
           <div>
             <label htmlFor="translate-target" className={labelClass}>Translate to</label>
-            <select id="translate-target" className={selectClass} value={targetValue} disabled={!targets.length} onChange={e => setTarget(e.target.value)}>
-              <option value="">Choose a target</option>
-              {targets.map(t => (
-                <option key={`${t.tool}:${t.format}`} value={`${t.tool}:${t.format}`}>{`${LABELS[t.tool]} · ${FORMAT_LABELS[t.format]}`}</option>
-              ))}
-            </select>
+            <Selector
+              id="translate-target"
+              variant="unfocused"
+              className={fieldSelectorClass}
+              value={targetValue || null}
+              disabled={!targets.length}
+              onValueChange={setTarget}
+              placeholder="Choose a target"
+              options={targets.map(t => ({ value: `${t.tool}:${t.format}`, label: `${LABELS[t.tool]} · ${FORMAT_LABELS[t.format]}` }))}
+            />
           </div>
         </div>
 
@@ -309,7 +309,7 @@ export default function TranslatePage() {
               <textarea
                 id="translate-input"
                 spellCheck={false}
-                className={cn(selectClass, 'h-[60vh] font-mono text-caption')}
+                className={cn(fieldClass, 'h-[60vh] font-mono text-caption')}
                 value={pasted}
                 onChange={e => onPaste(e.target.value)}
                 placeholder="Paste an SPDX or CycloneDX JSON SBOM"
@@ -319,12 +319,12 @@ export default function TranslatePage() {
               <div className="flex items-center justify-between">
                 <label htmlFor="translate-output" className={labelClass}>Translation</label>
                 {output && (
-                  <button type="button" className="text-caption text-primary mb-1" onClick={() => navigator.clipboard?.writeText(output)}>
+                  <button type="button" className="text-caption text-primary-fg mb-1" onClick={() => navigator.clipboard?.writeText(output)}>
                     Copy
                   </button>
                 )}
               </div>
-              <textarea id="translate-output" readOnly spellCheck={false} className={cn(selectClass, 'h-[60vh] font-mono text-caption')} value={output} />
+              <textarea id="translate-output" readOnly spellCheck={false} className={cn(fieldClass, 'h-[60vh] font-mono text-caption')} value={output} />
             </div>
           </div>
         )}

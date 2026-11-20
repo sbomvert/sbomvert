@@ -3,7 +3,7 @@ import {BackButton} from './BackButton';
 
 export const Default = () => <BackButton></BackButton>;
 
-export const meta = {
+const meta = {
   title: 'Button/BackButton',
   component: BackButton,
 };

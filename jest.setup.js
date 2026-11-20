@@ -39,6 +39,11 @@ jest.mock('recharts', () => {
     PieChart:          ({ children }) => <div>{children}</div>,
     Pie:               () => null,
     Cell:              () => null,
+    RadarChart:        ({ children }) => <div>{children}</div>,
+    PolarGrid:         () => null,
+    PolarAngleAxis:    () => null,
+    PolarRadiusAxis:   () => null,
+    Radar:             () => null,
   };
 });
 

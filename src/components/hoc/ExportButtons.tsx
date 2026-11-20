@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Selector } from '@/components/select/Selector';
 import { SanitizeContainerImage } from '@sbomvert/scan/image';
@@ -8,7 +8,6 @@ interface ExportButtonsProps {
 }
 
 export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
-  const [_, setSelectedTool] = useState<string>('');
 
   const handleDownload = (toolName: string) => {
     try {
@@ -58,25 +57,11 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       </Button>*/}
       <Selector
         size="Sm"
-        defaultValue=""
-        onChange={(e) => {
-          const val = e.target.value;
-          setSelectedTool(val);
-          if (val) {
-            handleDownload(val);
-          }
-        }}
-      >
-        <option value="" disabled>
-          Download SBOM
-        </option>
-
-        {comparison.tools.map((tool) => (
-          <option key={tool.name} value={tool.name}>
-            {tool.name}
-          </option>
-        ))}
-      </Selector>
+        aria-label="Download SBOM"
+        placeholder="Download SBOM"
+        options={comparison.tools.map(tool => ({ value: tool.name, label: tool.name }))}
+        onValueChange={handleDownload}
+      />
     </>
   );
 };
