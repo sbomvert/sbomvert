@@ -33,10 +33,10 @@ export function CVEToolSelector({
               style={
                 active
                   ? { borderColor: color, background: `${color}18`, color }
-                  : { borderColor: 'var(--color-border)', color: 'var(--color-foreground-subtle)' }
+                  : { borderColor: 'var(--border)', color: 'var(--foreground-subtle)' }
               }
             >
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: active ? color : 'var(--color-border)' }} />
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: active ? color : 'var(--border)' }} />
               {tool}
               {active && (
                 <svg className="w-3.5 h-3.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">

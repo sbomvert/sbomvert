@@ -16,7 +16,7 @@ export const TableView: React.FC<TableViewProps> = ({ comparison }) => {
   const filterBtnClass = (active: boolean) =>
     `px-3 py-1.5 rounded-lg text-body-sm font-medium transition-colors ${
       active
-        ? 'bg-primary text-white'
+        ? 'bg-primary text-primary-foreground'
         : 'bg-surface-alt text-foreground-muted hover:text-foreground'
     }`;
 

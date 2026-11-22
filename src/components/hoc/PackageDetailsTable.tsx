@@ -109,7 +109,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                             <span
                               key={tool.name}
                               className={`px-2 py-1 rounded text-caption font-medium ${
-                                found ? 'text-white' : 'bg-input text-foreground-subtle'
+                                found ? 'text-primary-foreground' : 'bg-input text-foreground-subtle'
                               }`}
                               style={found ? { backgroundColor: TOOL_COLORS[colorIndex] } : {}}
                             >

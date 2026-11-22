@@ -45,7 +45,7 @@ export const Selector: React.FC<SelectorProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-primary text-white focus-visible:ring-ring shadow-button ' +
+      'bg-primary text-primary-foreground focus-visible:ring-ring shadow-button ' +
       (withHover ? 'hover:bg-primary-hover' : ''),
 
     secondary:

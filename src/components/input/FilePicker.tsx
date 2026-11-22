@@ -26,7 +26,7 @@ export const FilePicker: React.FC<FilePickerProps> = ({ id, fileName, accept = '
     />
     <label
       htmlFor={id}
-      className="inline-flex items-center gap-2 rounded-button border-2 border-primary bg-primary px-3 py-1.5 text-sm font-semibold text-white shadow-button cursor-pointer hover:bg-primary-hover peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
+      className="inline-flex items-center gap-2 rounded-button border-2 border-primary bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-button cursor-pointer hover:bg-primary-hover peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
     >
       <FileUp size={16} />
       Choose a JSON file

@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 // The custom font sizes in globals.css (`--text-body`…): without them tailwind-merge takes `text-body` for a color and
 // drops the `text-white` before it
 const twMerge = extendTailwindMerge({
-  extend: { theme: { text: ['label', 'caption', 'body-sm', 'body', 'heading-sm', 'heading', 'heading-lg', 'display', 'display-lg'] } },
+  extend: { theme: { text: ['label', 'caption', 'body-sm', 'body', 'heading-sm', 'heading', 'heading-lg', 'display', 'display-lg', 'micro'] } },
 });
 
 export function cn(...inputs: ClassValue[]) {
@@ -15,8 +15,6 @@ export function cn(...inputs: ClassValue[]) {
 // because they are passed via `style` props / charting libs, not Tailwind classes).
 export const TOOL_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
-// Package-type badge colours — now expressed as Tailwind semantic tokens
-// so a single token change in tailwind.config.js ripples through.
 interface IJaccardResult { x: string; y: string; value: number; }
 
 export const computeJaccard = (

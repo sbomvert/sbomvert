@@ -89,7 +89,7 @@ function AuthResultView({ className, fallbackIntent }: AuthResultProps) {
             result.intent === "success"
               ? "text-primary"
               : result.intent === "warning"
-                ? "text-amber-600 dark:text-amber-400"
+                ? "text-warning-fg"
                 : "text-destructive"
           )}
         />

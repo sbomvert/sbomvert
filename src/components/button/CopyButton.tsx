@@ -6,10 +6,10 @@ export function CopyButton({ value }: { value: string }) {
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(value).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}
-      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+      className="p-1 rounded text-foreground-subtle hover:bg-muted hover:text-foreground transition-colors"
       title="Copy"
     >
-      {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+      {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
     </button>
   );
 }

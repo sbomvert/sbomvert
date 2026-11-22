@@ -2,6 +2,8 @@ import React from 'react';
 import { Database, Code, Box, Package, FileText } from 'lucide-react';
 
 // The color and icon of each package type, in one place so the two can't drift apart.
+// Categorical colors that tell package types apart, not theme colors: deliberately the same in both themes.
+/* eslint-disable sbomvert/design-tokens */
 const PACKAGE_TYPES: Record<string, { color: string; icon: React.ReactNode }> = {
   os:      { color: 'bg-purple-100 text-purple-800', icon: <Database size={16} /> },
   npm:     { color: 'bg-red-100 text-red-800',       icon: <Code size={16} /> },
@@ -14,6 +16,7 @@ const PACKAGE_TYPES: Record<string, { color: string; icon: React.ReactNode }> = 
   library: { color: 'bg-green-100 text-green-800',   icon: <Package size={16} /> },
 };
 const UNKNOWN = { color: 'bg-gray-100 text-gray-800', icon: <FileText size={16} /> };
+/* eslint-enable sbomvert/design-tokens */
 
 const typeOf = (type?: string) => (type && Object.hasOwn(PACKAGE_TYPES, type) ? PACKAGE_TYPES[type] : UNKNOWN);
 

@@ -15,9 +15,9 @@ type FilledLevel = Exclude<PasswordStrengthLevel, "empty">
 
 const segmentColors: Record<FilledLevel, string> = {
   weak: "bg-destructive",
-  fair: "bg-amber-500",
-  good: "bg-sky-500",
-  strong: "bg-emerald-500"
+  fair: "bg-warning",
+  good: "bg-info",
+  strong: "bg-success"
 }
 
 export type PasswordStrengthMeterProps = {

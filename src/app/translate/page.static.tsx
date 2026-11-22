@@ -334,7 +334,7 @@ export default function TranslatePage() {
         )}
 
         {error && (
-          <p role="alert" className={cn('text-body-sm rounded-input border border-danger px-3 py-2 text-danger')}>
+          <p role="alert" className={cn('text-body-sm rounded-input border border-error px-3 py-2 text-error-fg')}>
             {error}
           </p>
         )}

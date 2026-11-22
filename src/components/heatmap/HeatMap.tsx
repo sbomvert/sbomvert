@@ -139,7 +139,7 @@ export default function Heatmap({
                         width={cellWidth}
                         height={cellHeight}
                         fill={fill}
-                        stroke="#fff"
+                        stroke="var(--surface)"
                         strokeWidth={0.5}
                         className="heatmap-cell"
                         onMouseEnter={e => {
@@ -190,7 +190,7 @@ export default function Heatmap({
                   width={cellWidth * xLabels.length}
                   height={cellHeight * yLabels.length}
                   fill="none"
-                  stroke="#9ca3af"
+                  stroke="var(--foreground-subtle)"
                   strokeWidth={1.5}
                 />
 
@@ -202,7 +202,7 @@ export default function Heatmap({
                     y={cellHeight * yLabels.length + 30}
                     textAnchor="middle"
                     fontSize={14}
-                    fill="#9ca3af"
+                    fill="var(--foreground-subtle)"
                     transform={`rotate(-45, ${i * cellWidth + cellWidth / 2}, ${cellHeight * yLabels.length + 20})`}
                   >
                     {label}
@@ -216,7 +216,7 @@ export default function Heatmap({
                     x={-10}
                     y={i * cellHeight + cellHeight / 2}
                     textAnchor="end"
-                    fill="#9ca3af"
+                    fill="var(--foreground-subtle)"
                     fontSize={14}
                   >
                     {label}
@@ -230,13 +230,13 @@ export default function Heatmap({
 
       {tooltip && tooltip.active && (
         <div
-          className="absolute bg-white border border-gray-300 rounded shadow-lg p-2 text-sm pointer-events-none z-50"
+          className="absolute bg-popover text-popover-foreground border border-border rounded shadow-lg p-2 text-sm pointer-events-none z-50"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
-          <div className="font-semibold text-gray-800">
+          <div className="font-semibold text-foreground">
             {tooltip.xLabel} / {tooltip.yLabel}
           </div>
-          <div className="text-gray-600">Value: {tooltip.value}%</div>
+          <div className="text-foreground-muted">Value: {tooltip.value}%</div>
         </div>
       )}
     </div>
