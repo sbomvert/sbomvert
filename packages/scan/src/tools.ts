@@ -54,13 +54,45 @@ export const GrypeConfig: ToolConfig = {
   sbom_from: 'syft',
 };
 
+// Amazon Inspector's SBOM generator: CycloneDX only, no AWS account needed to generate.
+export const AmazonConfig: ToolConfig = {
+  name: 'amazon',
+  produce_sbom: true,
+  supports_spdx: false,
+  supports_cyclonedx: true,
+  scan_sbom: false,
+  find_cves: false,
+};
+
+// OSV-Scanner and cdxgen read the image from a file skopeo downloads (they need a Docker daemon otherwise).
+// osv-scanner's CycloneDX has no OS packages (it cannot make their purls): SPDX only
+export const OsvConfig: ToolConfig = {
+  name: 'osv',
+  produce_sbom: true,
+  supports_spdx: true,
+  supports_cyclonedx: false,
+  scan_sbom: false,
+  find_cves: false,
+};
+
+// cdxgen's SPDX is 3.0, which SBOMVert cannot read: CycloneDX only
+export const CdxgenConfig: ToolConfig = {
+  name: 'cdxgen',
+  produce_sbom: true,
+  supports_spdx: false,
+  supports_cyclonedx: true,
+  scan_sbom: false,
+  find_cves: false,
+};
+
 export type SupportedToolsType = {
   producers: Array<ToolConfig>;
   consumers: Array<ToolConfig>;
 };
 
 export const SupportedTools: SupportedToolsType = {
-  producers: [TrivyConfig, SyftConfig, DockerScoutConfig],
+  // not Microsoft's sbom-tool (needs a Docker daemon) nor Google Artifact Analysis (needs GCP)
+  producers: [TrivyConfig, SyftConfig, DockerScoutConfig, AmazonConfig, OsvConfig, CdxgenConfig],
   // not scout: its reports have no parser yet (vuln/vulnutils.ts VULN_EXTRACTORS)
   consumers: [TrivyConfig, GrypeConfig],
 };

@@ -13,6 +13,13 @@ export type SbomPlan = {
   outputs: Record<SbomFormat, string>; // where each format ends up
 };
 
+// Downloads the image to a `docker save`-style file, for the tools that would otherwise ask a Docker daemon.
+// skopeo follows /etc/containers/policy.json (from Alpine's containers-common).
+const pullToArchive = (image: string, archive: string) => ({
+  cmd: 'skopeo',
+  args: ['copy', `docker://${image}`, `docker-archive:${archive}`],
+});
+
 export function GenerateSBOMsWithTool(
   tool: string,
   image: string,
@@ -73,6 +80,33 @@ export function GenerateSBOMsWithTool(
           ...(formats.includes('spdx') ? [scout('spdx', outputs.spdx)] : []),
           ...(formats.includes('cdx') ? [scout('cyclonedx', outputs.cdx)] : []),
         ],
+        outputs,
+      };
+    }
+    case 'amazon':
+      // CycloneDX only: an SPDX request yields no file, which the worker reports as missing
+      return {
+        runs: formats.includes('cdx')
+          ? [{ cmd: 'inspector-sbomgen', args: ['container', '--image', image, '--disable-progress-bar', '-o', outputs.cdx] }]
+          : [],
+        outputs,
+      };
+    case 'osv': {
+      // exits with 1 when the packages have known vulnerabilities, after writing the SBOM
+      const archive = `${outDir}/image.tar`;
+      // SPDX only: its CycloneDX leaves out OS packages
+      const osv = {
+        cmd: 'osv-scanner',
+        args: ['scan', 'image', '--archive', '--all-packages', '--format', 'spdx-2-3', '--output-file', outputs.spdx, archive],
+      };
+      return { runs: formats.includes('spdx') ? [pullToArchive(image, archive), osv] : [], outputs };
+    }
+    case 'cdxgen': {
+      const archive = `${outDir}/image.tar`;
+      return {
+        runs: formats.includes('cdx')
+          ? [pullToArchive(image, archive), { cmd: 'cdxgen', args: ['-t', 'docker', '-o', outputs.cdx, archive] }]
+          : [],
         outputs,
       };
     }

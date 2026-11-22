@@ -105,3 +105,30 @@ test('scout reads the image from the registry, one run per format', () => {
 test('returns null for a tool that cannot produce SBOMs', () => {
   expect(GenerateSBOMsWithTool('grype', 'nginx', OUT)).toBeNull();
 });
+
+test('amazon inspector-sbomgen writes CycloneDX only, pulling from the registry', () => {
+  expect(GenerateSBOMsWithTool('amazon', 'nginx:1.27', OUT)!.runs).toStrictEqual([
+    {
+      cmd: 'inspector-sbomgen',
+      args: ['container', '--image', 'nginx:1.27', '--disable-progress-bar', '-o', `${OUT}/amazon.cdx.json`],
+    },
+  ]);
+  expect(GenerateSBOMsWithTool('amazon', 'nginx', OUT, ['spdx'])!.runs).toStrictEqual([]);
+});
+
+test('osv (SPDX only) and cdxgen (CycloneDX only) read the image from a file skopeo downloads once', () => {
+  const skopeo = { cmd: 'skopeo', args: ['copy', 'docker://nginx:1.27', `docker-archive:${OUT}/image.tar`] };
+  expect(GenerateSBOMsWithTool('osv', 'nginx:1.27', OUT)!.runs).toStrictEqual([
+    skopeo,
+    {
+      cmd: 'osv-scanner',
+      args: ['scan', 'image', '--archive', '--all-packages', '--format', 'spdx-2-3', '--output-file', `${OUT}/osv.spdx.json`, `${OUT}/image.tar`],
+    },
+  ]);
+  expect(GenerateSBOMsWithTool('cdxgen', 'nginx:1.27', OUT)!.runs).toStrictEqual([
+    skopeo,
+    { cmd: 'cdxgen', args: ['-t', 'docker', '-o', `${OUT}/cdxgen.cdx.json`, `${OUT}/image.tar`] },
+  ]);
+  expect(GenerateSBOMsWithTool('cdxgen', 'nginx', OUT, ['spdx'])!.runs).toStrictEqual([]);
+  expect(GenerateSBOMsWithTool('osv', 'nginx', OUT, ['cdx'])!.runs).toStrictEqual([]);
+});
