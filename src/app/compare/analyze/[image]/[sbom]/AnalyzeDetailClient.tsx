@@ -117,11 +117,11 @@ export default function AnalyzeDetailClient({
               value: info.totalPackages.toLocaleString(),
             },
           ].map(({ label, value }) => (
-            <Card key={label} className="px-4 py-3 dark:bg-gray-800">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
+            <Card key={label} className="px-4 py-3 bg-surface-alt">
+              <p className="text-micro font-semibold uppercase tracking-widest text-foreground-subtle mb-1">
                 {label}
               </p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <p className="text-sm font-semibold text-foreground truncate">
                 {value}
               </p>
             </Card>
@@ -132,11 +132,13 @@ export default function AnalyzeDetailClient({
       {/* Charts */}
       {info && (
         <div className="grid grid-cols-2 gap-3">
-          <Card className="px-4 py-3 dark:bg-gray-800">
+          <Card className="px-4 py-3 bg-surface-alt">
             <div>License information</div>
             <ResponsiveContainer height={200} width="100%">
               <PieChart>
                 <Pie
+                  // categorical chart colors, the same in both themes
+                  /* eslint-disable sbomvert/design-tokens */
                   data={[
                     {
                       fill: '#0088FE',
@@ -154,6 +156,7 @@ export default function AnalyzeDetailClient({
                       value: info.licenseInfo.unknown,
                     },
                   ]}
+                  /* eslint-enable sbomvert/design-tokens */
                   dataKey="value"
                   innerRadius={60}
                   outerRadius={80}
@@ -163,7 +166,7 @@ export default function AnalyzeDetailClient({
             </ResponsiveContainer>
           </Card>
 
-          <Card className="px-4 py-3 dark:bg-gray-800">
+          <Card className="px-4 py-3 bg-surface-alt">
             <div>Package Information</div>
             <ResponsiveContainer height={200} width="100%">
               <PieChart>
@@ -189,10 +192,10 @@ export default function AnalyzeDetailClient({
       {/* Namespace */}
       {info?.documentNamespace && (
         <div className="bg-surface rounded-xl border px-4 py-3 flex items-center gap-2">
-          <span className="text-[10px] font-semibold uppercase text-gray-400">
+          <span className="text-micro font-semibold uppercase text-foreground-subtle">
             Namespace
           </span>
-          <code className="text-xs text-gray-500 truncate flex-1">
+          <code className="text-xs text-foreground-muted truncate flex-1">
             {info.documentNamespace}
           </code>
           <CopyButton value={info.documentNamespace} />
@@ -270,7 +273,7 @@ export default function AnalyzeDetailClient({
         {selectedPkg && (
           <>
             <motion.div
-              className="fixed inset-0 bg-black/20 z-40"
+              className="fixed inset-0 bg-overlay z-40"
               onClick={() => setSelectedPkg(null)}
             />
             <PackageDrawer

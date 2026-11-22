@@ -204,7 +204,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
         )}
 
         {detected && 'error' in detected && (
-          <p className="text-body-sm text-danger">{detected.error}</p>
+          <p className="text-body-sm text-error-fg">{detected.error}</p>
         )}
         {detected && 'format' in detected && (
           <div className="grid gap-3 sm:grid-cols-3">
@@ -227,7 +227,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
         )}
 
         {error && (
-          <p role="alert" className="text-body-sm rounded-input border border-danger px-3 py-2 text-danger">
+          <p role="alert" className="text-body-sm rounded-input border border-error px-3 py-2 text-error-fg">
             {error}
           </p>
         )}

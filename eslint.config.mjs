@@ -1,5 +1,6 @@
 import next from "eslint-config-next";
 import unusedImports from "eslint-plugin-unused-imports";
+import designTokens from "./eslint-rules/design-tokens.js";
 
 
 const config = [
@@ -30,8 +31,14 @@ const config = [
             },
         ]
     }
-}
+},
+  {
+    // components use the design tokens in src/app/globals.css (see eslint-rules/design-tokens.js)
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}"],
+    plugins: { sbomvert: { rules: { "design-tokens": designTokens } } },
+    rules: { "sbomvert/design-tokens": "error" },
+  },
 ];
 
 export default config;
-

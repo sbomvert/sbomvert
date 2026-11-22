@@ -19,5 +19,5 @@ test('is not pressed when inactive', () => {
 
 test('fills with the tool color when active', () => {
   render(<ToolColorActive />);
-  expect(screen.getByRole('button')).toHaveStyle({ color: '#fff' });
+  expect(screen.getByRole('button')).toHaveStyle({ color: 'var(--primary-foreground)' });
 });

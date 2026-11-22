@@ -29,7 +29,7 @@ function MetaRow({ label, value, mono, href }: { label: string; value?: string |
 
 function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide', className)}>
+    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-md text-micro font-semibold uppercase tracking-wide', className)}>
       {children}
     </span>
   );
@@ -139,7 +139,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
             <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
               <Hash size={12} /> CPEs
               <a href={nvdHref} target="_blank" rel="noopener noreferrer"
-                className="ml-auto text-[10px] text-info hover:underline flex items-center gap-0.5">
+                className="ml-auto text-micro text-info hover:underline flex items-center gap-0.5">
                 Search NVD <ExternalLink size={10} />
               </a>
             </h3>
@@ -176,7 +176,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
               <FileText size={12} /> Files
-              <span className="ml-auto text-[10px] text-foreground-subtle font-normal normal-case tracking-normal">
+              <span className="ml-auto text-micro text-foreground-subtle font-normal normal-case tracking-normal">
                 {pkg.files.length} file{pkg.files.length !== 1 ? 's' : ''}
               </span>
             </h3>
@@ -193,7 +193,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
                   {file.fileTypes && file.fileTypes.length > 0 && (
                     <div className="flex gap-1 mb-1.5 flex-wrap">
                       {file.fileTypes.map(t => (
-                        <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-border text-foreground-subtle uppercase">
+                        <span key={t} className="text-micro px-1.5 py-0.5 rounded bg-border text-foreground-subtle uppercase">
                           {t}
                         </span>
                       ))}
@@ -202,22 +202,22 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
                   <div className="flex flex-col gap-0.5">
                     {file.sha256 && (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-foreground-subtle w-10 shrink-0">SHA256</span>
-                        <code className="text-[10px] font-mono text-foreground-subtle truncate flex-1">{file.sha256}</code>
+                        <span className="text-micro text-foreground-subtle w-10 shrink-0">SHA256</span>
+                        <code className="text-micro font-mono text-foreground-subtle truncate flex-1">{file.sha256}</code>
                         <CopyButton value={file.sha256} />
                       </div>
                     )}
                     {file.sha1 && (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-foreground-subtle w-10 shrink-0">SHA1</span>
-                        <code className="text-[10px] font-mono text-foreground-subtle truncate flex-1">{file.sha1}</code>
+                        <span className="text-micro text-foreground-subtle w-10 shrink-0">SHA1</span>
+                        <code className="text-micro font-mono text-foreground-subtle truncate flex-1">{file.sha1}</code>
                         <CopyButton value={file.sha1} />
                       </div>
                     )}
                     {file.layerId && (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-foreground-subtle w-10 shrink-0">Layer</span>
-                        <code className="text-[10px] font-mono text-foreground-subtle truncate flex-1">{file.layerId.slice(7, 19)}…</code>
+                        <span className="text-micro text-foreground-subtle w-10 shrink-0">Layer</span>
+                        <code className="text-micro font-mono text-foreground-subtle truncate flex-1">{file.layerId.slice(7, 19)}…</code>
                         <CopyButton value={file.layerId} />
                       </div>
                     )}

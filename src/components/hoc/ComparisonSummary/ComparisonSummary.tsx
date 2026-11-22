@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import Heatmap from '@/components/heatmap/HeatMap';
-import { computeJaccard } from '@/lib/utils';
+import { computeJaccard, TOOL_COLORS } from '@/lib/utils';
 import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
 
 interface MultiToolSummaryProps {
@@ -15,10 +15,10 @@ interface MultiToolSummaryProps {
 
 // Chart tooltip style — uses CSS vars so it adapts to dark mode at runtime
 const tooltipStyle = {
-  backgroundColor: 'var(--color-surface)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '0.5rem',
-  color: 'var(--color-foreground)',
+  backgroundColor: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--foreground)',
 };
 
 export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }) => {
@@ -26,7 +26,7 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
     tool: tool.name,
     total:  comparison.statistics.toolCounts[tool.name],
     unique: comparison.statistics.uniquePerTool[tool.name],
-    color:  ['#4f46e5', '#10b981', '#f59e0b'][idx],
+    color:  TOOL_COLORS[idx],
   }));
 
   const radarData = comparison.tools.map(tool => {
@@ -61,21 +61,21 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             <h3 className="text-heading-sm text-foreground mb-3">Package Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   dataKey="tool"
-                  stroke="var(--color-foreground-subtle)"
+                  stroke="var(--foreground-subtle)"
                   interval={0}
                   angle={-30}
                   textAnchor="end"
                   height={80}
                   tick={{ fontSize: 12 }}
                 />
-                <YAxis stroke="var(--color-foreground-subtle)" />
+                <YAxis stroke="var(--foreground-subtle)" />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend />
-                <Bar dataKey="total"  fill="#4f46e5" name="Total Packages" />
-                <Bar dataKey="unique" fill="#f59e0b" name="Unique Packages" />
+                <Bar dataKey="total"  fill={TOOL_COLORS[0]} name="Total Packages" />
+                <Bar dataKey="unique" fill={TOOL_COLORS[2]} name="Unique Packages" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -84,11 +84,11 @@ export const MultiToolSummary: React.FC<MultiToolSummaryProps> = ({ comparison }
             <h3 className="text-heading-sm text-foreground mb-3">Tool Analysis</h3>
             <ResponsiveContainer width="100%" height={300}>
               <RadarChart data={radarData} outerRadius="60%">
-                <PolarGrid stroke="var(--color-border)" />
-                <PolarAngleAxis dataKey="tool" stroke="var(--color-foreground-subtle)" tick={{ fontSize: 12 }} />
-                <PolarRadiusAxis stroke="var(--color-foreground-subtle)" />
-                <Radar name="Coverage %"   dataKey="coverage"   stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                <Radar name="Uniqueness %" dataKey="uniqueness" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                <PolarGrid stroke="var(--border)" />
+                <PolarAngleAxis dataKey="tool" stroke="var(--foreground-subtle)" tick={{ fontSize: 12 }} />
+                <PolarRadiusAxis stroke="var(--foreground-subtle)" />
+                <Radar name="Coverage %"   dataKey="coverage"   stroke={TOOL_COLORS[1]} fill={TOOL_COLORS[1]} fillOpacity={0.6} />
+                <Radar name="Uniqueness %" dataKey="uniqueness" stroke={TOOL_COLORS[2]} fill={TOOL_COLORS[2]} fillOpacity={0.6} />
                 <Legend />
                 <Tooltip contentStyle={tooltipStyle} />
               </RadarChart>

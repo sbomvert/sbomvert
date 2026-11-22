@@ -75,7 +75,7 @@ export function SummaryPreview({ detected }: { detected: DetectedReport }) {
       <div className="grid grid-cols-5 gap-2">
         {SEV_CONFIG.map(({ key, label, icon, color, bg }) => (
           <div key={key} className={cn('flex flex-col items-center gap-1 rounded-lg p-2', bg)}>
-            <span className={cn('flex items-center gap-0.5 text-[10px] font-medium', color)}>{icon}{label}</span>
+            <span className={cn('flex items-center gap-0.5 text-micro font-medium', color)}>{icon}{label}</span>
             <span className={cn('text-lg font-bold tabular-nums leading-none', color)}>{detected.summary[key]}</span>
           </div>
         ))}
@@ -130,7 +130,7 @@ export function DropZone({ file, onFile, onClear, detected }: DropZoneProps) {
             <p className="text-caption text-foreground-subtle mt-0.5">{(file.size / 1024).toFixed(1)} KB</p>
           </div>
           {detected && (
-            <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-success-subtle text-success-fg">
+            <span className="text-micro font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-success-subtle text-success-fg">
               {detected.scanner}
             </span>
           )}

@@ -1,4 +1,5 @@
 import { ToolInfoCard } from '@/components/hoc/ToolInfoCard';
+import { TOOL_COLORS } from '@/lib/utils';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof ToolInfoCard> = {
@@ -15,7 +16,7 @@ type ToolInfoCardStory = StoryObj<typeof ToolInfoCard>;
 
 export const ToolInfoCardStory: ToolInfoCardStory = {
   args: {
-    color: '#4f46e5',
+    color: TOOL_COLORS[0],
     toolInfo: {
       name: 'Trivy',
       vendor: 'Aquasecurity',
