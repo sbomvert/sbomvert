@@ -10,6 +10,7 @@ import { Card } from '@/components/card/Card';
 import { Button } from '@/components/button/Button';
 import { Selector } from '@/components/select/Selector';
 import { FilePicker } from '@/components/input/FilePicker';
+import { SegmentedRadio } from '@/components/input/SegmentedRadio';
 import { fieldClass, fieldSelectorClass, labelClass } from '@/components/input/fieldStyles';
 import { cn } from '@/lib/utils';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
@@ -204,28 +205,22 @@ export default function TranslatePage() {
 
   return (
     <>
-      <PageTitle title="Translate SBOM" subtitle="Convert an SBOM to the output of another tool or format." />
+      <PageTitle title="Translate SBOM" subtitle="Convert an SBOM to the output of another tool or format" />
 
-      <Card className={cn('flex flex-col gap-5', mode !== 'paste' && 'max-w-2xl')}>
-        <fieldset className="flex flex-col gap-3">
-          <legend className={labelClass}>Source</legend>
-          <div className="flex gap-6 text-body-sm">
-            <label className="flex items-center gap-2">
-              <input type="radio" name="mode" checked={mode === 'paste'} onChange={() => switchMode('paste')} />
-              Paste JSON
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="mode" checked={mode === 'file'} onChange={() => switchMode('file')} />
-              File from my computer
-            </label>
-            {/* the static build has no stored SBOMs */}
-            {!FEATURE_FLAGS.STATIC_MODE && (
-              <label className="flex items-center gap-2">
-                <input type="radio" name="mode" checked={mode === 'stored'} onChange={() => switchMode('stored')} />
-                Stored SBOM
-              </label>
-            )}
-          </div>
+      <Card className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
+          <SegmentedRadio<Mode>
+            name="mode"
+            legend="Source"
+            value={mode}
+            onChange={switchMode}
+            options={[
+              { value: 'paste', label: 'Paste JSON' },
+              { value: 'file', label: 'File from my computer' },
+              // the static build has no stored SBOMs
+              ...(FEATURE_FLAGS.STATIC_MODE ? [] : [{ value: 'stored' as const, label: 'Stored SBOM' }]),
+            ]}
+          />
 
           {mode === 'file' ? (
             <div>
@@ -265,7 +260,7 @@ export default function TranslatePage() {
               </div>
             </div>
           ) : null}
-        </fieldset>
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div>

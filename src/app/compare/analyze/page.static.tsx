@@ -114,7 +114,7 @@ export default function AnalyzePage() {
         <SbomUploadForm
           submitText="Load SBOM"
           allowPaste
-          className="p-0 shadow-none bg-transparent max-w-none"
+          className="p-0 border-0 shadow-none bg-transparent"
           onUpload={async (name, containerName, file, details) => {
             // a failure throws to the form, which shows it; the dialog stays open
             await handleUpload(name, containerName, file, details);
@@ -154,7 +154,7 @@ export default function AnalyzePage() {
                   }
                 >
                   <div className="flex items-center gap-3">
-                    <Package size={16} className="text-info" />
+                    <Package size={16} className="text-info-fg" />
                     <p className="font-semibold text-body-sm text-foreground">
                       {formatContainerName(container.name)}
                     </p>

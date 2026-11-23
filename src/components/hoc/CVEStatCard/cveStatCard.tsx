@@ -34,7 +34,7 @@ export function CVEStatCard({
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col">
               <dt className="text-label font-medium text-foreground-subtle uppercase tracking-wider mb-1">{label}</dt>
-              <dd className="text-display font-bold text-foreground tabular-nums">{value.toLocaleString()}</dd>
+              <dd className="text-display text-foreground tabular-nums">{value.toLocaleString()}</dd>
             </div>
           ))}
         </dl>
@@ -47,7 +47,7 @@ export function CVEStatCard({
         </div>
         <div className="w-full h-1.5 rounded-full bg-surface-alt overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-700"
+            className="h-full rounded-full"
             style={{ width: `${coverage}%`, background: color }}
           />
         </div>

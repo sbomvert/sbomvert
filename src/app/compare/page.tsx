@@ -82,9 +82,9 @@ export default function Home() {
   /* ------------------ UI ------------------ */
   return (
     <>
-      <PageTitle title="Compare artifacts" subtitle='Select an artifact and comparison type to start.'></PageTitle>
+      <PageTitle title="Compare artifacts" subtitle='Pick a comparison type, then a container image'></PageTitle>
       <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
-      {loading && <LoadingSpinner message="Loading SBOM files..." />}
+      {loading && <LoadingSpinner message="Loading SBOM files" />}
       {!loading && (
         <>
 

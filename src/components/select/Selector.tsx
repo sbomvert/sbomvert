@@ -41,7 +41,7 @@ export const Selector: React.FC<SelectorProps> = ({
   'aria-label': ariaLabel,
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-between gap-2 rounded-button font-semibold transition-all outline-none focus-visible:ring-2';
+    'inline-flex items-center justify-between gap-2 rounded-button font-medium transition-colors outline-none focus-visible:ring-2';
 
   const variantStyles = {
     primary:
@@ -68,7 +68,7 @@ export const Selector: React.FC<SelectorProps> = ({
     sm: 'px-3 py-1.5 text-body-sm',
     Sm: 'px-4 py-2 text-body min-w-24',
     md: 'px-6 py-3 text-body',
-    lg: 'px-9 py-6 text-lg',
+    lg: 'px-9 py-6 text-heading-sm',
   };
 
   const isDisabled = disabled || variant === 'disabled';

@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/button/Button';
 import { Input } from '@/components/input/Input';
-import { Card } from '@/components/card/Card';
 import { CardTitle } from '@/components/card/CardTitle';
-import { FileUp } from 'lucide-react';
+import { Check, FileUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FilePicker } from '@/components/input/FilePicker';
+import { SegmentedRadio } from '@/components/input/SegmentedRadio';
 import { fieldClass, labelClass } from '@/components/input/fieldStyles';
 import { formatOf, SbomFormat } from '@sbomvert/core/translate/detectTool';
 import { parseCreator } from '@/lib/sbom/spdx/parser';
@@ -133,31 +133,32 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
   };
 
   return (
-    <Card className={cn('max-w-2xl', className)}>
+    // p-6, not the card token: a caller's p-0 (e.g. inside a dialog) must be able to override it
+    <section className={cn('bg-surface border border-border rounded-card shadow-card p-6', className)}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
         {title && (
           <CardTitle className="flex items-center gap-2">
-            <FileUp size={20} />
+            <FileUp size={18} className="text-foreground-subtle" aria-hidden />
             {title}
           </CardTitle>
         )}
 
         {askNames && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="name" className={labelClass}>SBOM Name</label>
+              <label htmlFor="name" className={labelClass}>SBOM name</label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
-                placeholder="Enter a name for this SBOM"
+                placeholder="e.g. syft-alpine"
               />
             </div>
 
             <div>
-              <label htmlFor="containerName" className={labelClass}>Container Name</label>
+              <label htmlFor="containerName" className={labelClass}>Container name</label>
               <Input
                 id="containerName"
                 type="text"
@@ -165,23 +166,21 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
                 onChange={e => setContainerName(e.target.value)}
                 required
                 placeholder="e.g. alpine:3.24"
+                className="font-mono"
               />
             </div>
           </div>
         )}
 
         {allowPaste && (
-          <fieldset className="flex gap-6 text-body-sm">
-            <legend className="sr-only">Source</legend>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="sbom-source" checked={source === 'paste'} onChange={() => switchSource('paste')} />
-              Paste JSON
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="sbom-source" checked={source === 'file'} onChange={() => switchSource('file')} />
-              File from my computer
-            </label>
-          </fieldset>
+          <SegmentedRadio
+            name="sbom-source"
+            legend="Source"
+            hideLegend
+            value={source}
+            onChange={switchSource}
+            options={[{ value: 'paste', label: 'Paste JSON' }, { value: 'file', label: 'File from my computer' }]}
+          />
         )}
 
         {source === 'paste' ? (
@@ -198,7 +197,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
           </div>
         ) : (
           <div>
-            <label htmlFor="file-input" className={labelClass}>SBOM File (JSON)</label>
+            <label htmlFor="file-input" className={labelClass}>SBOM file</label>
             <FilePicker id="file-input" fileName={file?.name} onFile={onFile} />
           </div>
         )}
@@ -207,47 +206,48 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
           <p className="text-body-sm text-error-fg">{detected.error}</p>
         )}
         {detected && 'format' in detected && (
-          <div className="grid gap-3 sm:grid-cols-3">
+          // what the SBOM says about itself, as a read-out; only the tool can be corrected
+          <dl className="grid gap-4 sm:grid-cols-3 rounded-input bg-surface-alt border border-border p-4">
             <div>
-              <p className={labelClass}>Format</p>
-              <p className="text-body-sm text-foreground py-2">{detected.formatLabel}</p>
+              <dt className={labelClass}>Format</dt>
+              <dd className="font-mono text-body-sm text-foreground py-2">{detected.formatLabel}</dd>
             </div>
             <div>
-              <label htmlFor="sbom-tool" className={labelClass}>Tool</label>
-              <Input id="sbom-tool" type="text" value={tool} onChange={e => setTool(e.target.value)} placeholder="e.g. syft" />
-              <p className="text-caption text-foreground-muted mt-1">
-                {!detected.tool ? 'Not detected: enter it' : tool === detected.tool ? 'Detected' : `Detected: ${detected.tool}`}
-              </p>
+              <dt><label htmlFor="sbom-tool" className={labelClass}>Tool</label></dt>
+              <dd>
+                <Input id="sbom-tool" type="text" value={tool} onChange={e => setTool(e.target.value)} placeholder="e.g. syft" />
+                <p className="text-caption text-foreground-muted mt-1">
+                  {!detected.tool ? 'Not detected: enter it' : tool === detected.tool ? 'Detected' : `Detected: ${detected.tool}`}
+                </p>
+              </dd>
             </div>
             <div>
-              <p className={labelClass}>Vendor</p>
-              <p className="text-body-sm text-foreground py-2">{detected.vendor || 'Not stated'}</p>
+              <dt className={labelClass}>Vendor</dt>
+              <dd className="text-body-sm text-foreground py-2">{detected.vendor || 'Not stated'}</dd>
             </div>
-          </div>
+          </dl>
         )}
 
-        {error && (
-          <p role="alert" className="text-body-sm rounded-input border border-error px-3 py-2 text-error-fg">
-            {error}
-          </p>
-        )}
-        {uploaded && (
-          <p role="status" className="text-body-sm rounded-input border border-success px-3 py-2 text-success-fg">
-            {uploaded}
-          </p>
-        )}
-
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-border">
+          {error && (
+            <p role="alert" className="mr-auto text-body-sm text-error-fg">{error}</p>
+          )}
+          {uploaded && (
+            <p role="status" className="mr-auto inline-flex items-center gap-2 text-body-sm text-success-fg">
+              <Check size={16} aria-hidden />
+              {uploaded}
+            </p>
+          )}
           {onCancel && (
-            <Button type="button" size="sm" variant="outline-solid" onClick={onCancel}>
+            <Button type="button" variant="secondary" withHover onClick={onCancel}>
               Cancel
             </Button>
           )}
-          <Button type="submit" size="sm" disabled={isSubmitting}>
+          <Button type="submit" withHover disabled={isSubmitting}>
             {isSubmitting ? 'Uploading…' : submitText}
           </Button>
         </div>
       </form>
-    </Card>
+    </section>
   );
 };

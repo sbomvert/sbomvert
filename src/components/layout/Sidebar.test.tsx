@@ -1,14 +1,11 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import Sidebar from './Sidebar';
 
-// Mock next/navigation
-const pushMock = jest.fn();
+const pathnameMock = jest.fn();
 const useSessionMock = jest.fn();
 
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: pushMock,
-  }),
+  usePathname: () => pathnameMock(),
 }));
 
 jest.mock('@better-auth-ui/react', () => ({
@@ -34,6 +31,9 @@ jest.mock('lucide-react', () => ({
   Upload: () => <svg data-testid="icon-upload" />,
   ScanText: () => <svg data-testid="icon-scan" />,
   LogIn: () => <svg data-testid="icon-login" />,
+  ArrowLeftRight: () => <svg data-testid="icon-translate" />,
+  Moon: () => <svg data-testid="icon-moon" />,
+  Sun: () => <svg data-testid="icon-sun" />,
 }));
 
 describe('Sidebar', () => {
@@ -44,7 +44,7 @@ describe('Sidebar', () => {
     process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'false';
     process.env.NEXT_PUBLIC_ENABLE_SBOM_UPLOAD = 'false';
     process.env.NEXT_PUBLIC_ENABLE_AUTH = 'true';
-    pushMock.mockClear();
+    pathnameMock.mockReturnValue('/');
     useSessionMock.mockClear();
     useSessionMock.mockReturnValue({ data: null });
   });
@@ -73,7 +73,7 @@ describe('Sidebar', () => {
 
     render(<Sidebar />);
 
-    expect(screen.getAllByRole('button').map(b => b.textContent)).toEqual(['Home', 'SBOM Analysis', 'Translate SBOM']);
+    expect(screen.getAllByRole('link').map(b => b.textContent)).toEqual(['SBOMVert', 'Home', 'SBOM Analysis', 'Translate SBOM']);
   });
 
   it('has no login or account controls when auth is disabled', () => {
@@ -82,55 +82,48 @@ describe('Sidebar', () => {
     render(<Sidebar />);
 
     expect(screen.queryByText('Login')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button')).toHaveLength(5);
+    expect(screen.getAllByRole('link')).toHaveLength(6);
     // useSession needs the AuthProvider, which is not rendered without auth
     expect(useSessionMock).not.toHaveBeenCalled();
   });
 
-  it('renders 6 buttons when scan API is disabled', () => {
+  it('renders 7 links (the logo and 6 pages) when scan API is disabled', () => {
     render(<Sidebar />);
 
-    expect(screen.getAllByRole('button')).toHaveLength(6);
+    expect(screen.getAllByRole('link')).toHaveLength(7);
   });
 
-  it('renders 7 buttons when scanning is enabled (passed in by the server layout)', () => {
+  it('renders 8 links (the logo and 7 pages) when scanning is enabled (passed in by the server layout)', () => {
     render(<Sidebar scanEnabled />);
 
-    expect(screen.getAllByRole('button')).toHaveLength(7);
-    expect(screen.getByRole('button', { name: /scan/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(8);
+    expect(screen.getByRole('link', { name: /^scan$/i })).toBeInTheDocument();
   });
-  it('links to the Translate SBOM page', () => {
+
+  it('links each item to its page', () => {
     render(<Sidebar />);
 
-    fireEvent.click(screen.getByText('Translate SBOM'));
-    expect(pushMock).toHaveBeenCalledWith('/translate');
+    const href = (name: string) => screen.getByRole('link', { name }).getAttribute('href');
+    expect(href('Home')).toBe('/');
+    expect(href('SBOM Analysis')).toBe('/compare/analyze');
+    expect(href('SBOM Comparison')).toBe('/compare/sbom');
+    expect(href('CVE Comparison')).toBe('/compare/cve');
+    expect(href('Translate SBOM')).toBe('/translate');
+    expect(href('Login')).toBe('/auth/sign-in');
   });
 
-  it('calls router.push with correct route on click', () => {
+  it('marks the current page, also on its sub-pages', () => {
+    pathnameMock.mockReturnValue('/compare/sbom/artifact');
     render(<Sidebar />);
 
-    fireEvent.click(screen.getByText('Home'));
-    expect(pushMock).toHaveBeenCalledWith('/');
-
-    fireEvent.click(screen.getByText('SBOM Analysis'));
-    expect(pushMock).toHaveBeenCalledWith('/compare/analyze');
-
-    fireEvent.click(screen.getByText('SBOM Comparison'));
-    expect(pushMock).toHaveBeenCalledWith('/compare/sbom');
-
-    fireEvent.click(screen.getByText('CVE Comparison'));
-    expect(pushMock).toHaveBeenCalledWith('/compare/cve');
-
-    fireEvent.click(screen.getByText('Login'));
-    expect(pushMock).toHaveBeenCalledWith('/auth/sign-in');
-
+    expect(screen.getByRole('link', { name: 'SBOM Comparison' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
   });
 
-  it('applies layout classes to sidebar', () => {
+  it('is a rail of icons on a phone and full width from md up', () => {
     const { container } = render(<Sidebar />);
 
-    const aside = container.querySelector('aside');
-    expect(aside).toHaveClass('w-64', 'bg-background', 'border-r-4');
+    expect(container.querySelector('aside')).toHaveClass('w-16', 'md:w-60');
   });
 
   it('renders icons for each item', () => {
@@ -155,6 +148,15 @@ describe('Sidebar', () => {
 
     expect(screen.getByText('Logged in')).toBeInTheDocument();
     expect(screen.queryByText('Login')).not.toBeInTheDocument();
+  });
+  it('switches the theme from the bottom of the sidebar', () => {
+    document.documentElement.classList.remove('dark');
+    render(<Sidebar />);
+
+    fireEvent.click(screen.getByRole('button', { name: /theme/i }));
+    expect(document.documentElement).toHaveClass('dark');
+    fireEvent.click(screen.getByRole('button', { name: /theme/i }));
+    expect(document.documentElement).not.toHaveClass('dark');
   });
 });
 

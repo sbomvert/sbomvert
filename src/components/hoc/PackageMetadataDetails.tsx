@@ -3,17 +3,16 @@ import { CheckCircle, XCircle, AlertTriangle, Check } from 'lucide-react';
 import { IPackageComparison } from '@/models/IComparisonResult';
 import { IToolInfo } from '@/models/ISbom';
 import { PurlAnalysisCard } from './PurlAnalysisCard';
+import { toolColor } from '@/lib/utils';
 
 interface PackageMetadataDetailsProps {
   packageData: IPackageComparison;
   tools: IToolInfo[];
-  toolColors: string[];
 }
 
 export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
   packageData,
   tools,
-  toolColors,
 }) => {
   const renderMetadataSection = (
     title: string,
@@ -25,7 +24,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       return (
         <div>
           <h5 className="text-body-sm font-semibold text-foreground-muted mb-2">{title}</h5>
-          <p className="text-body-sm text-foreground-subtle italic">Not reported by any tool</p>
+          <p className="text-body-sm text-foreground-subtle">Not reported by any tool</p>
         </div>
       );
     }
@@ -35,7 +34,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
         <div>
           <h5 className="text-body-sm font-semibold text-foreground-muted mb-2 flex items-center gap-2">
             {title}
-            <Check size={16} className="text-success" />
+            <Check size={16} className="text-success-fg" />
           </h5>
           <div className="bg-success-subtle rounded-panel p-3">
             <p className="text-body-sm text-foreground font-mono break-all">{values[0]}</p>
@@ -49,25 +48,25 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       <div>
         <h5 className="text-body-sm font-semibold text-foreground-muted mb-2 flex items-center gap-2">
           {title}
-          <AlertTriangle size={16} className="text-warning" />
+          <AlertTriangle size={16} className="text-warning-fg" />
           <span className="text-caption font-normal text-warning-fg">Conflicts detected</span>
         </h5>
         <div className="space-y-2">
-          {tools.map((tool, idx) => {
+          {tools.map(tool => {
             const metadata = packageData.metadataByTool.get(tool.name);
             const value = metadata?.[metadataKey];
             return (
               <div
                 key={tool.name}
                 className="bg-surface rounded-panel p-3 border-l-4"
-                style={{ borderLeftColor: toolColors[idx] }}
+                style={{ borderLeftColor: toolColor(tool.name) }}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-body-sm font-medium" style={{ color: toolColors[idx] }}>
+                  <span className="text-body-sm font-medium">
                     {tool.name}
                   </span>
                   {!value && (
-                    <span className="text-caption text-foreground-subtle italic">Not reported</span>
+                    <span className="text-caption text-foreground-subtle">Not reported</span>
                   )}
                 </div>
                 {value && <p className="text-body-sm text-foreground font-mono break-all">{value}</p>}
@@ -87,7 +86,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       <div>
         <h4 className="text-body-sm font-semibold text-foreground-muted mb-3">Tool Detection Status</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {tools.map((tool, idx) => {
+          {tools.map(tool => {
             const found = packageData.foundInTools.includes(tool.name);
             return (
               <div
@@ -97,7 +96,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
                 }`}
               >
                 {found ? (
-                  <CheckCircle size={16} style={{ color: toolColors[idx] }} />
+                  <CheckCircle size={16} style={{ color: toolColor(tool.name) }} />
                 ) : (
                   <XCircle size={16} className="text-foreground-subtle" />
                 )}
@@ -131,14 +130,14 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
         ) : (
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle size={16} className="text-warning" />
+              <AlertTriangle size={16} className="text-warning-fg" />
               <span className="text-body-sm text-warning-fg font-medium">Multiple pURLs detected – Review required</span>
             </div>
-            {tools.map((tool, idx) => {
+            {tools.map(tool => {
               const metadata = packageData.metadataByTool.get(tool.name);
               return (
-                <div key={tool.name} className="border-l-4 pl-4" style={{ borderLeftColor: toolColors[idx] }}>
-                  <div className="text-body-sm font-medium mb-2" style={{ color: toolColors[idx] }}>{tool.name}</div>
+                <div key={tool.name} className="border-l-4 pl-4" style={{ borderLeftColor: toolColor(tool.name) }}>
+                  <div className="text-body-sm font-medium mb-2">{tool.name}</div>
                   <PurlAnalysisCard purl={metadata?.purl} cpe={metadata?.cpe} />
                 </div>
               );
@@ -161,19 +160,19 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
           ) : (
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle size={16} className="text-warning" />
+                <AlertTriangle size={16} className="text-warning-fg" />
                 <span className="text-body-sm text-warning-fg font-medium">Multiple CPEs detected</span>
               </div>
-              {tools.map((tool, idx) => {
+              {tools.map(tool => {
                 const cpe = packageData.metadataByTool.get(tool.name)?.cpe;
                 if (!cpe) return null;
                 return (
                   <div
                     key={tool.name}
                     className="bg-surface rounded-panel p-3 border-l-4"
-                    style={{ borderLeftColor: toolColors[idx] }}
+                    style={{ borderLeftColor: toolColor(tool.name) }}
                   >
-                    <div className="text-body-sm font-medium mb-1" style={{ color: toolColors[idx] }}>{tool.name}</div>
+                    <div className="text-body-sm font-medium mb-1">{tool.name}</div>
                     <p className="text-body-sm font-mono text-foreground break-all">{cpe}</p>
                   </div>
                 );
@@ -187,7 +186,7 @@ export const PackageMetadataDetails: React.FC<PackageMetadataDetailsProps> = ({
       {packageData.hasMetadataConflicts && (
         <div className="bg-warning-subtle border border-warning rounded-panel p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
+            <AlertTriangle size={20} className="text-warning-fg shrink-0 mt-0.5" />
             <div>
               <h5 className="text-body-sm font-semibold text-warning-fg mb-1">Metadata Conflicts Detected</h5>
               <p className="text-body-sm text-warning-fg">

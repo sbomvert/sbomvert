@@ -11,15 +11,15 @@ function MetaRow({ label, value, mono, href }: { label: string; value?: string |
   if (!value) return null;
   return (
     <div className="grid grid-cols-[120px_1fr] gap-2 py-1.5 border-b border-border-subtle last:border-0">
-      <span className="text-xs font-medium text-foreground-subtle uppercase tracking-wider self-start pt-0.5">{label}</span>
+      <span className="text-caption font-medium text-foreground-subtle uppercase tracking-wider self-start pt-0.5">{label}</span>
       <div className="flex items-start gap-1.5 min-w-0">
         {href ? (
           <a href={href} target="_blank" rel="noopener noreferrer"
-            className={cn('text-xs text-info hover:underline break-all', mono && 'font-mono')}>
+            className={cn('text-caption text-info-fg hover:underline break-all', mono && 'font-mono')}>
             {value}
           </a>
         ) : (
-          <span className={cn('text-xs text-foreground-muted break-all', mono && 'font-mono')}>{value}</span>
+          <span className={cn('text-caption text-foreground-muted break-all', mono && 'font-mono')}>{value}</span>
         )}
         <CopyButton value={value} />
       </div>
@@ -64,8 +64,8 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
               </Badge>
             )}
           </div>
-          <h2 className="font-bold text-foreground text-lg truncate">{pkg.name}</h2>
-          <p className="text-sm text-foreground-subtle font-mono">{pkg.version}</p>
+          <h2 className="font-medium text-foreground text-heading-sm truncate">{pkg.name}</h2>
+          <p className="text-body-sm text-foreground-subtle font-mono">{pkg.version}</p>
         </div>
         <Button onClick={onClose} variant="unfocused" withHover aria-label="Close" className="shrink-0 border-0 p-2 hover:bg-surface-alt">
           <X size={18} />
@@ -77,12 +77,12 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
 
         {/* Description */}
         {pkg.description && (
-          <p className="text-sm text-foreground-muted leading-relaxed">{pkg.description}</p>
+          <p className="text-body-sm text-foreground-muted leading-relaxed">{pkg.description}</p>
         )}
 
         {/* Identity */}
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
+          <h3 className="text-body-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
             <Info size={12} /> Identity
           </h3>
           <div className="bg-surface-alt rounded-xl px-4 py-1">
@@ -96,7 +96,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
 
         {/* Provenance */}
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
+          <h3 className="text-body-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
             <Package size={12} /> Provenance
           </h3>
           <div className="bg-surface-alt rounded-xl px-4 py-1">
@@ -110,7 +110,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
 
         {/* License */}
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
+          <h3 className="text-body-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
             <Shield size={12} /> License
           </h3>
           <div className="bg-surface-alt rounded-xl px-4 py-1">
@@ -121,12 +121,12 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
         {/* PURL */}
         {pkg.purl && (
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
+            <h3 className="text-body-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
               <Tag size={12} /> Package URL
             </h3>
             <div className="bg-surface-alt rounded-xl px-4 py-3">
               <div className="flex items-start gap-2">
-                <code className="text-xs text-info break-all flex-1">{pkg.purl}</code>
+                <code className="text-caption text-info-fg break-all flex-1">{pkg.purl}</code>
                 <CopyButton value={pkg.purl} />
               </div>
             </div>
@@ -136,17 +136,17 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
         {/* CPEs */}
         {uniqueCpes.length > 0 && (
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
+            <h3 className="text-body-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
               <Hash size={12} /> CPEs
               <a href={nvdHref} target="_blank" rel="noopener noreferrer"
-                className="ml-auto text-micro text-info hover:underline flex items-center gap-0.5">
+                className="ml-auto text-micro text-info-fg hover:underline flex items-center gap-0.5">
                 Search NVD <ExternalLink size={10} />
               </a>
             </h3>
             <div className="bg-surface-alt rounded-xl px-4 py-3 flex flex-col gap-2">
               {uniqueCpes.map((cpe) => (
                 <div key={cpe} className="flex items-start gap-1.5">
-                  <code className="text-xs text-foreground-muted break-all flex-1">{cpe}</code>
+                  <code className="text-caption text-foreground-muted break-all flex-1">{cpe}</code>
                   <CopyButton value={cpe} />
                 </div>
               ))}
@@ -157,13 +157,13 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
         {/* Layer IDs */}
         {layerIds.length > 0 && (
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3">
+            <h3 className="text-body-sm font-semibold text-foreground mb-3">
               Layer{layerIds.length > 1 ? 's' : ''}
             </h3>
             <div className="bg-surface-alt rounded-xl px-4 py-3 flex flex-col gap-2">
               {layerIds.map((lid) => (
                 <div key={lid} className="flex items-start gap-1.5">
-                  <code className="text-xs text-foreground-muted break-all flex-1">{lid}</code>
+                  <code className="text-caption text-foreground-muted break-all flex-1">{lid}</code>
                   <CopyButton value={lid} />
                 </div>
               ))}
@@ -174,7 +174,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
         {/* Files */}
         {pkg.files.length > 0 && (
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-subtle mb-3 flex items-center gap-1.5">
+            <h3 className="text-body-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
               <FileText size={12} /> Files
               <span className="ml-auto text-micro text-foreground-subtle font-normal normal-case tracking-normal">
                 {pkg.files.length} file{pkg.files.length !== 1 ? 's' : ''}
@@ -186,7 +186,7 @@ export function PackageDrawer({ pkg, onClose }: { pkg: RichPackage; onClose: () 
                   className="bg-surface-alt rounded-xl px-4 py-3">
                   <div className="flex items-center gap-2 mb-1.5">
                     <FileText size={12} className="text-foreground-subtle shrink-0" />
-                    <span className="font-mono text-xs text-foreground break-all">
+                    <span className="font-mono text-caption text-foreground break-all">
                       {file.fileName}
                     </span>
                   </div>

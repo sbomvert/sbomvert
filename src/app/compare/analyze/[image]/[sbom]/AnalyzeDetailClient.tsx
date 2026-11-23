@@ -121,7 +121,7 @@ export default function AnalyzeDetailClient({
               <p className="text-micro font-semibold uppercase tracking-widest text-foreground-subtle mb-1">
                 {label}
               </p>
-              <p className="text-sm font-semibold text-foreground truncate">
+              <p className="text-body-sm font-semibold text-foreground truncate">
                 {value}
               </p>
             </Card>
@@ -195,7 +195,7 @@ export default function AnalyzeDetailClient({
           <span className="text-micro font-semibold uppercase text-foreground-subtle">
             Namespace
           </span>
-          <code className="text-xs text-foreground-muted truncate flex-1">
+          <code className="text-caption text-foreground-muted truncate flex-1">
             {info.documentNamespace}
           </code>
           <CopyButton value={info.documentNamespace} />
@@ -234,7 +234,7 @@ export default function AnalyzeDetailClient({
       {/* Table */}
       <div className="bg-surface rounded-2xl border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-sm">
             <tbody>
               {filtered.map((pkg) => (
                 <tr
@@ -245,18 +245,18 @@ export default function AnalyzeDetailClient({
                   <td className="px-4 py-2 max-w-xs">
                     <div className="font-medium truncate" title={pkg.name}>{pkg.name}</div>
                   </td>
-                  <td className="px-4 py-2 text-xs font-mono max-w-[12rem] truncate" title={pkg.version}>{pkg.version}</td>
+                  <td className="px-4 py-2 text-caption font-mono max-w-[12rem] truncate" title={pkg.version}>{pkg.version}</td>
                   <td className="px-4 py-2">
                     <PackageTypeBadge type={pkg.pkgType} />
                   </td>
-                  <td className="px-4 py-2 text-xs">
-                    {pkg.license ?? '—'}
+                  <td className="px-4 py-2 text-caption">
+                    {pkg.license ?? 'Not reported'}
                   </td>
-                  <td className="px-4 py-2 text-xs">
-                    {pkg.supplier ?? pkg.originator ?? '—'}
+                  <td className="px-4 py-2 text-caption">
+                    {pkg.supplier ?? pkg.originator ?? 'Not reported'}
                   </td>
                   <td className="px-4 py-2 text-center">
-                    {pkg.files.length || '—'}
+                    {pkg.files.length}
                   </td>
                   <td className="px-2">
                     <ChevronRight size={13} />

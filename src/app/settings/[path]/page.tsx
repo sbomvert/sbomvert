@@ -10,6 +10,8 @@ import { getAuth } from "@/lib/auth"
 import { FEATURE_FLAGS } from "@/lib/featureFlags"
 import { getQueryClient } from "@/lib/query-client"
 
+export const metadata = { title: "Settings · SBOMVert" }
+
 const validSettingsPaths = new Set([
   ...Object.values(viewPaths.settings),
   ...Object.values(organizationPlugin().viewPaths.settings ?? {})

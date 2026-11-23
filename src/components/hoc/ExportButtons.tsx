@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { Selector } from '@/components/select/Selector';
 import { SanitizeContainerImage } from '@sbomvert/scan/image';
@@ -8,8 +8,10 @@ interface ExportButtonsProps {
 }
 
 export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
+  const [error, setError] = useState('');
 
   const handleDownload = (toolName: string) => {
+    setError('');
     try {
       // Get the image name from comparison
       const imageName = comparison.imageId;
@@ -45,7 +47,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Download failed:', error);
-      alert(`Failed to download ${toolName} SBOM file`);
+      setError(`Could not download the ${toolName} SBOM file`);
     }
   };
 
@@ -62,6 +64,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ comparison }) => {
         options={comparison.tools.map(tool => ({ value: tool.name, label: tool.name }))}
         onValueChange={handleDownload}
       />
+      {error && <p role="alert" className="text-body-sm text-error-fg">{error}</p>}
     </>
   );
 };

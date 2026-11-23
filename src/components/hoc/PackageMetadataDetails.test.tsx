@@ -26,13 +26,10 @@ test('shows conflict when only one tool reports a CPE', () => {
     uniqueHashes: [],
   };
 
-  const toolColors = ['#ff0000', '#00ff00'];
-
   render(
     <PackageMetadataDetails
       packageData={packageData}
       tools={tools}
-      toolColors={toolColors}
     />
   );
 

@@ -15,7 +15,8 @@ export const Card: React.FC<CardProps> = ({
     <div
       {...props}
       className={cn(
-        'bg-surface rounded-card-lg shadow-card p-card-p-lg transition-colors',
+        // p-6, not the card token: a caller's p-0 must be able to override it (tailwind-merge does not know the token)
+        'bg-surface rounded-card border border-border shadow-card p-6',
         className
       )}
     >

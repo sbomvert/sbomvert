@@ -28,7 +28,7 @@ export function List<T>({
           <div className="flex items-center gap-3">
             <FileText
               size={14}
-              className="text-foreground-subtle group-hover:text-info transition-colors"
+              className="text-foreground-subtle group-hover:text-info-fg transition-colors"
             />
             <span className="text-body-sm text-foreground font-medium capitalize">
               {getLabel(item)}
@@ -37,7 +37,7 @@ export function List<T>({
 
           <ChevronRight
             size={14}
-            className="text-foreground-subtle group-hover:text-info transition-colors"
+            className="text-foreground-subtle group-hover:text-info-fg transition-colors"
           />
         </button>
       ))}

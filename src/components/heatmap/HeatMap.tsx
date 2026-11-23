@@ -15,38 +15,15 @@ export type HeatmapProps = {
   height?: number;
 };
 
-function hexToRgb(hex: string) {
-  const h = hex.replace('#', '');
-  const bigint = parseInt(
-    h.length === 3
-      ? h
-          .split('')
-          .map(c => c + c)
-          .join('')
-      : h,
-    16
-  );
-  return {
-    r: (bigint >> 16) & 255,
-    g: (bigint >> 8) & 255,
-    b: bigint & 255,
-  };
-}
-
-function interpolateColor(low: string, high: string, t: number) {
-  const a = hexToRgb(low);
-  const b = hexToRgb(high);
-  const r = Math.round(a.r + (b.r - a.r) * t);
-  const g = Math.round(a.g + (b.g - a.g) * t);
-  const bl = Math.round(a.b + (b.b - a.b) * t);
-  return `rgb(${r}, ${g}, ${bl})`;
-}
+// color-mix instead of interpolating hex in JS: the ends can be theme tokens (`var(--primary)`)
+const mixColor = (low: string, high: string, t: number) =>
+  `color-mix(in oklab, ${high} ${Math.round(t * 100)}%, ${low})`;
 
 export default function Heatmap({
   data,
   xLabels: xLabelsProp,
   yLabels: yLabelsProp,
-  colorRange = ['#e0f7fa', '#006064'],
+  colorRange = ['var(--surface-alt)', 'var(--primary)'],
   width,
   height,
 }: HeatmapProps) {
@@ -116,7 +93,7 @@ export default function Heatmap({
 
             // Calculate cell size to maintain squares
             const cellSize = Math.max(
-              40,
+              24,
               Math.min(availableWidth / xLabels.length, availableHeight / yLabels.length)
             );
             const cellWidth = cellSize;
@@ -129,7 +106,7 @@ export default function Heatmap({
                   xLabels.map((xLabel, xi) => {
                     const val = lookup.get(`${xLabel}||${yLabel}`) ?? 0;
                     const t = Math.max(0, Math.min(1, (val - min) / range));
-                    const fill = interpolateColor(colorRange[0], colorRange[1], t);
+                    const fill = mixColor(colorRange[0], colorRange[1], t);
 
                     return (
                       <rect
@@ -138,7 +115,7 @@ export default function Heatmap({
                         y={yi * cellHeight}
                         width={cellWidth}
                         height={cellHeight}
-                        fill={fill}
+                        style={{ fill }}
                         stroke="var(--surface)"
                         strokeWidth={0.5}
                         className="heatmap-cell"
@@ -190,20 +167,21 @@ export default function Heatmap({
                   width={cellWidth * xLabels.length}
                   height={cellHeight * yLabels.length}
                   fill="none"
-                  stroke="var(--foreground-subtle)"
-                  strokeWidth={1.5}
+                  stroke="var(--border)"
+                  strokeWidth={1}
                 />
 
                 {/* X-axis labels */}
                 {xLabels.map((label, i) => (
+                  // each label ends just under its column and runs down-left, so it never covers the grid
                   <text
                     key={`x-${i}`}
-                    x={i * cellWidth + cellWidth / 2 - 20}
-                    y={cellHeight * yLabels.length + 30}
-                    textAnchor="middle"
-                    fontSize={14}
+                    x={i * cellWidth + cellWidth / 2}
+                    y={cellHeight * yLabels.length + 12}
+                    textAnchor="end"
+                    fontSize={12}
                     fill="var(--foreground-subtle)"
-                    transform={`rotate(-45, ${i * cellWidth + cellWidth / 2}, ${cellHeight * yLabels.length + 20})`}
+                    transform={`rotate(-45, ${i * cellWidth + cellWidth / 2}, ${cellHeight * yLabels.length + 12})`}
                   >
                     {label}
                   </text>
@@ -217,7 +195,7 @@ export default function Heatmap({
                     y={i * cellHeight + cellHeight / 2}
                     textAnchor="end"
                     fill="var(--foreground-subtle)"
-                    fontSize={14}
+                    fontSize={12}
                   >
                     {label}
                   </text>
@@ -230,10 +208,10 @@ export default function Heatmap({
 
       {tooltip && tooltip.active && (
         <div
-          className="absolute bg-popover text-popover-foreground border border-border rounded shadow-lg p-2 text-sm pointer-events-none z-50"
+          className="absolute bg-popover text-popover-foreground border border-border rounded shadow-lg p-2 text-body-sm pointer-events-none z-50"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
-          <div className="font-semibold text-foreground">
+          <div className="font-medium text-foreground">
             {tooltip.xLabel} / {tooltip.yLabel}
           </div>
           <div className="text-foreground-muted">Value: {tooltip.value}%</div>

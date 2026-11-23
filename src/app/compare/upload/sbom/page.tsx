@@ -26,7 +26,7 @@ const handleUpload = async (name: string, containerName: string, file: File, det
 export default function UploadPage() {
   return (
     <>
-      <PageTitle title="Upload SBOM" subtitle="Add an SPDX or CycloneDX SBOM of a container image to the stored SBOMs." />
+      <PageTitle title="Upload SBOM" subtitle="Add an SPDX or CycloneDX SBOM of a container image to the stored SBOMs" />
       <SbomUploadForm onUpload={handleUpload} />
     </>
   );

@@ -17,34 +17,34 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center gap-2 rounded-button font-semibold transition-all';
+    'inline-flex items-center justify-center gap-2 rounded-button font-medium transition-[color,background-color,border-color,transform] active:scale-[0.98] disabled:active:scale-100';
 
   const variantStyles = {
     primary:
-      'border-2 border-primary bg-primary text-primary-foreground focus:ring-ring shadow-button ' +
+      'border border-primary bg-primary text-primary-foreground focus:ring-ring ' +
       (withHover ? 'hover:bg-primary-hover' : ''),
 
     secondary:
-      'border-2 border-input bg-input text-foreground focus:ring-ring shadow-button ' +
-      (withHover ? 'hover:bg-border' : ''),
+      'border border-border bg-surface text-foreground focus:ring-ring ' +
+      (withHover ? 'hover:bg-muted' : ''),
 
     "outline-solid":
-      'border-2 border-primary-fg text-primary-fg focus:ring-ring ' +
+      'border border-primary-fg text-primary-fg focus:ring-ring ' +
       (withHover ? 'hover:bg-info-subtle' : ''),
 
     unfocused:
-      'border-2 border-primary-fg text-foreground-muted ' +
-      (withHover ? 'hover:text-foreground' : ''),
+      'border border-border bg-surface text-foreground-muted ' +
+      (withHover ? 'hover:text-foreground hover:bg-muted' : ''),
 
     disabled:
       'flex items-center bg-input text-foreground-subtle cursor-not-allowed',
   };
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
+    sm: 'px-3 py-1.5 text-body-sm',
     Sm: 'px-4 py-2 min-w-24',
-    md: 'px-6 py-3',
-    lg: 'px-9 py-6 text-lg',
+    md: 'h-10 px-4 text-body-sm',
+    lg: 'h-12 px-5 text-body',
   };
 
   return (

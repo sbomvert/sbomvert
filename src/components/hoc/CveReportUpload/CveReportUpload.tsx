@@ -53,10 +53,11 @@ export interface UploadState {
 const SEV_CONFIG: Array<{
   key: keyof CveSummary; label: string; icon: React.ReactNode; color: string; bg: string;
 }> = [
-  { key: 'critical', label: 'Critical', icon: <ChevronsUp size={13} />,  color: 'text-error',       bg: 'bg-error-subtle' },
-  { key: 'high',     label: 'High',     icon: <ShieldAlert size={13} />, color: 'text-warning', bg: 'bg-warning-subtle' },
-  { key: 'medium',   label: 'Medium',   icon: <Shield size={13} />,      color: 'text-warning', bg: 'bg-warning-subtle' },
-  { key: 'low',      label: 'Low',      icon: <ShieldCheck size={13} />, color: 'text-info',     bg: 'bg-info-subtle' },
+  // an ordered scale: critical is the only inverted (solid) one, high and critical share the error hue
+  { key: 'critical', label: 'Critical', icon: <ChevronsUp size={13} />,  color: 'text-surface',       bg: 'bg-error-fg' },
+  { key: 'high',     label: 'High',     icon: <ShieldAlert size={13} />, color: 'text-error-fg',     bg: 'bg-error-subtle' },
+  { key: 'medium',   label: 'Medium',   icon: <Shield size={13} />,      color: 'text-warning-fg', bg: 'bg-warning-subtle' },
+  { key: 'low',      label: 'Low',      icon: <ShieldCheck size={13} />, color: 'text-info-fg',     bg: 'bg-info-subtle' },
   { key: 'unknown',  label: 'Unknown',  icon: <Minus size={13} />,       color: 'text-foreground-muted',     bg: 'bg-surface-alt' },
 ];
 
@@ -76,7 +77,7 @@ export function SummaryPreview({ detected }: { detected: DetectedReport }) {
         {SEV_CONFIG.map(({ key, label, icon, color, bg }) => (
           <div key={key} className={cn('flex flex-col items-center gap-1 rounded-lg p-2', bg)}>
             <span className={cn('flex items-center gap-0.5 text-micro font-medium', color)}>{icon}{label}</span>
-            <span className={cn('text-lg font-bold tabular-nums leading-none', color)}>{detected.summary[key]}</span>
+            <span className={cn('text-heading-sm font-medium tabular-nums leading-none', color)}>{detected.summary[key]}</span>
           </div>
         ))}
       </div>
@@ -109,7 +110,7 @@ export function DropZone({ file, onFile, onClear, detected }: DropZoneProps) {
       onDrop={handleDrop}
       onClick={() => !file && inputRef.current?.click()}
       className={cn(
-        'relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all min-h-[160px]',
+        'relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-colors min-h-[160px]',
         file
           ? 'border-success bg-success-subtle/40 cursor-default'
           : dragging
@@ -123,7 +124,7 @@ export function DropZone({ file, onFile, onClear, detected }: DropZoneProps) {
       {file ? (
         <div className="flex flex-col items-center gap-2 px-6 py-5 text-center w-full">
           <div className="w-10 h-10 rounded-xl bg-success-subtle flex items-center justify-center">
-            <FileJson size={20} className="text-success" />
+            <FileJson size={20} className="text-success-fg" />
           </div>
           <div>
             <p className="font-medium text-foreground text-body-sm">{file.name}</p>
@@ -147,7 +148,7 @@ export function DropZone({ file, onFile, onClear, detected }: DropZoneProps) {
           <div>
             <p className="text-body-sm font-medium text-foreground-muted">Drop your CVE report here</p>
             <p className="text-caption text-foreground-subtle mt-0.5">
-              or <span className="text-success underline underline-offset-2">browse</span> · Grype or Trivy JSON
+              or <span className="text-success-fg underline underline-offset-2">browse</span> · Grype or Trivy JSON
             </p>
           </div>
         </div>
@@ -165,10 +166,10 @@ export function Field({ label, hint, error, children }: {
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between">
         <label className="text-body-sm font-medium text-foreground-muted">{label}</label>
-        {hint && <span className="text-xs text-foreground-subtle">{hint}</span>}
+        {hint && <span className="text-caption text-foreground-subtle">{hint}</span>}
       </div>
       {children}
-      {error && <p className="text-caption text-error">{error}</p>}
+      {error && <p className="text-caption text-error-fg">{error}</p>}
     </div>
   );
 }
@@ -239,8 +240,8 @@ export function SubjectCombobox({
         )}>
           <div className="flex items-center justify-between">
             <div className={cn(
-              'flex items-center gap-1.5 text-xs font-medium',
-              accent === 'emerald' ? 'text-success' : 'text-info'
+              'flex items-center gap-1.5 text-caption font-medium',
+              accent === 'emerald' ? 'text-success-fg' : 'text-info-fg'
             )}>
               <Plus size={12} /> New subject
             </div>
@@ -264,7 +265,7 @@ export function SubjectCombobox({
         </div>
       )}
 
-      {error && <p className="text-caption text-error">{error}</p>}
+      {error && <p className="text-caption text-error-fg">{error}</p>}
     </div>
   );
 }
@@ -278,7 +279,7 @@ export function ResultBanner({ state, subjectId, onReset, onGoHome }: {
     return (
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <div className="w-14 h-14 rounded-2xl bg-success-subtle flex items-center justify-center">
-          <CheckCircle2 size={28} className="text-success" />
+          <CheckCircle2 size={28} className="text-success-fg" />
         </div>
         <div>
           <p className="font-semibold text-foreground">CVE report uploaded</p>
@@ -301,12 +302,12 @@ export function ResultBanner({ state, subjectId, onReset, onGoHome }: {
   if (state.status === 'error') {
     return (
       <div className="flex items-start gap-3 p-4 rounded-xl bg-error-subtle border border-error">
-        <AlertCircle size={18} className="text-error shrink-0 mt-0.5" />
+        <AlertCircle size={18} className="text-error-fg shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-body-sm font-medium text-error-fg">Upload failed</p>
           <p className="text-caption text-error-fg mt-0.5">{state.message}</p>
         </div>
-        <button onClick={onReset} className="text-caption text-error hover:opacity-80 font-medium shrink-0">Try again</button>
+        <button onClick={onReset} className="text-caption text-error-fg hover:opacity-80 font-medium shrink-0">Try again</button>
       </div>
     );
   }

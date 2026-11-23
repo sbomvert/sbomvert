@@ -9,7 +9,7 @@ test('passes on the chosen file, and the same file can be chosen again', async (
   const onFile = jest.fn();
   render(<Empty onFile={onFile} />);
   expect(screen.getByText('No file chosen')).toBeInTheDocument();
-  const input = screen.getByLabelText('Choose a JSON file') as HTMLInputElement;
+  const input = screen.getByLabelText(/Choose a JSON file/) as HTMLInputElement;
   const file = new File(['{}'], 'a.json', { type: 'application/json' });
   await userEvent.upload(input, file);
   await userEvent.upload(input, file);
@@ -24,6 +24,6 @@ test('shows the chosen file name', () => {
 
 test('the button directly follows the input, so peer-focus-visible reaches it', () => {
   render(<Empty />);
-  const input = screen.getByLabelText('Choose a JSON file');
+  const input = screen.getByLabelText(/Choose a JSON file/);
   expect(input.nextElementSibling).toHaveTextContent('Choose a JSON file');
 });

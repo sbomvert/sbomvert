@@ -19,7 +19,7 @@ export const FilterPill: React.FC<FilterPillProps> = ({ active, onClick, color, 
       'text-caption px-3 py-1.5 rounded-pill border transition-colors font-medium capitalize',
       !color && (active ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-foreground-muted hover:border-primary-fg'),
     )}
-    style={color ? (active ? { background: color, borderColor: color, color: 'var(--primary-foreground)' } : { borderColor: color, color }) : undefined}
+    style={color ? (active ? { background: color, borderColor: color, color: 'var(--primary-foreground)' } : { borderColor: color, color: 'var(--foreground-muted)' }) : undefined}
   >
     {children}
   </button>

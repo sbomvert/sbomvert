@@ -7,31 +7,18 @@ interface CardProps {
 
 export const HorizontalStrip: React.FC<CardProps> = ({ entries, className }) => {
   const entriesArray = Object.entries(entries);
-  const nEntries = entriesArray.length;
-
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${nEntries || 1}, minmax(0, 1fr))`,
-    alignItems: 'center',
-  };
 
   return (
-    <div
-      className={`grid bg-surface rounded-card-lg shadow-card border border-border-subtle p-card-p-lg ${className ?? ''}`}
-      style={gridStyle}
+    <dl
+      className={`grid bg-surface rounded-card border border-border shadow-card divide-x divide-border ${className ?? ''}`}
+      style={{ gridTemplateColumns: `repeat(${entriesArray.length || 1}, minmax(0, 1fr))` }}
     >
-      {entriesArray.map(([k, v], index) => {
-        const isMiddle = index !== 0 && index !== nEntries - 1;
-        return (
-          <div
-            key={k}
-            className={`text-center ${isMiddle ? 'border-x border-border-subtle' : ''}`}
-          >
-            <p className="text-label text-foreground-subtle uppercase tracking-wider mb-1">{k}</p>
-            <p className="text-display font-extrabold text-foreground tabular-nums">{v}</p>
-          </div>
-        );
-      })}
-    </div>
+      {entriesArray.map(([k, v]) => (
+        <div key={k} className="px-card-p py-4 min-w-0">
+          <dt className="text-label text-foreground-subtle uppercase tracking-wider mb-1 truncate">{k}</dt>
+          <dd className="text-display text-foreground tabular-nums">{v}</dd>
+        </div>
+      ))}
+    </dl>
   );
 };

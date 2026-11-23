@@ -2,11 +2,6 @@ import { render, screen } from '@testing-library/react';
 import RootLayout from '@/app/layout.static';
 import '@testing-library/jest-dom'; // ensures DOM matchers are available
 
-// Mock Navbar to avoid rendering the actual component
-jest.mock('@/components/navbar/Navbar', () => ({
-  Navbar: jest.fn(() => <nav data-testid="navbar">Navbar</nav>),
-}));
-
 // Sidebar and Providers pull in @better-auth-ui, which ships ES modules only (Jest can't load them);
 // they have their own tests. The Sidebar stand-in shows what the layout passes it.
 jest.mock('@/components/layout/Sidebar', () => function Sidebar({ scanEnabled }: { scanEnabled?: boolean }) {
@@ -38,16 +33,16 @@ describe('RootLayout', () => {
     expect(screen.getByText(childrenText)).toBeInTheDocument();
   });
 
-  it('renders Navbar', async () => {
+  it('renders the sidebar, which carries the navigation', async () => {
     await renderLayout(childrenText);
-    expect(screen.getByTestId('navbar')).toBeInTheDocument();
+    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
   });
 
   it('renders footer with current year and license', async () => {
     await renderLayout(childrenText);
     const currentYear = new Date().getFullYear();
     expect(
-      screen.getByText(`© ${currentYear} Author jackops.dev - License Apache-2`)
+      screen.getByText(`© ${currentYear} jackops.dev · Apache-2.0 license`)
     ).toBeInTheDocument();
   });
 

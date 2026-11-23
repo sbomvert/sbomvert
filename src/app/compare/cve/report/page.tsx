@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { CVEReport, loadCVEsForImage } from '@/lib/vuln/vulnLoader';
-import { TOOL_COLORS } from '@/lib/utils';
+import { toolColor } from '@/lib/utils';
 import { getUniqueCVEs, getVulnerablePackages, buildPackageRows } from '@/lib/vuln/cveSummary';
 import { LoadingSpinner } from '@/components/spinner/LoadingSpinner';
 import { CVEToolSelector } from '@/components/hoc/CVEToolSelector/CVEToolSelector';
@@ -42,7 +42,7 @@ export default function CVEPage() {
   }, [selectedImage, router]);
 
   const activeTools       = useMemo(() => allTools.filter(t => selectedTools.has(t)), [allTools, selectedTools]);
-  const toolColors        = useMemo(() => Object.fromEntries(allTools.map((t, i) => [t, TOOL_COLORS[i % TOOL_COLORS.length]])), [allTools]);
+  const toolColors        = useMemo(() => Object.fromEntries(allTools.map(t => [t, toolColor(t)])), [allTools]);
   const globalUniqueCVEs  = useMemo(() => getUniqueCVEs(cves, activeTools), [cves, activeTools]);
   const globalVulnPackages = useMemo(() => getVulnerablePackages(cves, activeTools), [cves, activeTools]);
 
@@ -127,7 +127,7 @@ export default function CVEPage() {
           {/* Summary view */}
           {viewMode === 'summary' && (
             <section className="space-y-4">
-              <h2 className="text-label font-semibold uppercase tracking-widest text-foreground-muted">Per-tool breakdown</h2>
+              <h2 className="text-heading-sm text-foreground">Per-tool breakdown</h2>
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(activeTools.length, 3)}, 1fr)` }}>
                 {perToolStats.map(({ tool, totalVulns, uniqueVulns, vulnerablePackages }) => (
                   <CVEStatCard
@@ -148,7 +148,7 @@ export default function CVEPage() {
                     <div key={tool} className="flex items-center gap-2 px-4 py-2 rounded-card" style={{ background: `${toolColors[tool]}15` }}>
                       <span className="w-2 h-2 rounded-full" style={{ background: toolColors[tool] }} />
                       <span className="text-body-sm font-medium text-foreground capitalize">{tool}</span>
-                      <span className="text-body font-bold tabular-nums" style={{ color: toolColors[tool] }}>{exclusiveCounts[tool] ?? 0}</span>
+                      <span className="text-body font-medium tabular-nums" style={{ color: toolColors[tool] }}>{exclusiveCounts[tool] ?? 0}</span>
                     </div>
                   ))}
                 </div>
@@ -194,7 +194,9 @@ export default function CVEPage() {
                         <th className={thClass}>Package</th>
                         <th className={thClass}>Status</th>
                         {activeTools.map(tool => (
-                          <th key={tool} className="text-center py-3 px-4 text-label font-semibold uppercase tracking-wider capitalize" style={{ color: toolColors[tool] }}>
+                          <th key={tool} className="text-center py-3 px-4 text-label font-semibold uppercase tracking-wider text-foreground-muted">
+                            {/* the tool's colour is the dot: as text it is too dark on the dark theme */}
+                            <span aria-hidden className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: toolColors[tool] }} />
                             {tool}
                           </th>
                         ))}

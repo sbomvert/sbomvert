@@ -67,12 +67,12 @@ export function PackageTableRow({
               {count > 0 ? (
                 <span
                   className="inline-block text-body-sm font-semibold rounded-pill min-w-7 py-0.5 px-2"
-                  style={{ background: `${toolColors[tool]}22`, color: toolColors[tool] }}
+                  style={{ background: `${toolColors[tool]}22`, boxShadow: `inset 0 0 0 1px ${toolColors[tool]}`, color: 'var(--foreground)' }}
                 >
                   {count}
                 </span>
               ) : (
-                <span className="text-foreground-subtle text-body-sm">—</span>
+                <span className="text-foreground-subtle text-body-sm">0</span>
               )}
             </td>
           );
@@ -83,7 +83,7 @@ export function PackageTableRow({
               const d = (row.byCve[tools[0]]?.length ?? 0) - (row.byCve[tools[1]]?.length ?? 0);
               if (d === 0) return <span className="text-foreground-subtle text-body-sm">0</span>;
               return (
-                <span className={`text-body-sm font-semibold ${d > 0 ? 'text-warning' : 'text-success'}`}>
+                <span className={`text-body-sm font-semibold ${d > 0 ? 'text-warning-fg' : 'text-success-fg'}`}>
                   {d > 0 ? `+${d}` : d}
                 </span>
               );
@@ -99,11 +99,12 @@ export function PackageTableRow({
                 const list = row.byCve[tool] ?? [];
                 return (
                   <div key={tool}>
-                    <p className="text-caption font-semibold uppercase tracking-wider mb-2 capitalize" style={{ color: toolColors[tool] }}>
+                    <p className="text-body-sm font-semibold mb-2 text-foreground">
+                      <span aria-hidden className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: toolColors[tool] }} />
                       {tool} ({list.length})
                     </p>
                     {list.length === 0 ? (
-                      <p className="text-caption text-foreground-subtle italic">Not detected</p>
+                      <p className="text-caption text-foreground-subtle">Not detected</p>
                     ) : (
                       <div className="flex flex-col gap-1">
                         {list.map(cve => <CVEChip key={cve} cveId={cve} />)}
