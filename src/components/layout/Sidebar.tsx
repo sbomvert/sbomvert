@@ -2,11 +2,11 @@
 import { useSession } from '@better-auth-ui/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, ShieldX, Scale, Home, FileChartColumnIncreasing, Upload, ScanText, LogIn, ArrowLeftRight, Moon, Sun } from 'lucide-react';
+import { Shield, ShieldX, Scale, Home, FileChartColumnIncreasing, Upload, ScanText, LogIn, ArrowLeftRight } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { UserButton } from '@/components/auth/user/user-button';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
-import { useTheme } from '@/hooks/useTheme';
+import { ThemeSwitch } from '@/components/themeSwitch/ThemeSwitch';
 
 
 // Its own component: useSession needs the AuthProvider, which is only there with auth enabled.
@@ -40,7 +40,6 @@ type NavItem = { icon: typeof Home; label: string; href: string; server?: boolea
 
 export default function Sidebar({ scanEnabled = false }: { scanEnabled?: boolean }) {
   const pathname = usePathname() ?? '';
-  const { toggleTheme } = useTheme();
 
   // server: the page is not in the static build
   const allGroups: { label?: string; items: NavItem[] }[] = [
@@ -113,17 +112,7 @@ export default function Sidebar({ scanEnabled = false }: { scanEnabled?: boolean
       </nav>
 
       <div className="flex flex-col gap-0.5 p-3 border-t border-border">
-        {/* an icon button; the icon follows the .dark class, so the server and the browser render the same markup */}
-        <button
-          type="button"
-          onClick={toggleTheme}
-          aria-label="Switch theme"
-          title="Switch theme"
-          className="self-center md:self-end inline-flex items-center justify-center size-9 rounded-md text-foreground-subtle transition-colors hover:bg-surface/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Moon className="size-4.5 dark:hidden" strokeWidth={1.75} aria-hidden />
-          <Sun className="size-4.5 hidden dark:block" strokeWidth={1.75} aria-hidden />
-        </button>
+        <ThemeSwitch className="self-center md:self-end" />
         {FEATURE_FLAGS.ENABLE_AUTH && <SidebarAccount />}
       </div>
     </aside>

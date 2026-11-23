@@ -7,6 +7,9 @@ import '@testing-library/jest-dom'; // ensures DOM matchers are available
 jest.mock('@/components/layout/Sidebar', () => function Sidebar({ scanEnabled }: { scanEnabled?: boolean }) {
   return <aside data-testid="sidebar">{scanEnabled && <button>Scan</button>}</aside>;
 });
+jest.mock('@/components/layout/StaticHeader', () => ({
+  StaticHeader: () => <header data-testid="static-header" />,
+}));
 jest.mock('@/components/providers', () => ({
   Providers: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -68,5 +71,15 @@ describe('RootLayout', () => {
     process.env.NEXT_PUBLIC_ENABLE_SCAN_API = 'true';
     await renderLayout(childrenText);
     expect(screen.getByRole('button', { name: /^scan$/i })).toBeInTheDocument();
+  });
+  it('has a header instead of the sidebar in the static build', async () => {
+    process.env.NEXT_PUBLIC_STATIC_MODE = 'true';
+    try {
+      await renderLayout(childrenText);
+      expect(screen.getByTestId('static-header')).toBeInTheDocument();
+      expect(screen.queryByTestId('sidebar')).not.toBeInTheDocument();
+    } finally {
+      delete process.env.NEXT_PUBLIC_STATIC_MODE;
+    }
   });
 });
