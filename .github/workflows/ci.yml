@@ -23,7 +23,7 @@ jobs:
 
       - uses: github/codeql-action/autobuild@fddeee1a7ece751b577e409a89057319e3172939 # v4
 
-      - uses: github/codeql-action/analyze@fddeee1a7ece751b577e409a89057319e3172939 # v4
+      - uses: github/codeql-action/analyze@38112626f97ac1fd7acf3df7ebca51f4677c1b38 # v4
 
   test:
     runs-on: ubuntu-latest
