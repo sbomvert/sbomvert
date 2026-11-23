@@ -27,7 +27,9 @@ const createAuth = () => {
         },
         plugins: [
             apiKey({
-                enableSessionForAPIKeys: true,
+                // scan-auth.ts verifies keys itself; a key must not act as a session, which would let it
+                // call every Better Auth endpoint, including creating more keys
+                enableSessionForAPIKeys: false,
                 rateLimit: {
                     enabled: true,
                     timeWindow: 1000 * 60 * 60, // 1 hour
@@ -36,7 +38,8 @@ const createAuth = () => {
                 keyExpiration: {
                     minExpiresIn: 7,
                     maxExpiresIn: 90,
-                    defaultExpiresIn: null,
+                    // seconds; also applied when a request asks for no expiry, so no key is permanent
+                    defaultExpiresIn: 60 * 60 * 24 * 30,
                     disableCustomExpiresTime: false
                 }
             }),
