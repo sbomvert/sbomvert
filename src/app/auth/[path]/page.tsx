@@ -5,6 +5,8 @@ import { notFound } from "next/navigation"
 import { Auth } from "@/components/auth/auth"
 import { FEATURE_FLAGS } from "@/lib/featureFlags"
 
+export const metadata = { title: "Sign in · SBOMVert" }
+
 const validAuthPaths = new Set([
   ...Object.values(viewPaths.auth),
   ...Object.values(magicLinkPlugin().viewPaths.auth ?? {})

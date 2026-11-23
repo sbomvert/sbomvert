@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { Navbar } from '@/components/navbar/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import { Providers } from '@/components/providers';
 import { connection } from 'next/server';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
 
+// no title here: each page renders its own <title> (PageTitle does), and Next's would come first in <head>
+// self-hosted at build time: no request to Google when the page loads
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
+
 export const metadata: Metadata = {
-  title: 'SBOMVert',
   description: FEATURE_FLAGS.STATIC_MODE
     ? 'Analyze and translate container image SBOMs in your browser'
     : 'Compare SBOM tool outputs for container images',
@@ -19,35 +23,33 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // The static build has no server: rendered once, at build time.
   if (!FEATURE_FLAGS.STATIC_MODE) await connection();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body>
         <Providers>
-          <div className="min-h-screen flex flex-col transition-colors duration-300">
-            <Navbar />
-            <div className="flex flex-1 min-h-0 bg-background">
-              <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />
+          {/* one column of chrome: the sidebar carries the logo, the links and the theme switch */}
+          <div className="min-h-screen flex bg-background">
+            <Sidebar scanEnabled={FEATURE_FLAGS.ENABLE_SCAN_API} />
 
-              <div className="flex flex-1 min-h-0 flex-col">
-                <main className="flex-1 overflow-y-auto">
-                  <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                    {children}
-                  </div>
-                </main>
+            <div className="flex flex-1 min-w-0 min-h-0 flex-col">
+              <main className="flex-1 overflow-y-auto">
+                <div className="mx-auto max-w-360 px-4 py-8 sm:px-6 lg:px-8">
+                  {children}
+                </div>
+              </main>
 
-                <footer className="shrink-0 py-6 text-center text-body-sm text-foreground-muted">
-                  © {new Date().getFullYear()} Author jackops.dev - License Apache-2
-                  <div className="mt-2">
-                    <a
-                      href="https://github.com/sbomvert/sbomvert"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary-fg hover:text-primary-hover transition-colors"
-                    >
-                      GitHub Repository
-                    </a>
-                  </div>
-                </footer>
-              </div>
+              <footer className="shrink-0 py-6 text-center text-caption text-foreground-subtle">
+                © {new Date().getFullYear()} jackops.dev · Apache-2.0 license
+                <div className="mt-1">
+                  <a
+                    href="https://github.com/sbomvert/sbomvert"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground-muted hover:text-foreground hover:underline transition-colors"
+                  >
+                    GitHub Repository
+                  </a>
+                </div>
+              </footer>
             </div>
           </div>
         </Providers>

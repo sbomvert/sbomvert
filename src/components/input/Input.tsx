@@ -8,10 +8,10 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Input: React.FC<InputProps> = ({ className, variant = 'default', ...props }) => {
   const baseStyles =
-    'block w-full rounded-input border-0 py-1.5 pl-3 text-foreground bg-surface shadow-panel ring-1 ring-inset focus:ring-2 focus:ring-inset';
+    'block w-full h-10 rounded-input border-0 px-3 text-body-sm text-foreground bg-surface shadow-panel ring-1 ring-inset focus:ring-2 focus:ring-inset';
 
   const variantStyles = {
-    default: 'ring-border focus:ring-ring',
+    default: 'ring-border-field focus:ring-ring',
     error:   'ring-error focus:ring-error',
   };
 

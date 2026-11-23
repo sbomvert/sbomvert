@@ -38,9 +38,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
     return (
       <div className="text-center py-12">
         <Package className="mx-auto h-12 w-12 text-foreground-subtle mb-4" />
-        <p className="text-foreground-muted">
-          No container images found. Please add SBOMs 
-        </p>
+        <p className="text-foreground-muted">No container images yet. Add SBOMs to compare them</p>
       </div>
     );
   }
@@ -48,38 +46,33 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
   return (
     <div>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-section"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-section"
       >
-        {images.map((image, idx) => {
+        {images.map(image => {
           const { imageName, repository } = handleImageName(image.name);
           const selectable = image.sbomCount >= 2;
 
           return (
-            <motion.button
+            <button
               key={image.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
+              type="button"
               onClick={selectable ? () => onImageSelect(image.id) : undefined}
-              className={`bg-surface rounded-card p-card-p-lg shadow-card text-left min-w-0 overflow-hidden ${
-                selectable
-                  ? 'hover:shadow-card-hover transition-all hover:scale-105 cursor-pointer'
-                  : 'opacity-50 cursor-not-allowed'
+              className={`bg-surface rounded-card border border-border p-card-p shadow-card text-left min-w-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                selectable ? 'transition-colors hover:bg-surface-alt hover:border-border-field' : 'opacity-50 cursor-not-allowed'
               }`}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <Package className="text-primary-fg shrink-0" size={24} />
-                <h3 className="font-bold text-foreground truncate min-w-0" title={imageName}>
+              <div className="flex items-center gap-2 mb-1">
+                <Package className="text-foreground-subtle shrink-0" size={16} strokeWidth={1.75} aria-hidden />
+                <h3 className="font-mono text-body-sm font-medium text-foreground truncate min-w-0" title={imageName}>
                   {imageName}
                 </h3>
               </div>
               <p className="text-body-sm text-foreground-muted truncate" title={image.description}>
                 {image.description}
               </p>
-              <div className="mt-2 space-y-1">
+              <div className="mt-3 space-y-0.5">
                 {image.toolCount !== undefined && (
                   <p className="text-caption text-foreground-subtle">{image.toolCount} tools available</p>
                 )}
@@ -95,7 +88,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
               <p className="text-caption text-foreground-subtle mt-1 truncate" title={repository}>
                 Repository: {repository}
               </p>
-            </motion.button>
+            </button>
           );
         })}
       </motion.div>
@@ -110,7 +103,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         >
           Previous
         </Button>
-        <span className="px-4 py-2 text-foreground-muted">Page {currentPage} of {totalPages}</span>
+        <span className="px-4 py-2 text-body-sm text-foreground-muted tabular-nums">Page {currentPage} of {totalPages}</span>
         <Button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}

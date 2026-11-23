@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { FileText, Shield } from 'lucide-react';
 import { Button } from '@/components/button/Button';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
@@ -15,15 +14,15 @@ export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
   onComparisonTypeChange,
   comparisonType,
 }) => (
-  <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-section">
-    <h2 className="text-heading-sm text-foreground mb-4">Select Comparison Type</h2>
-    <div className="flex gap-4">
+  <div className="mb-section">
+    <h2 className="text-body-sm font-medium text-foreground-muted mb-2">Comparison type</h2>
+    <div className="flex gap-2">
       <Button
         onClick={() => onComparisonTypeChange('SBOM')}
         size="md"
         variant={comparisonType === 'SBOM' ? 'primary' : 'unfocused'}
       >
-        <FileText size={20} />
+        <FileText size={16} />
         SBOM Comparison
       </Button>
       {FEATURE_FLAGS.CVE_MAPPING_ENABLED && (
@@ -32,10 +31,10 @@ export const ComparisonTypeSelector: React.FC<ComparisonTypeSelectorProps> = ({
           size="md"
           variant={comparisonType === 'CVE' ? 'primary' : 'unfocused'}
         >
-          <Shield size={20} />
+          <Shield size={16} />
           CVE Comparison
         </Button>
       )}
     </div>
-  </motion.div>
+  </div>
 );

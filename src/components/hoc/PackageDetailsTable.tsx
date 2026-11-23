@@ -4,7 +4,7 @@ import { AlertTriangle } from 'lucide-react';
 import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { PackageMetadataDetails } from './PackageMetadataDetails';
 import { PackageTypeBadge } from './PackageTypeBadge';
-import { TOOL_COLORS } from '@/lib/utils';
+import { toolColor } from '@/lib/utils';
 
 interface PackageDetailsTableProps {
   comparison: IMultiToolComparison;
@@ -61,26 +61,38 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
     });
   }, [filteredPackages, sortKey, sortDirection]);
 
-  const thClass = 'text-left py-3 px-4 font-semibold text-foreground cursor-pointer';
-  const sortIndicator = (key: string) => sortKey === key ? (sortDirection === 'asc' ? ' ↑' : ' ↓') : '';
+  const thClass = 'text-left py-3 px-4 font-semibold text-foreground';
+  // a sortable column: the header is a button, and the column says how it is sorted
+  // (a function, not a component: a component defined here would remount on every sort and lose focus)
+  const sortableTh = (sortBy: string, className: string, children: React.ReactNode) => {
+    const sorted = sortKey === sortBy;
+    return (
+      <th className={`${thClass} ${className}`} aria-sort={sorted ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+        <button type="button" onClick={() => handleSort(sortBy)} className="font-semibold rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          {children}
+          {sorted && <span aria-hidden>{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>}
+        </button>
+      </th>
+    );
+  };
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full table-fixed">
         <thead>
           <tr className="border-b border-border">
-            <th className={`${thClass} w-1/4`}  onClick={() => handleSort('name')}>Package{sortIndicator('name')}</th>
-            <th className={`${thClass} w-32`}   onClick={() => handleSort('type')}>Type{sortIndicator('type')}</th>
-            <th className={`${thClass} w-32`}   onClick={() => handleSort('version')}>Version{sortIndicator('version')}</th>
-            <th className={`${thClass} w-64`}   onClick={() => handleSort('foundIn')}>Found In{sortIndicator('foundIn')}</th>
-            <th className={`${thClass} w-24`} />
+            {sortableTh('name',    'w-1/4', 'Package')}
+            {sortableTh('type',    'w-32',  'Type')}
+            {sortableTh('version', 'w-32',  'Version')}
+            {sortableTh('foundIn', 'w-64',  'Found In')}
+            <th className={`${thClass} w-24`}><span className="sr-only">Package details</span></th>
           </tr>
         </thead>
         <tbody>
           {sortedPackages.map(([key, pkg]) => {
             const toolChunks = chunkArray(
-              comparison.tools.map((tool, idx) => ({
-                tool, found: pkg.foundInTools.includes(tool.name), colorIndex: idx,
+              comparison.tools.map(tool => ({
+                tool, found: pkg.foundInTools.includes(tool.name),
               })),
               4
             );
@@ -91,7 +103,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                     <div className="flex items-center gap-2">
                       <div className="font-medium text-foreground truncate" title={pkg.name}>{pkg.name}</div>
                       {(pkg.hasMetadataConflicts || pkg.foundInTools.length !== comparison.tools.length) && (
-                        <AlertTriangle size={16} className="text-warning shrink-0" />
+                        <AlertTriangle size={16} className="text-warning-fg shrink-0" />
                       )}
                     </div>
                   </td>
@@ -105,13 +117,13 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                     <div className="space-y-1">
                       {toolChunks.map((chunk, chunkIdx) => (
                         <div key={chunkIdx} className="flex gap-1 flex-wrap">
-                          {chunk.map(({ tool, found, colorIndex }) => (
+                          {chunk.map(({ tool, found }) => (
                             <span
                               key={tool.name}
-                              className={`px-2 py-1 rounded text-caption font-medium ${
+                              className={`px-2 py-1 rounded-badge text-caption font-medium ${
                                 found ? 'text-primary-foreground' : 'bg-input text-foreground-subtle'
                               }`}
-                              style={found ? { backgroundColor: TOOL_COLORS[colorIndex] } : {}}
+                              style={found ? { backgroundColor: toolColor(tool.name) } : {}}
                             >
                               {tool.name}
                             </span>
@@ -123,7 +135,7 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                   <td className="py-3 px-4">
                     <button
                       onClick={() => setExpandedPackage(expandedPackage === key ? null : key)}
-                      className="text-primary-fg hover:text-primary-hover text-body-sm font-medium whitespace-nowrap"
+                      className="text-primary-fg hover:underline text-body-sm font-medium whitespace-nowrap"
                     >
                       {expandedPackage === key ? 'Hide' : 'Details'}
                     </button>
@@ -140,7 +152,6 @@ export const PackageDetailsTable: React.FC<PackageDetailsTableProps> = ({
                         <PackageMetadataDetails
                           packageData={pkg}
                           tools={comparison.tools}
-                          toolColors={TOOL_COLORS}
                         />
                       </motion.div>
                     </td>

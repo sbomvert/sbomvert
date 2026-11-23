@@ -11,9 +11,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Tool palette — used for dynamically coloured chart elements (kept as hex,
-// because they are passed via `style` props / charting libs, not Tailwind classes).
-export const TOOL_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+// Tool palette: data colours for chart elements and tool chips (hex, because they go to `style` props
+// and the charting library). Each one carries white text at 4.5:1 and stands out 3:1 on the dark surface.
+export const TOOL_COLORS = ['#2563eb', '#047857', '#b45309', '#dc2626', '#7c3aed', '#0e7490', '#c026d3', '#4d7c0f', '#0369a1', '#a16207'];
+
+// A tool keeps its colour on every view, and when other tools are deselected: the first tool seen
+// in the session gets the first colour, and so on.
+// ponytail: colours repeat after TOOL_COLORS.length tools, and follow the order tools are first seen
+const toolColors = new Map<string, string>();
+export const toolColor = (tool: string): string => {
+  if (!toolColors.has(tool)) toolColors.set(tool, TOOL_COLORS[toolColors.size % TOOL_COLORS.length]);
+  return toolColors.get(tool)!;
+};
 
 interface IJaccardResult { x: string; y: string; value: number; }
 

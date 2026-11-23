@@ -28,11 +28,11 @@ export function CVEToolSelector({
             <button
               key={tool}
               onClick={() => onToggle(tool)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-card text-body-sm font-medium border transition-all capitalize
+              className={`flex items-center gap-2 px-4 py-2 rounded-card text-body-sm font-medium border transition-colors capitalize
                 ${active ? 'shadow-panel' : 'opacity-40 hover:opacity-70'}`}
               style={
                 active
-                  ? { borderColor: color, background: `${color}18`, color }
+                  ? { borderColor: color, background: `${color}18`, color: 'var(--foreground)' }
                   : { borderColor: 'var(--border)', color: 'var(--foreground-subtle)' }
               }
             >

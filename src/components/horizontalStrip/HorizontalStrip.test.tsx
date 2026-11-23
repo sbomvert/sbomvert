@@ -12,8 +12,7 @@ describe('HorizontalStrip component', () => {
     expect(screen.getByText('20')).toBeInTheDocument();
     expect(screen.getByText('Third')).toBeInTheDocument();
     expect(screen.getByText('30')).toBeInTheDocument();
-    // Verify middle entry gets border-x class (Second is middle)
-    const middleDiv = screen.getByText('Second').closest('div');
-    expect(middleDiv).toHaveClass('border-x');
+    // the entries are separated by dividers on the list, and the custom class is kept
+    expect(screen.getByText('Second').closest('dl')).toHaveClass('divide-x', 'custom');
   });
 });

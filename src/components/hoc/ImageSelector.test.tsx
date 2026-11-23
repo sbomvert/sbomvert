@@ -17,7 +17,7 @@ describe('ImageSelector', () => {
         totalPages={10}
       />
     );
-    expect(screen.getByText(/No container images found/i)).not.toBeNull();
+    expect(screen.getByText(/No container images yet/i)).not.toBeNull();
   });
 
   it('renders images and fires onImageSelect', () => {

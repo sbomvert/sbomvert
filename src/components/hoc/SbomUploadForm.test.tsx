@@ -9,17 +9,17 @@ const SYFT_SPDX = JSON.stringify({
 });
 
 const fill = async (user: ReturnType<typeof render>['user']) => {
-  await user.type(screen.getByLabelText('SBOM Name'), 'mine');
-  await user.type(screen.getByLabelText('Container Name'), 'alpine:3.24');
-  await user.upload(screen.getByLabelText('SBOM File (JSON)'), new File([SYFT_SPDX], 'sbom.json', { type: 'application/json' }));
+  await user.type(screen.getByLabelText('SBOM name'), 'mine');
+  await user.type(screen.getByLabelText('Container name'), 'alpine:3.24');
+  await user.upload(screen.getByLabelText('SBOM file'), new File([SYFT_SPDX], 'sbom.json', { type: 'application/json' }));
 };
 
 describe('SbomUploadForm', () => {
   it('renders the fields, and a title and Cancel only when given', () => {
     const { rerender } = render(<SbomUploadForm onUpload={jest.fn()} />);
-    expect(screen.getByLabelText('SBOM Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('Container Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('SBOM File (JSON)')).toBeInTheDocument();
+    expect(screen.getByLabelText('SBOM name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Container name')).toBeInTheDocument();
+    expect(screen.getByLabelText('SBOM file')).toBeInTheDocument();
     expect(screen.getByText('No file chosen')).toBeInTheDocument();
     expect(screen.queryByText('Cancel')).toBeNull();
     rerender(<SbomUploadForm title="Load SBOM" onUpload={jest.fn()} onCancel={jest.fn()} />);
@@ -82,8 +82,8 @@ describe('SbomUploadForm', () => {
   it('refuses JSON that is not an SBOM', async () => {
     const onUpload = jest.fn();
     const { user } = render(<SbomUploadForm allowPaste onUpload={onUpload} />);
-    await user.type(screen.getByLabelText('SBOM Name'), 'mine');
-    await user.type(screen.getByLabelText('Container Name'), 'alpine:3.24');
+    await user.type(screen.getByLabelText('SBOM name'), 'mine');
+    await user.type(screen.getByLabelText('Container name'), 'alpine:3.24');
     await user.click(screen.getByLabelText('SBOM (JSON)'));
     await user.paste('{"hello":"world"}');
     expect(screen.getByText('Not an SPDX or CycloneDX SBOM')).toBeInTheDocument();
@@ -94,9 +94,9 @@ describe('SbomUploadForm', () => {
   it('uploads pasted JSON as a file, pasting first when offered', async () => {
     const onUpload = jest.fn();
     const { user } = render(<SbomUploadForm allowPaste onUpload={onUpload} />);
-    expect(screen.queryByLabelText('SBOM File (JSON)')).toBeNull();
-    await user.type(screen.getByLabelText('SBOM Name'), 'mine');
-    await user.type(screen.getByLabelText('Container Name'), 'alpine:3.24');
+    expect(screen.queryByLabelText('SBOM file')).toBeNull();
+    await user.type(screen.getByLabelText('SBOM name'), 'mine');
+    await user.type(screen.getByLabelText('Container name'), 'alpine:3.24');
     await user.click(screen.getByText('Upload SBOM'));
     expect(screen.getByRole('alert')).toHaveTextContent('paste the SBOM');
     // a brace starts a userEvent descriptor: paste the JSON instead of typing it; this SBOM names no tool
@@ -114,10 +114,10 @@ describe('SbomUploadForm', () => {
   it('can leave out the names', async () => {
     const onUpload = jest.fn(async () => {});
     const { user } = render(<SbomUploadForm askNames={false} onUpload={onUpload} />);
-    expect(screen.queryByLabelText('SBOM Name')).toBeNull();
+    expect(screen.queryByLabelText('SBOM name')).toBeNull();
     await user.click(screen.getByText('Upload SBOM'));
     expect(screen.getByRole('alert')).toHaveTextContent('Choose a file');
-    await user.upload(screen.getByLabelText('SBOM File (JSON)'), new File([SYFT_SPDX], 'sbom.json', { type: 'application/json' }));
+    await user.upload(screen.getByLabelText('SBOM file'), new File([SYFT_SPDX], 'sbom.json', { type: 'application/json' }));
     await screen.findByLabelText('Tool');
     await user.click(screen.getByText('Upload SBOM'));
     expect(onUpload).toHaveBeenCalledWith('', '', expect.any(File), expect.objectContaining({ tool: 'Syft' }));
@@ -126,7 +126,7 @@ describe('SbomUploadForm', () => {
   it('can switch from pasting to choosing a file', async () => {
     const { user } = render(<SbomUploadForm allowPaste onUpload={jest.fn()} />);
     await user.click(screen.getByLabelText('File from my computer'));
-    expect(screen.getByLabelText('SBOM File (JSON)')).toBeInTheDocument();
+    expect(screen.getByLabelText('SBOM file')).toBeInTheDocument();
     expect(screen.queryByLabelText('SBOM (JSON)')).toBeNull();
   });
 });

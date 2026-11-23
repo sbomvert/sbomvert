@@ -64,6 +64,6 @@ describe('RecentScans component', () => {
     // @ts-ignore
     fetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
     render(<RecentScans />);
-    await waitFor(() => expect(screen.getByText(/No recent scans found./i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/No recent scans found/i)).toBeInTheDocument());
   });
 });

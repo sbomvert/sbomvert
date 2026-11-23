@@ -23,6 +23,24 @@ describe('ImageScanForm component', () => {
   const onSubmit = jest.fn(() => Promise.resolve());
   const onCancel = jest.fn();
 
+  test('says what is missing next to the button, without submitting', () => {
+    render(<ImageScanForm onSubmit={onSubmit} />);
+    onSubmit.mockClear();
+    fireEvent.click(screen.getByText('Start scan'));
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter an image name');
+    expect(onSubmit).not.toHaveBeenCalled();
+    // there is nothing to cancel without a handler
+    expect(screen.queryByText('Cancel')).not.toBeInTheDocument();
+  });
+
+  test('shows why the scan could not start', async () => {
+    const failing = jest.fn(() => Promise.reject(new Error('Redis is down')));
+    render(<ImageScanForm onSubmit={failing} />);
+    fireEvent.change(screen.getByPlaceholderText('repo/app:tag'), { target: { value: 'alpine' } });
+    fireEvent.click(screen.getByText('Start scan'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The scan could not start: Redis is down');
+  });
+
   test('renders input and toggles tool selection', () => {
     render(
       <ImageScanForm onSubmit={onSubmit} onCancel={onCancel} />
@@ -37,7 +55,7 @@ describe('ImageScanForm component', () => {
     render(<ImageScanForm onSubmit={onSubmit} onCancel={onCancel} />);
     fireEvent.change(screen.getByPlaceholderText('repo/app:tag'), { target: { value: 'alpine' } });
     fireEvent.click(screen.getByText('SPDX'));
-    fireEvent.click(screen.getByText('Start Scan'));
+    fireEvent.click(screen.getByText('Start scan'));
     expect(onSubmit).toHaveBeenCalledWith(
       'alpine',
       { producers: ['trivy', 'amazon'], consumers: ['trivy'] },
@@ -46,13 +64,13 @@ describe('ImageScanForm component', () => {
   });
 
   test('warns when a selected generator cannot write a selected format, until either is deselected', () => {
-    const warning = 'AMAZON cannot generate SPDX SBOMs: none will be made.';
+    const warning = 'Amazon Inspector cannot write SPDX, so that SBOM is skipped';
     render(<ImageScanForm onSubmit={onSubmit} onCancel={onCancel} />);
     expect(screen.getByRole('status')).toHaveTextContent(warning);
     fireEvent.click(screen.getByText('SPDX'));
     expect(screen.queryByRole('status')).toBeNull();
     fireEvent.click(screen.getByText('SPDX'));
-    fireEvent.click(screen.getByText('AMAZON'));
+    fireEvent.click(screen.getByText('Amazon Inspector'));
     expect(screen.queryByRole('status')).toBeNull();
   });
 

@@ -19,35 +19,24 @@ const Page = () => {
     formats: SbomFormat[]
   ) => {
     const payload = { image, tools, formats };
-    try {
-      const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    // a failure throws to the form, which shows it next to the button
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `the server answered ${res.status}`);
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setJobIdState(data.jobId);
-        setJobStatus('running');
-      } else {
-        alert(data.error || 'Failed to start scan');
-      }
-    } catch (e) {
-      console.error(e);
-      alert('Failed to start scan');
-    }
+    setJobIdState(data.jobId);
+    setJobStatus('running');
   };
 
 
   return (
     <>
-      <PageTitle title="Scan Image" subtitle="Generate SBOMs and CVE reports for a container image." />
-      <ImageScanForm
-        onSubmit={handleScanSubmit} onCancel={function (): void {
-          throw new Error("Function not implemented.");
-        }} />
+      <PageTitle title="Scan an image" subtitle="Generate SBOMs with each tool, then scan them for CVEs" />
+      <ImageScanForm onSubmit={handleScanSubmit} />
       <RecentScans />
     </>
   );

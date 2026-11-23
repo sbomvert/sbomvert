@@ -8,7 +8,6 @@ import { IMultiToolComparison } from '@/models/IComparisonResult';
 import { ISbom } from '@/models/ISbom';
 import { loadSbomsForImage } from '@/lib/sbomLoader';
 import { useRouter } from 'next/navigation';
-import { TOOL_COLORS } from '@/lib/utils';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { PageTitle } from '@/components/Title/Title';
 import { ViewSwitch } from '@/components/viewSwitch/ViewSwitch';
@@ -97,19 +96,18 @@ export default function Home() {
   // ------------------------------------------------------------
   // Toggle tool selection
   // ------------------------------------------------------------
+  // shown next to the tools, instead of blocking the page
+  const [toolNotice, setToolNotice] = useState('');
   const handleToolToggle = (toolName: string) => {
+    if (selectedTools.has(toolName) && selectedTools.size <= 2) {
+      setToolNotice('A comparison needs at least 2 tools: select another tool before removing this one.');
+      return;
+    }
+    setToolNotice('');
     setSelectedTools(prev => {
       const newSet = new Set(prev);
-
-      if (newSet.has(toolName)) {
-        if (newSet.size <= 2) {
-          alert('You must have at least 2 tools selected for comparison');
-          return prev;
-        }
-        newSet.delete(toolName);
-      } else {
-        newSet.add(toolName);
-      }
+      if (newSet.has(toolName)) newSet.delete(toolName);
+      else newSet.add(toolName);
       return newSet;
     });
   };
@@ -132,8 +130,12 @@ export default function Home() {
             tools={currentSboms.map(s => s.toolInfo)}
             selectedTools={selectedTools}
             onToolToggle={handleToolToggle}
-            colors={TOOL_COLORS}
           />
+          {toolNotice && (
+            <p role="status" className="-mt-4 mb-section text-body-sm rounded-input border border-warning bg-warning-subtle px-3 py-2 text-warning-fg">
+              {toolNotice}
+            </p>
+          )}
 
           {comparison && (
             <AnimatePresence mode="wait">

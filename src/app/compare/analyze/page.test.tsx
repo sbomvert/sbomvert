@@ -53,8 +53,8 @@ describe('Analyze page in the static build', () => {
   test('shows the Load SBOM form on the page and asks no server', () => {
     render(<AnalyzePage />);
     expect(screen.getByLabelText('SBOM (JSON)')).toBeInTheDocument();
-    expect(screen.queryByLabelText('SBOM Name')).toBeNull();
-    expect(screen.queryByLabelText('Container Name')).toBeNull();
+    expect(screen.queryByLabelText('SBOM name')).toBeNull();
+    expect(screen.queryByLabelText('Container name')).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(fetch).not.toHaveBeenCalled();
   });

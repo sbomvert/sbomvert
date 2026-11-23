@@ -1,6 +1,7 @@
 "use client"
 
 import { QueryClientProvider } from "@tanstack/react-query"
+import { MotionConfig } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
@@ -18,11 +19,12 @@ export function Providers({ children }: { children: ReactNode }) {
     const router = useRouter()
     const queryClient = getQueryClient()
 
+    // framer-motion animations follow the "reduce motion" setting of the OS
     const content = (
-        <>
+        <MotionConfig reducedMotion="user" transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
             <TooltipProvider>{children}</TooltipProvider>
             <Toaster />
-        </>
+        </MotionConfig>
     )
 
     if (!FEATURE_FLAGS.ENABLE_AUTH) {

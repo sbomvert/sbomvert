@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ToolSelector } from '@/components/hoc/ToolSelector';
-import { TOOL_COLORS } from '@/lib/utils';
 
 const meta: Meta<typeof ToolSelector> = {
   title: 'Compare/ToolSelector',
@@ -25,7 +24,6 @@ export const AllSelected: Story = {
     tools: mockTools,
     selectedTools: new Set(['Syft', 'Trivy', 'Docker Scout']),
     onToolToggle: name => console.log('Toggled:', name),
-    colors: TOOL_COLORS,
   },
 };
 
@@ -34,7 +32,6 @@ export const TwoSelected: Story = {
     tools: mockTools,
     selectedTools: new Set(['Syft', 'Trivy']),
     onToolToggle: name => console.log('Toggled:', name),
-    colors: TOOL_COLORS,
   },
 };
 
@@ -43,6 +40,5 @@ export const OneSelected: Story = {
     tools: mockTools,
     selectedTools: new Set(['Syft']),
     onToolToggle: name => console.log('Toggled:', name),
-    colors: TOOL_COLORS,
   },
 };
