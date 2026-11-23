@@ -202,6 +202,11 @@ test.each([
     'cve',
     { image: 'dir:/root', tool: 'grype', producer: 'syft' },
   ],
+  [
+    'a producer that escapes the work dir',
+    'cve',
+    { image: 'alpine', tool: 'grype', producer: '../../app/x' },
+  ],
   ['a malformed scan', 'scan', { image: 'alpine' }],
   ['an unknown job', 'other', { image: 'alpine' }],
 ])('%s fails the job without running any tool', async (_, name, data) => {

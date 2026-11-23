@@ -15,7 +15,7 @@ import {
   ScanResult,
 } from '@sbomvert/scan/queue';
 import { GenerateSBOMsWithTool } from '@sbomvert/scan/sbom/generator';
-import { SBOM_FORMATS, SbomFormat } from '@sbomvert/scan/tools';
+import { SBOM_FORMATS, SbomFormat, SupportedTools } from '@sbomvert/scan/tools';
 import { ScanSbomWithTool } from '@sbomvert/scan/vuln/scanner';
 import { VULN_EXTRACTORS } from '@sbomvert/core/vuln/vulnutils';
 
@@ -76,6 +76,14 @@ function checkFormats(formats: unknown): SbomFormat[] {
     throw new Error(`Invalid formats: ${JSON.stringify(formats)}`);
   }
   return formats;
+}
+
+// Job data comes over Redis: the producer names the SBOM file the scanner reads, so only known tools.
+function checkProducer(producer: unknown): string {
+  if (!SupportedTools.producers.some(t => t.name === producer)) {
+    throw new Error(`Invalid producer: ${String(producer)}`);
+  }
+  return producer as string;
 }
 
 // One job of a scan flow (see packages/scan/src/queue.ts). Tool failures are logged as warnings
@@ -144,7 +152,8 @@ async function generateSboms(job: Job<SbomJobData>, deps: ScanDeps): Promise<Sca
 // Scans the SBOMs its child sbom job produced, one CVE report per format.
 async function scanForCves(job: Job<CveJobData>, deps: ScanDeps): Promise<ScanResult> {
   const image = checkImage(job.data.image);
-  const { tool, producer } = job.data;
+  const { tool } = job.data;
+  const producer = checkProducer(job.data.producer);
   const formats = checkFormats(job.data.formats);
   const result: ScanResult = { image, sboms: [], cves: [] };
   const extract = Object.hasOwn(VULN_EXTRACTORS, tool) ? VULN_EXTRACTORS[tool] : undefined;
