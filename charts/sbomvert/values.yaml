@@ -47,7 +47,7 @@ seaweedfs:
   enabled: true
   image:
     repository: chrislusf/seaweedfs
-    tag: "4.53"
+    tag: "4.54"
     pullPolicy: IfNotPresent
   port: 8333
   persistence:
