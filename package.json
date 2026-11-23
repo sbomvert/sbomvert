@@ -88,7 +88,7 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "mock-fs": "^5.2.0",
-    "msw": "^2.12.10",
+    "msw": "^3.0.7",
     "postcss": "^8.4.40",
     "prettier": "^3.3.3",
     "storybook": "^8.6.14",
