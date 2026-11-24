@@ -4,6 +4,7 @@ import { createDb } from "@/db";
 import * as schemas from "@/db/schema"; // your drizzle instance
 import { magicLink } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key"
+import { APIError, createAuthMiddleware } from "better-auth/api";
 
 const REQUIRED_ENV = ["DATABASE_URL", "BETTER_AUTH_SECRET"];
 
@@ -19,6 +20,14 @@ const createAuth = () => {
                 ...schemas
             }
         }),
+        hooks: {
+            // defaultExpiresIn only covers creation: updating a key with expiresIn: null would make it permanent
+            before: createAuthMiddleware(async ctx => {
+                if (ctx.path === "/api-key/update" && ctx.body?.expiresIn === null) {
+                    throw new APIError("BAD_REQUEST", { message: "API keys must expire" });
+                }
+            }),
+        },
         socialProviders: {
             github: { 
                 clientId: process.env.GITHUB_CLIENT_ID as string, 

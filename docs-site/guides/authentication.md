@@ -113,7 +113,7 @@ From the same section you can rename and delete keys.
 Key settings in `src/lib/auth.ts`:
 
 - **Rate limit:** 50 requests per hour per key. Status polls count too, so poll sparingly.
-- **Expiry:** between 7 and 90 days. A key created without one, for example through the API, expires after 30 days. No key is permanent.
+- **Expiry:** between 7 and 90 days. A key created without one, for example through the API, expires after 30 days, and a key cannot be updated to never expire. Keys created before this rule with no expiry stay valid until you delete them: find them with `SELECT id, name FROM apikey WHERE "expires_at" IS NULL;`.
 - **Scope:** a key acts for the user who created it, and only on the scan API. It does not give a session, so it cannot manage the account or create other keys. There are no per-key permissions.
 
 Organization-level API keys are not available. The UI contains organization components, but the organization plugin is not enabled on the server or in the client.
