@@ -72,6 +72,15 @@ describe('comparisonKeys', () => {
     expect(keyOf('pkg:golang/github.com/foo/bar@v1.2.3')).toBe('golang/github.com/foo/bar@1.2.3');
   });
 
+  test('a tool without a translator that names the distro by its family (cdxgen `amazon`) gets the same key as one using the os-release id (osv `amzn`)', () => {
+    const cdxgenPurl = 'pkg:rpm/amazon/bash@5.2.15-1.amzn2023.0.2?arch=aarch64';
+    const osvPurl = 'pkg:rpm/amzn/bash@5.2.15-1.amzn2023.0.2';
+    const cdxgenKey = comparisonKeys(cdx({ components: [{ name: 'cdxgen' }] }, cdxgenPurl))(cdxgenPurl);
+    const osvKey = comparisonKeys(spdx('Tool: osv-scanner', osvPurl))(osvPurl);
+    expect(cdxgenKey).toBeDefined();
+    expect(cdxgenKey).toBe(osvKey);
+  });
+
   test('an unknown tool (no creators, no CycloneDX metadata, a name no translator has): the key from the purl alone', () => {
     const deb = 'pkg:deb/debian/bsdutils@1:2.41.5-0%2Bdeb13u1?arch=amd64';
     const noCreators = { ...spdx('x', deb), creationInfo: { creators: [], created: '' } } as SpdxDocument;
