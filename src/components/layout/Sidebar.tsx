@@ -13,8 +13,12 @@ import { ThemeSwitch } from '@/components/themeSwitch/ThemeSwitch';
 function SidebarAccount() {
   const { data: session } = useSession(authClient);
 
+  // on the phone rail just the avatar: the full button (name, email) is wider than the rail
   return session ? (
-    <UserButton />
+    <>
+      <UserButton size="icon" className="md:hidden" />
+      <UserButton className="hidden md:inline-flex w-full" />
+    </>
   ) : (
     <Link href="/auth/sign-in" title="Login" className={itemClass(false)}>
       <LogIn className={iconClass(false)} strokeWidth={1.75} aria-hidden />
@@ -111,9 +115,14 @@ export default function Sidebar({ scanEnabled = false }: { scanEnabled?: boolean
         ))}
       </nav>
 
-      <div className="flex flex-col gap-0.5 p-3 border-t border-border">
-        <ThemeSwitch className="self-center md:self-end" />
-        {FEATURE_FLAGS.ENABLE_AUTH && <SidebarAccount />}
+      {/* account and theme on one row; stacked on the phone rail, which is one icon wide */}
+      <div className="flex flex-col md:flex-row md:items-center gap-0.5 p-3 border-t border-border">
+        {FEATURE_FLAGS.ENABLE_AUTH && (
+          <div className="self-center md:self-auto min-w-0 md:flex-1">
+            <SidebarAccount />
+          </div>
+        )}
+        <ThemeSwitch className="self-center md:ml-auto shrink-0" />
       </div>
     </aside>
   );

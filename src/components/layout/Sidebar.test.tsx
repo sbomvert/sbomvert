@@ -18,7 +18,7 @@ jest.mock('@/lib/auth-client', () => ({
 
 // The real one imports @better-auth-ui, which ships ES modules only (Jest can't load them)
 jest.mock('@/components/auth/user/user-button', () => ({
-  UserButton: () => <span>Logged in</span>,
+  UserButton: ({ size }: { size?: string }) => <span>{size === 'icon' ? 'Avatar' : 'Logged in'}</span>,
 }));
 
 // Mock lucide-react icons (avoid SVG noise)
@@ -136,7 +136,7 @@ describe('Sidebar', () => {
     expect(screen.getByTestId('icon-login')).toBeInTheDocument();
   });
 
-  it('shows a simple signed-in label instead of the login button', () => {
+  it('shows the account (just the avatar on the phone rail) instead of the login button', () => {
     useSessionMock.mockReturnValue({
       data: {
         user: { email: 'user@example.com' },
@@ -147,6 +147,7 @@ describe('Sidebar', () => {
     render(<Sidebar />);
 
     expect(screen.getByText('Logged in')).toBeInTheDocument();
+    expect(screen.getByText('Avatar')).toBeInTheDocument();
     expect(screen.queryByText('Login')).not.toBeInTheDocument();
   });
   it('switches the theme from the bottom of the sidebar', () => {
