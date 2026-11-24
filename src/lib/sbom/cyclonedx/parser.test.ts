@@ -1,4 +1,4 @@
-import { AnalyzeCycloneDX, parseCycloneDxSbom } from './parser';
+import { AnalyzeCycloneDX, getTool, parseCycloneDxSbom } from './parser';
 
 const baseBom = {
   bomFormat: 'CycloneDX',
@@ -152,6 +152,26 @@ describe('parseCycloneDxSbom', () => {
     expect(result?.toolInfo.name).toBe('Trivy');
     expect(result?.toolInfo.version).toBe('unknown');
     expect(result?.packages[0].version).toBe('unknown');
+  });
+
+  it('names cdxgen, not the plugins it also lists as tools (its own trivy)', () => {
+    const bom = {
+      bomFormat: 'CycloneDX',
+      specVersion: '1.6',
+      version: 1,
+      metadata: {
+        tools: {
+          components: [
+            { name: 'trivy', properties: [{ name: 'cdx:plugin:manifest:name', value: 'trivy' }] },
+            { name: 'trustinspector', properties: [{ name: 'cdx:plugin:manifest:name', value: 'trustinspector' }] },
+            { name: 'cdxgen', version: '13.8.0' },
+          ],
+        },
+      },
+      components: [],
+    };
+
+    expect(getTool(bom as any, 'cdxgen.cdx.json')).toMatchObject({ name: 'Cdxgen', version: '13.8.0' });
   });
 
   it('supports license expressions and named licenses', () => {

@@ -31,9 +31,9 @@ const getUniquePurlComponents = (components?: CycloneDxComponent[]): CycloneDxCo
 
 export const getTool = (data: CycloneDxBom, toolName: string): IToolInfo => {
   const tools = data.metadata?.tools;
-  const firstTool = Array.isArray(tools)
-    ? tools[0]
-    : tools?.components?.[0] ?? tools?.services?.[0];
+  const list = Array.isArray(tools) ? tools : tools?.components?.length ? tools.components : tools?.services ?? [];
+  // cdxgen lists the plugins it ran (its own build of Trivy, named `trivy`) before itself: name it, not them
+  const firstTool = list.find(t => t.name === 'cdxgen') ?? list[0];
   const vendor = firstTool
     ? 'vendor' in firstTool
       ? firstTool.vendor
