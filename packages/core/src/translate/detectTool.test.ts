@@ -35,6 +35,15 @@ describe('detectTool', () => {
     expect(detectTool(spdx('Tool: some-scanner-1.0'))).toBeUndefined();
     expect(detectTool(cdx({ components: [{ type: 'application', name: 'some-scanner' }] }))).toBeUndefined();
   });
+
+  test('cdxgen, which also lists its plugins (its own trivy) as tools, is not taken for one of them', () => {
+    const components = [
+      { name: 'trivy', properties: [{ name: 'cdx:plugin:manifest:name', value: 'trivy' }] },
+      { name: 'trustinspector', properties: [{ name: 'cdx:plugin:manifest:name', value: 'trustinspector' }] },
+      { name: 'cdxgen', version: '13.8.0' },
+    ];
+    expect(detectTool(cdx({ components }))).toBeUndefined();
+  });
 });
 
 describe('formatOf', () => {

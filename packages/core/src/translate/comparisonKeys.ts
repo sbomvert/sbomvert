@@ -2,7 +2,7 @@ import { CycloneDxBom } from '../cyclonedx/types';
 import { parsePackageUrl } from '../purl/packageUrl';
 import { SpdxDocument } from '../spdx/types';
 import { anchoreCycloneDxProvider, anchoreSpdxProvider } from './anchore';
-import { isOsType, splitEpoch } from './common';
+import { isOsType, OS_RELEASE_IDS, splitEpoch } from './common';
 import { dockerCycloneDxProvider, dockerSpdxProvider } from './docker';
 import { cycloneDxAdapter } from './formats/cyclonedx';
 import { spdxAdapter } from './formats/spdx';
@@ -14,13 +14,16 @@ import { detectTool } from './detectTool';
 // translator reads them, so the same whichever tool wrote them. In lower case (Trivy and Scout lowercase Go
 // paths), without the epoch, and without the `v` some tools write before a language package's version. Not the
 // architecture, distro or source package, on which tools differ for the same package.
+// - An OS package's distro by its os-release id (`amzn`, not `amazon`), for the tools without a translator (cdxgen).
 // - Maven without its group: tools disagree on it for the same jar (Trivy `org.ow2.asm`, Syft and Scout guess
 //   `org.objectweb.asm` from its Java packages).
 // - None for the image itself (`oci`): Trivy gives it no purl, so its name and version match it.
 export const comparisonKey = ({ type, namespace, name, version }: Pick<CanonicalPackage, 'type' | 'namespace' | 'name' | 'version'>): string | undefined => {
   if (type === 'oci') return undefined;
-  const bare = isOsType(type) ? version : version.replace(/^v(?=\d)/, '');
-  return `${type}/${type === 'maven' ? '' : namespace}/${name}@${bare}`.toLowerCase();
+  const os = isOsType(type);
+  const bare = os ? version : version.replace(/^v(?=\d)/, '');
+  const ns = type === 'maven' ? '' : os ? OS_RELEASE_IDS[namespace.toLowerCase()] ?? namespace : namespace;
+  return `${type}/${ns}/${name}@${bare}`.toLowerCase();
 };
 
 // a purl's key, for a package no translator reads (a tool without one, a nested CycloneDX component)

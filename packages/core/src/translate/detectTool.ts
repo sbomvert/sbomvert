@@ -27,6 +27,9 @@ const NAMES: [string, ToolId][] = [
 export const detectTool = (doc: SpdxDocument | CycloneDxBom): ToolId | undefined => {
   const names = 'spdxVersion' in doc ? doc.creationInfo?.creators ?? [] : cycloneDxTools(doc);
   const all = names.join(' ').toLowerCase();
+  // cdxgen also lists the plugins it ran as tools, among them its own build of Trivy named `trivy`: without this,
+  // its SBOMs would be taken for Trivy's. It has no translator.
+  if (all.includes('cdxgen')) return undefined;
   return NAMES.find(([name]) => all.includes(name))?.[1];
 };
 
