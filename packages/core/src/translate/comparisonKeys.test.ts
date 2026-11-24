@@ -72,13 +72,13 @@ describe('comparisonKeys', () => {
     expect(keyOf('pkg:golang/github.com/foo/bar@v1.2.3')).toBe('golang/github.com/foo/bar@1.2.3');
   });
 
-  test('a tool without a translator that names the distro by its family (cdxgen `amazon`) gets the same key as one using the os-release id (osv `amzn`)', () => {
-    const cdxgenPurl = 'pkg:rpm/amazon/bash@5.2.15-1.amzn2023.0.2?arch=aarch64';
-    const osvPurl = 'pkg:rpm/amzn/bash@5.2.15-1.amzn2023.0.2';
-    const cdxgenKey = comparisonKeys(cdx({ components: [{ name: 'cdxgen' }] }, cdxgenPurl))(cdxgenPurl);
-    const osvKey = comparisonKeys(spdx('Tool: osv-scanner', osvPurl))(osvPurl);
-    expect(cdxgenKey).toBeDefined();
-    expect(cdxgenKey).toBe(osvKey);
+  test('a distro named by its family gets the same key as by its os-release id', () => {
+    const amazonPurl = 'pkg:rpm/amazon/bash@5.2.15-1.amzn2023.0.2?arch=x86_64&distro=2023&epoch=0&source=bash-5.2.15-1.amzn2023.0.2.src.rpm';
+    const syftPurl = 'pkg:rpm/amzn/bash@5.2.15-1.amzn2023.0.2?arch=x86_64&distro=amzn-2023&upstream=bash-5.2.15-1.amzn2023.0.2.src.rpm';
+    const amazonKey = comparisonKeys(cdx({ components: [{ name: 'inspector-sbomgen' }] }, amazonPurl))(amazonPurl);
+    const syftKey = comparisonKeys(cdx({ components: [{ name: 'syft' }] }, syftPurl))(syftPurl);
+    expect(amazonKey).toBeDefined();
+    expect(amazonKey).toBe(syftKey);
   });
 
   test('an unknown tool (no creators, no CycloneDX metadata, a name no translator has): the key from the purl alone', () => {
