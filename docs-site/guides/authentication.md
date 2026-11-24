@@ -105,7 +105,7 @@ API keys let scripts call the scan API without a browser session.
 ### Create a key
 
 1. Sign in, then open **Settings → Security** (`/settings/security`).
-2. In the API keys section, create a key. Choose an expiry of 7, 30 or 90 days, or no expiry.
+2. In the API keys section, create a key. Choose an expiry of 7, 30 or 90 days.
 3. Copy the key when it is shown. Better Auth stores keys hashed, so the full key cannot be shown again.
 
 From the same section you can rename and delete keys.
@@ -113,8 +113,8 @@ From the same section you can rename and delete keys.
 Key settings in `src/lib/auth.ts`:
 
 - **Rate limit:** 50 requests per hour per key. Status polls count too, so poll sparingly.
-- **Custom expiry:** between 7 and 90 days.
-- **Scope:** a key acts for the user who created it. There are no per-key permissions.
+- **Expiry:** between 7 and 90 days. A key created without one, for example through the API, expires after 30 days, and a key cannot be updated to never expire. Keys created before this rule with no expiry stay valid until you delete them: find them with `SELECT id, name FROM apikey WHERE "expires_at" IS NULL;`.
+- **Scope:** a key acts for the user who created it, and only on the scan API. It does not give a session, so it cannot manage the account or create other keys. There are no per-key permissions.
 
 Organization-level API keys are not available. The UI contains organization components, but the organization plugin is not enabled on the server or in the client.
 

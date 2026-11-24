@@ -47,7 +47,7 @@ export function Providers({ children }: { children: ReactNode }) {
                         keyExpiration: {
                             intervals: [7, 30, 90],
                             defaultInterval: 30,
-                            allowNever: true
+                            allowNever: false
                         }
                     })
                     // deleteUserPlugin(),
