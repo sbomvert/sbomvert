@@ -1,6 +1,7 @@
 'use client';
 
 import { SbomDetails, SbomUploadForm } from "@/components/hoc/SbomUploadForm";
+import { RequireAuth } from "@/components/hoc/RequireAuth/RequireAuth";
 import { PageTitle } from "@/components/Title/Title";
 
 // the form reports the outcome: a failed upload throws
@@ -26,7 +27,9 @@ export default function UploadPage() {
   return (
     <>
       <PageTitle title="Upload SBOM" subtitle="Add an SPDX or CycloneDX SBOM of a container image to the stored SBOMs" />
-      <SbomUploadForm onUpload={handleUpload} />
+      <RequireAuth>
+        <SbomUploadForm onUpload={handleUpload} />
+      </RequireAuth>
     </>
   );
 }
