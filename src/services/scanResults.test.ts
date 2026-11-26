@@ -8,6 +8,7 @@ test('stores every SBOM and CVE report of a scan under the sanitized image name'
   const storage = {
     saveSbom: jest.fn().mockResolvedValue(undefined),
     saveCves: jest.fn().mockResolvedValue(undefined),
+    saveRawCves: jest.fn().mockResolvedValue(undefined),
   };
   await storeScanResults(
     {
@@ -30,6 +31,26 @@ test('stores every SBOM and CVE report of a scan under the sanitized image name'
     'grype',
     'v'
   );
+  // no raw output in this report, so none is stored
+  expect(storage.saveRawCves).not.toHaveBeenCalled();
+});
+
+test('keeps the scanner output of each CVE report next to the report', async () => {
+  const storage = {
+    saveSbom: jest.fn().mockResolvedValue(undefined),
+    saveCves: jest.fn().mockResolvedValue(undefined),
+    saveRawCves: jest.fn().mockResolvedValue(undefined),
+  };
+  await storeScanResults(
+    {
+      image: 'alpine:3.22',
+      sboms: [],
+      cves: [{ tool: 'grype', format: 'spdx', content: 'translated', raw: 'scanner output' }],
+    },
+    storage
+  );
+  expect(storage.saveCves).toHaveBeenCalledWith('alpinetwodots3.22', 'spdx', 'grype', 'translated');
+  expect(storage.saveRawCves).toHaveBeenCalledWith('alpinetwodots3.22', 'spdx', 'grype', 'scanner output');
 });
 
 describe('storing completed scan jobs', () => {
@@ -41,6 +62,7 @@ describe('storing completed scan jobs', () => {
   const storage = () => ({
     saveSbom: jest.fn().mockResolvedValue(undefined),
     saveCves: jest.fn().mockResolvedValue(undefined),
+    saveRawCves: jest.fn().mockResolvedValue(undefined),
   });
   const job = (id: string, over: Record<string, unknown> = {}) => ({
     id,
@@ -146,6 +168,6 @@ test('storeMissedScans reads the completed jobs a page at a time', async () => {
     data: { storedAt: 't' },
   }));
   const getJobs = jest.fn(async (_: string[], start: number, end: number) => jobs.slice(start, end + 1));
-  await storeMissedScans({ getJobs } as never, { saveSbom: jest.fn(), saveCves: jest.fn() });
+  await storeMissedScans({ getJobs } as never, { saveSbom: jest.fn(), saveCves: jest.fn(), saveRawCves: jest.fn() });
   expect(getJobs.mock.calls.map(([, start, end]) => [start, end])).toEqual([[0, 9], [10, 19], [20, 29]]);
 });

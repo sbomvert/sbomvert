@@ -26,7 +26,8 @@ export type CveJobData = { image: string; tool: string; producer: string; format
 export type ScanQueueData = (ScanJobData | SbomJobData | CveJobData) & { storedAt?: string };
 
 // What an sbom or cve job returns. The worker stores nothing; the web app stores these.
-export type ScanArtifact = { tool: string; format: 'spdx' | 'cdx'; content: string };
+// A CVE report's `raw` is the scanner's own output, before the worker translates it into `content`.
+export type ScanArtifact = { tool: string; format: 'spdx' | 'cdx'; content: string; raw?: string };
 export type ScanResult = { image: string; sboms: ScanArtifact[]; cves: ScanArtifact[] };
 
 export type ScanLogEntry = { level: 'info' | 'warning' | 'error'; message: string };

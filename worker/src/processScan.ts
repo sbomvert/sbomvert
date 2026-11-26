@@ -185,7 +185,7 @@ async function scanForCves(job: Job<CveJobData>, deps: ScanDeps): Promise<ScanRe
       await logStep(job, 'info', `${label} is scanning the ${producer} SBOM`);
       const out = await deps.runCommand(cmd.cmd, cmd.args, deps.timeoutMs);
       const report = extract(parseJson(out, `${label} CVE report`), {});
-      result.cves.push({ tool, format, content: JSON.stringify(report) });
+      result.cves.push({ tool, format, content: JSON.stringify(report), raw: out });
       await logStep(job, 'info', `${label} CVE report generated`);
     } catch (err) {
       await logStep(job, 'warning', `${label} CVE scan failed: ${err}`);

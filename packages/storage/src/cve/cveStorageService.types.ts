@@ -26,4 +26,5 @@ export interface CVEServiceType {
   listCVEFiles(containerName: string): Promise<CVEfile[]>;
   getFileContent(containerName: string, fileName: string): Promise<string>;
   saveCVEFile(image: string, type: string, tool: string, content: string): Promise<void>;
+  saveRawCVEFile(image: string, type: string, tool: string, content: string): Promise<void>;
 }

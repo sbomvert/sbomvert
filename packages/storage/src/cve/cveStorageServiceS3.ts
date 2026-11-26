@@ -22,6 +22,8 @@ export class S3CVEService implements CVEServiceType {
   private readonly s3Client: S3Client;
   private readonly bucketName: string;
   private readonly prefix: string;
+  // the scanners' own CVE output, in the same bucket but under its own prefix (CVE_RAW_PREFIX)
+  private readonly rawPrefix: string;
   private readonly itemsPerPage: number;
 
   constructor(
@@ -32,6 +34,8 @@ export class S3CVEService implements CVEServiceType {
   ) {
     this.bucketName = bucketName;
     this.prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
+    const rawPrefix = process.env.CVE_RAW_PREFIX || 'cve-raw/';
+    this.rawPrefix = rawPrefix.endsWith('/') ? rawPrefix : `${rawPrefix}/`;
     this.itemsPerPage = itemsPerPage;
 
     this.s3Client = s3Client || this.createDefaultClient();
@@ -255,6 +259,20 @@ export class S3CVEService implements CVEServiceType {
    */
   async saveCVEFile(image: string, type: string, tool: string, content: string): Promise<void> {
     const key = `${this.prefix}${image}/${tool}.${type.toLowerCase()}.json`;
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+      Body: content,
+      ContentType: 'application/json',
+    });
+    await this.s3Client.send(command);
+  }
+
+  /**
+   * Save the scanner's own output for a CVE report, under its own prefix (CVE_RAW_PREFIX, default cve-raw/), so /compare never lists it.
+   */
+  async saveRawCVEFile(image: string, type: string, tool: string, content: string): Promise<void> {
+    const key = `${this.rawPrefix}${image}/${tool}.${type.toLowerCase()}.json`;
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,

@@ -7,20 +7,26 @@ import CVEService from '@sbomvert/storage/cve/cveStorageService';
 type Storage = {
   saveSbom: (image: string, format: string, tool: string, content: string) => Promise<void>;
   saveCves: (image: string, format: string, tool: string, content: string) => Promise<void>;
+  // the scanner's own CVE output, kept for review
+  saveRawCves: (image: string, format: string, tool: string, content: string) => Promise<void>;
 };
 
 const defaultStorage: Storage = {
   saveSbom: (image, format, tool, content) => SBOMService.saveSBOM(image, format, tool, content),
   saveCves: (image, format, tool, content) => CVEService.saveCVEFile(image, format, tool, content),
+  saveRawCves: (image, format, tool, content) => CVEService.saveRawCVEFile(image, format, tool, content),
 };
 
-// Stores what a scan job returned, where /compare reads it: <SBOM_DIR|CVE_DIR>/<image>/<tool>.<format>.json
+// Stores what a scan job returned, where /compare reads it: <SBOM_DIR|CVE_DIR>/<image>/<tool>.<format>.json,
+// and each CVE report's raw scanner output under <CVE_RAW_DIR>/<image>/<tool>.<format>.json
 export async function storeScanResults(result: ScanResult, storage: Storage = defaultStorage) {
   const image = SanitizeContainerImage(result.image);
   for (const { tool, format, content } of result.sboms)
     await storage.saveSbom(image, format, tool, content);
-  for (const { tool, format, content } of result.cves)
+  for (const { tool, format, content, raw } of result.cves) {
     await storage.saveCves(image, format, tool, content);
+    if (raw !== undefined) await storage.saveRawCves(image, format, tool, raw);
+  }
 }
 
 const isScanResult = (v: unknown): v is ScanResult => {
@@ -48,7 +54,7 @@ export async function storeCompletedScan(
 const withoutContents = (r: ScanResult) => ({
   ...r,
   sboms: r.sboms.map(({ content: _, ...a }) => a),
-  cves: r.cves.map(({ content: __, ...a }) => a),
+  cves: r.cves.map(({ content: __, raw: ___, ...a }) => a),
 });
 
 // Once a scan is done its SBOMs and CVE reports are in storage, and nothing reads them from Redis again (a cve

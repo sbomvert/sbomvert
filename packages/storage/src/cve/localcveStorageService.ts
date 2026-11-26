@@ -13,10 +13,12 @@ import type {
 export class LocalCVEService implements CVEServiceType {
   private readonly sbomDir: string;
   private readonly itemsPerPage: number;
+  private readonly rawDir: string;
 
-  constructor(sbomDir: string, itemsPerPage: number = 20) {
+  constructor(sbomDir: string, itemsPerPage: number = 20, rawDir: string = './public/cve-raw') {
     this.sbomDir = sbomDir;
     this.itemsPerPage = itemsPerPage;
+    this.rawDir = rawDir;
     this.checkDirectoryExists();
   }
 
@@ -135,6 +137,20 @@ export class LocalCVEService implements CVEServiceType {
    */
   async saveCVEFile(image: string, type: string, tool: string, content: string): Promise<void> {
     const fullPath = pathIn(this.sbomDir, image, `${tool}.${type.toLowerCase()}.json`);
+    const dir = path.dirname(fullPath);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(fullPath, content, 'utf8');
+  }
+
+  /**
+   * Save the scanner's own output for a CVE report, in its own folder (CVE_RAW_DIR), apart from /compare's reports.
+   */
+  async saveRawCVEFile(image: string, type: string, tool: string, content: string): Promise<void> {
+    const fullPath = pathIn(this.rawDir, image, `${tool}.${type.toLowerCase()}.json`);
     const dir = path.dirname(fullPath);
 
     if (!fs.existsSync(dir)) {

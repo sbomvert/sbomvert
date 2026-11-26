@@ -137,6 +137,8 @@ describe('cve job', () => {
       ['grype', 'cdx'],
     ]);
     expect(JSON.parse(result!.cves[0].content)).toHaveProperty('vulns_by_package');
+    // the scanner's output is kept as it came, for later review
+    expect(result!.cves[0].raw).toBe(JSON.stringify({ matches: [] }));
   });
 
   test('no SBOM from the child (its tool failed) is a warning, and nothing runs', async () => {
@@ -150,8 +152,23 @@ describe('cve job', () => {
     expect(d.runCommand).not.toHaveBeenCalled();
   });
 
-  test('a scanner without a report parser is skipped with a warning', async () => {
+  test('a tool that cannot scan for CVEs is skipped with a warning', async () => {
     const d = deps(async () => '{}');
+    const job = fakeJob(
+      'cve',
+      { image: 'alpine', tool: 'syft', producer: 'syft' },
+      {
+        k: { image: 'alpine', sboms: [{ tool: 'syft', format: 'spdx', content: '{}' }], cves: [] },
+      }
+    );
+    await run(job, d);
+    expect(logged(job)).toContainEqual({ level: 'warning', message: 'syft cannot scan for CVEs' });
+    expect(d.runCommand).not.toHaveBeenCalled();
+  });
+
+  test('a Docker Scout run is read from its SARIF', async () => {
+    const sarif = JSON.stringify({ runs: [{ tool: { driver: { rules: [] } }, results: [] }] });
+    const d = deps(async () => sarif);
     const job = fakeJob(
       'cve',
       { image: 'alpine', tool: 'scout', producer: 'scout' },
@@ -159,9 +176,10 @@ describe('cve job', () => {
         k: { image: 'alpine', sboms: [{ tool: 'scout', format: 'spdx', content: '{}' }], cves: [] },
       }
     );
-    await run(job, d);
-    expect(logged(job)).toContainEqual({ level: 'warning', message: 'scout cannot scan for CVEs' });
-    expect(d.runCommand).not.toHaveBeenCalled();
+    const result = await run(job, d);
+    expect(result!.cves).toEqual([
+      expect.objectContaining({ tool: 'scout', format: 'spdx', raw: sarif, content: expect.stringContaining('"totalCVEs":0') }),
+    ]);
   });
 
   test('a scanner that fails is logged and the job completes with no report', async () => {

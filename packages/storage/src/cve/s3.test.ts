@@ -153,6 +153,41 @@ describe('S3CVEService', () => {
     });
   });
 
+  describe('saveRawCVEFile', () => {
+    const saved = process.env.CVE_RAW_PREFIX;
+
+    afterEach(() => {
+      if (saved === undefined) delete process.env.CVE_RAW_PREFIX;
+      else process.env.CVE_RAW_PREFIX = saved;
+    });
+
+    it('writes under cve-raw/ when CVE_RAW_PREFIX is not set', async () => {
+      delete process.env.CVE_RAW_PREFIX;
+      sendMock.mockResolvedValueOnce({});
+
+      await new S3CVEService('test-bucket', 'cves/', 2).saveRawCVEFile('img1', 'SPDX', 'grype', '{"ok":true}');
+
+      expect(sendMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: expect.objectContaining({ Key: 'cve-raw/img1/grype.spdx.json' }),
+        })
+      );
+    });
+
+    it('takes the prefix from CVE_RAW_PREFIX and adds the trailing slash', async () => {
+      process.env.CVE_RAW_PREFIX = 'scanner-output';
+      sendMock.mockResolvedValueOnce({});
+
+      await new S3CVEService('test-bucket', 'cves/', 2).saveRawCVEFile('img1', 'CDX', 'trivy', '{}');
+
+      expect(sendMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: expect.objectContaining({ Key: 'scanner-output/img1/trivy.cdx.json' }),
+        })
+      );
+    });
+  });
+
   describe('saveFile (deprecated wrapper)', () => {
     it('should delegate to saveCVEFile', async () => {
       sendMock.mockResolvedValueOnce({});
