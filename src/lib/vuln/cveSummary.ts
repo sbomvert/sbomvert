@@ -1,4 +1,5 @@
 import { CVEReport } from '@/lib/vuln/vulnLoader';
+import type { VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
 import { VulnReport } from '@sbomvert/core/vuln/vulnutils';
 
 export interface PackageRow {
@@ -26,6 +27,31 @@ export function buildPackageRows(cves: CVEReport, tools: string[]): PackageRow[]
     })
     .sort((a, b) => b.detectedBy.size - a.detectedBy.size || a.pkg.localeCompare(b.pkg));
 }
+
+/**
+ * For each tool, how many of its packages each CVE is reported on.
+ * A CVE on several packages (e.g. one library behind several packages) gets a count above 1.
+ */
+export function countPackagesPerCve(cves: CVEReport, tools: string[]): Record<string, Map<string, number>> {
+  const result: Record<string, Map<string, number>> = {};
+  for (const tool of tools) {
+    const counts = new Map<string, number>();
+    for (const list of Object.values(cves[tool]?.vulns_by_package ?? {})) {
+      for (const cve of new Set(list)) counts.set(cve, (counts.get(cve) ?? 0) + 1);
+    }
+    result[tool] = counts;
+  }
+  return result;
+}
+
+/** How many CVEs are reported on more than one package, from `countPackagesPerCve`. */
+export function countRepeated(counts: Map<string, number>): number {
+  let repeated = 0;
+  for (const packages of counts.values()) if (packages > 1) repeated++;
+  return repeated;
+}
+
+
 
 /**
  * Returns a map of tool name → number of CVEs reported by that tool.
