@@ -11,7 +11,7 @@ jest.mock('@/components/hoc/SbomUploadForm', () => {
         <>
           <button
             onClick={() =>
-              onUpload('test-name', 'test-container', new File(['data'], 'file.txt'), { format: 'cdx', tool: 'Docker Scout' }).then(
+              onUpload('test-container', new File(['data'], 'file.txt'), { format: 'cdx', tool: 'Docker Scout' }).then(
                 () => setOutcome('ok'),
                 (err: Error) => setOutcome(err.message)
               )
