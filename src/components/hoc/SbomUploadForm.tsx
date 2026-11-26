@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/button/Button';
 import { Input } from '@/components/input/Input';
+import { List } from '@/components/list/List';
+import { searchStoredImages } from '@/lib/sbomLoader';
 import { CardTitle } from '@/components/card/CardTitle';
 import { Check, FileUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -47,19 +49,18 @@ interface SbomUploadFormProps {
   title?: string;
   submitText?: string;
   // throws to report a failed upload
-  onUpload: (name: string, containerName: string, file: File, details: SbomDetails) => void | Promise<void>;
+  onUpload: (containerName: string, file: File, details: SbomDetails) => void | Promise<void>;
   onCancel?: () => void;
   // the card's classes: e.g. no card look inside a dialog
   className?: string;
   // offer pasting the SBOM's JSON as well as choosing a file (pasted first)
   allowPaste?: boolean;
-  // ask for the SBOM and container names; without them onUpload gets empty strings
-  askNames?: boolean;
+  // ask for the container name; without it onUpload gets an empty string
+  askContainer?: boolean;
 }
 
 
-export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitText = 'Upload SBOM', onUpload, onCancel, className, allowPaste = false, askNames = true }) => {
-  const [name, setName] = useState('');
+export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitText = 'Upload SBOM', onUpload, onCancel, className, allowPaste = false, askContainer = true }) => {
   const [containerName, setContainerName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [source, setSource] = useState<'paste' | 'file'>(allowPaste ? 'paste' : 'file');
@@ -69,6 +70,7 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [uploaded, setUploaded] = useState('');
+  const [matches, setMatches] = useState<string[]>([]);
 
   const text = source === 'paste' ? pasted : fileText;
   const detected = text.trim() ? detectSbom(text) : undefined;
@@ -93,6 +95,25 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
     sbomChanged(next === 'paste' ? pasted : fileText);
   };
 
+  // stored containers that match the typed name, as a lookup: the name itself stays free
+  useEffect(() => {
+    if (!askContainer || !containerName.trim()) return;
+    let current = true;
+    const timer = setTimeout(() => {
+      searchStoredImages(containerName.trim()).then(list => {
+        if (current) setMatches(list);
+      });
+    }, 350);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [askContainer, containerName]);
+  // nothing is suggested for an empty name, nor for a container already picked (or typed exactly)
+  const options = askContainer && containerName.trim()
+    ? matches.filter(match => match !== containerName.trim())
+    : [];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploaded('');
@@ -100,9 +121,9 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
     const sbom = source === 'paste'
       ? (pasted.trim() ? new File([pasted], 'pasted.json', { type: 'application/json' }) : null)
       : file;
-    if ((askNames && (!name || !containerName)) || !sbom) {
-      const what = source === 'paste' ? 'paste the SBOM' : 'choose a file';
-      setError(askNames ? `Fill in every field and ${what}` : what[0].toUpperCase() + what.slice(1));
+    if ((askContainer && !containerName.trim()) || !sbom) {
+      const what = source === 'paste' ? 'Paste the SBOM' : 'Choose a file';
+      setError(askContainer && !containerName.trim() ? 'Enter the container name' : what);
       return;
     }
     if (!detected || 'error' in detected) {
@@ -116,10 +137,9 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
     setError('');
     setIsSubmitting(true);
     try {
-      await onUpload(name, containerName, sbom, { format: detected.format, tool: tool.trim(), vendor: detected.vendor });
-      setUploaded(name ? `SBOM "${name}" uploaded` : 'SBOM loaded');
+      await onUpload(containerName.trim(), sbom, { format: detected.format, tool: tool.trim(), vendor: detected.vendor });
+      setUploaded(askContainer ? 'SBOM uploaded' : 'SBOM loaded');
       // a second submit must not upload the same SBOM again
-      setName('');
       setContainerName('');
       setFile(null);
       setFileText('');
@@ -143,32 +163,31 @@ export const SbomUploadForm: React.FC<SbomUploadFormProps> = ({ title, submitTex
           </CardTitle>
         )}
 
-        {askNames && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="name" className={labelClass}>SBOM name</label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                placeholder="e.g. syft-alpine"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="containerName" className={labelClass}>Container name</label>
-              <Input
-                id="containerName"
-                type="text"
-                value={containerName}
-                onChange={e => setContainerName(e.target.value)}
-                required
-                placeholder="e.g. alpine:3.24"
-                className="font-mono"
-              />
-            </div>
+        {askContainer && (
+          <div className="relative">
+            <label htmlFor="containerName" className={labelClass}>Container name</label>
+            <Input
+              id="containerName"
+              type="text"
+              value={containerName}
+              onChange={e => setContainerName(e.target.value)}
+              required
+              placeholder="e.g. alpine:3.24"
+              className="font-mono"
+            />
+            {options.length > 0 && (
+              <div className="absolute z-50 mt-2 w-full bg-surface border border-border rounded-card-lg shadow-lg overflow-hidden">
+                <div className="max-h-64 overflow-y-auto">
+                  <List
+                    items={options}
+                    getId={name => name}
+                    getLabel={name => name}
+                    labelClassName="font-mono"
+                    onSelect={name => setContainerName(name)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
