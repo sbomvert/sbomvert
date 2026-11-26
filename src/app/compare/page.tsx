@@ -84,19 +84,16 @@ export default function Home() {
     <>
       <PageTitle title="Compare artifacts" subtitle='Pick a comparison type, then a container image'></PageTitle>
       <ComparisonTypeSelector comparisonType={comparisonType} onComparisonTypeChange={setComparisonType} />
+      <SearchBar value={searchInput} onChange={handleSearch} />
       {loading && <LoadingSpinner message="Loading SBOM files" />}
       {!loading && (
-        <>
-
-          <SearchBar value={searchInput} onChange={handleSearch} />
-          <ImageSelector
-            images={filteredImages as any}
-            onImageSelect={handleImageSelect}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </>
+        <ImageSelector
+          images={filteredImages as any}
+          onImageSelect={handleImageSelect}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
     </>
   );

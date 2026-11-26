@@ -1,12 +1,12 @@
 'use client';
 
 import { SbomDetails, SbomUploadForm } from "@/components/hoc/SbomUploadForm";
+import { RequireAuth } from "@/components/hoc/RequireAuth/RequireAuth";
 import { PageTitle } from "@/components/Title/Title";
 
 // the form reports the outcome: a failed upload throws
-const handleUpload = async (name: string, containerName: string, file: File, details: SbomDetails) => {
+const handleUpload = async (containerName: string, file: File, details: SbomDetails) => {
   const formData = new FormData();
-  formData.append('name', name);
   formData.append('containerName', containerName);
   formData.append('file', file);
   // stored as <tool>.<format>.json, like the other SBOMs: "Docker Scout" -> docker-scout
@@ -27,7 +27,9 @@ export default function UploadPage() {
   return (
     <>
       <PageTitle title="Upload SBOM" subtitle="Add an SPDX or CycloneDX SBOM of a container image to the stored SBOMs" />
-      <SbomUploadForm onUpload={handleUpload} />
+      <RequireAuth>
+        <SbomUploadForm onUpload={handleUpload} />
+      </RequireAuth>
     </>
   );
 }

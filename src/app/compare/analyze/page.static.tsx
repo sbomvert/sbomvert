@@ -74,7 +74,7 @@ export default function AnalyzePage() {
   };
 
   // the form has checked the SBOM: its format, and the tool as the user confirmed it
-  const handleUpload = async (name: string, containerName: string, file: File, details: SbomDetails) => {
+  const handleUpload = async (containerName: string, file: File, details: SbomDetails) => {
     const json = JSON.parse(await file.text());
     const parsed = details.format === 'cdx' ? AnalyzeCycloneDX(json, 'Local SBOM', file.name) : AnalyzeSPDX(json, 'Local SBOM');
 
@@ -82,7 +82,7 @@ export default function AnalyzePage() {
       ...parsed,
       info: { ...parsed.info, tool: details.tool },
       // not asked in the static build: what the SBOM says (e.g. "docker-scout.cdx.json", "docker:29.9.3")
-      name: name || `${details.tool.toLowerCase().replace(/\s+/g, '-')}.${details.format}.json`,
+      name: `${details.tool.toLowerCase().replace(/\s+/g, '-')}.${details.format}.json`,
       containerName: containerName || subjectOf(json) || 'Local SBOM',
     });
 
@@ -94,7 +94,7 @@ export default function AnalyzePage() {
       <>
         <BackButton href="/" />
         <PageTitle title="Analyze SBOM" subtitle="Open an SPDX or CycloneDX SBOM from your computer to inspect its full package manifest" />
-        <SbomUploadForm submitText="Load SBOM" allowPaste askNames={false} onUpload={handleUpload} />
+        <SbomUploadForm submitText="Load SBOM" allowPaste askContainer={false} onUpload={handleUpload} />
       </>
     );
   }
@@ -117,9 +117,9 @@ export default function AnalyzePage() {
           submitText="Load SBOM"
           allowPaste
           className="p-0 border-0 shadow-none bg-transparent"
-          onUpload={async (name, containerName, file, details) => {
+          onUpload={async (containerName, file, details) => {
             // a failure throws to the form, which shows it; the dialog stays open
-            await handleUpload(name, containerName, file, details);
+            await handleUpload(containerName, file, details);
             setLoadModalOpen(false);
           }}
           onCancel={() => setLoadModalOpen(false)}

@@ -1,6 +1,7 @@
 'use client';
 import { ImageScanForm } from "@/components/hoc/ImageScanForm/ImageScanForm";
 import { RecentScans } from "@/components/hoc/RecentScans/RecentScans";
+import { RequireAuth } from "@/components/hoc/RequireAuth/RequireAuth";
 import { PageTitle } from "@/components/Title/Title";
 import { SbomFormat } from "@sbomvert/scan/tools";
 import {useState } from "react";
@@ -36,8 +37,10 @@ const Page = () => {
   return (
     <>
       <PageTitle title="Scan an image" subtitle="Generate SBOMs with each tool, then scan them for CVEs" />
-      <ImageScanForm onSubmit={handleScanSubmit} />
-      <RecentScans />
+      <RequireAuth>
+        <ImageScanForm onSubmit={handleScanSubmit} />
+        <RecentScans />
+      </RequireAuth>
     </>
   );
 }

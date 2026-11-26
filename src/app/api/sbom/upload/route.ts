@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
+import { authorizeScanRequest } from '@/lib/auth/scan-auth';
 import { SbomFormatName } from '@/models/ISbom';
 import { parseSpdxSbom, parseCycloneDxSbom } from '@/lib/parseSbom';
 import { reverseFormatContainerName } from '@/lib/container/containerUtils';
 import { isSafeName } from '@sbomvert/storage/safePath';
+import { MAX_SBOM_BYTES } from '@/lib/sbom/uploadLimits';
+
+// Room for the other form fields on top of the file.
+const FORM_OVERHEAD_BYTES = 64 * 1024;
 
 export async function POST(request: Request) {
   // Check if SBOM upload is enabled via feature flag
@@ -12,10 +17,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'SBOM upload is not enabled' }, { status: 403 });
   }
 
+  if (FEATURE_FLAGS.ENABLE_AUTH) {
+    const auth = await authorizeScanRequest(request.headers);
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+  }
+
+  // Refuse a declared size before reading the body. A chunked body with no Content-Length is still buffered by formData(); a streaming limit is the next step.
+  if (Number(request.headers.get('content-length') ?? 0) > MAX_SBOM_BYTES + FORM_OVERHEAD_BYTES) {
+    return NextResponse.json({ error: 'SBOM file is larger than 10 MB' }, { status: 413 });
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const containerName = formData.get('containerName') as string | null;
+    // the name as typed, trimmed: the form trims too, but the API can be called directly
+    const typedContainer = formData.get('containerName');
+    const containerName = typeof typedContainer === 'string' ? typedContainer.trim() : '';
 
     // Validate required fields
     if (!file) {
@@ -35,7 +54,11 @@ export async function POST(request: Request) {
       content = new TextDecoder().decode(buffer);
     }
 
-    // Detect SBOM format (SPDX or CycloneDX)
+    if (Buffer.byteLength(content, 'utf8') > MAX_SBOM_BYTES) {
+      return NextResponse.json({ error: 'SBOM file is larger than 10 MB' }, { status: 413 });
+    }
+
+    // Detect SBOM format (SPDX or CycloneDX) from the content
     let format: SbomFormatName | null = null;
     let parsedData: any = null;
 
@@ -55,12 +78,9 @@ export async function POST(request: Request) {
       // Check for CycloneDX format
       else if (parsedData.bomFormat) {
         format = 'CycloneDX';
-        // Parse CycloneDX SBOM (placeholder)
         const sbom = parseCycloneDxSbom(parsedData, containerName, file.name);
         if (!sbom) {
-          // For now, we'll treat this as a valid format but return success
-          // In a real implementation, this would be properly handled
-          format = 'CycloneDX';
+          return NextResponse.json({ error: 'Failed to parse CycloneDX SBOM' }, { status: 400 });
         }
       }
       else {
@@ -70,20 +90,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid JSON format. Please provide a valid SBOM file' }, { status: 400 });
     }
 
-    // Save the file using the existing storage service
-    // Save the file using the new saveSBOM method
-    // tool and type as the form detected them, else from the file name (e.g. "trivy.spdx.json")
+    // The stored type is the format the content really is; a form that names another one is refused
+    const type = format === 'SPDX' ? 'spdx' : 'cdx';
+    const formType = formData.get('format');
+    if (formType !== null && formType !== type) {
+      return NextResponse.json({ error: 'Format must be spdx or cdx, and match the file' }, { status: 400 });
+    }
+
+    // tool from the form, else from the file name (e.g. "trivy.spdx.json")
+    const toolField = formData.get('tool');
+    if (toolField !== null && typeof toolField !== 'string') {
+      return NextResponse.json({ error: 'Tool must be a name' }, { status: 400 });
+    }
     const parts = file.name.split('.');
-    // Expected pattern: <tool>.<type>.json
-    const tool = (formData.get('tool') as string | null) || (parts[0] ?? 'unknown');
-    const type = ((formData.get('format') as string | null) || (parts[1] ?? 'unknown')).toLowerCase();
+    const tool = toolField || (parts[0] ?? 'unknown');
     // stored like the other SBOMs (`libraryslashnginxtwodots1.2`); a name that is not a plain name could leave the SBOM directory
     const folder = reverseFormatContainerName(containerName);
-    if (![folder, tool, type].every(isSafeName)) {
+    if (![folder, tool].every(isSafeName)) {
       return NextResponse.json({ error: 'Invalid container or file name' }, { status: 400 });
     }
-    await SBOMService.saveSBOM(folder, type, tool, content);
 
+    // Never replace an SBOM already stored, scanner output included. A new tool name makes a new file.
+    // ponytail: check then write is not atomic; two uploads racing for one name can both pass. Add an exclusive create later.
+    const fileName = `${tool}.${type}.json`;
+    const stored = await SBOMService.listFiles(folder);
+    if (stored.some(existing => existing.name === fileName)) {
+      return NextResponse.json({ error: `${fileName} already exists for this image` }, { status: 409 });
+    }
+
+    await SBOMService.saveSBOM(folder, type, tool, content);
 
     return NextResponse.json({
       message: 'SBOM file uploaded successfully',

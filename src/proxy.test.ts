@@ -45,8 +45,13 @@ describe('proxy (scan auth gate)', () => {
     delete process.env.NEXT_PUBLIC_ENABLE_AUTH;
   });
 
-  it('redirects to / when the scan feature is disabled', async () => {
+  it('returns the scan API JSON 403 when the scan feature is disabled, not the home page', async () => {
     const res = await proxy(makeRequest('http://localhost/api/scan', { method: 'POST' }));
+    expect(res).toEqual({ kind: 'json', body: { error: 'Scan feature disabled' }, status: 403 });
+  });
+
+  it('redirects the scan page to / when the scan feature is disabled', async () => {
+    const res = await proxy(makeRequest('http://localhost/scan'));
     expect(res).toEqual({ kind: 'redirect', url: 'http://localhost/' });
   });
 
@@ -117,6 +122,45 @@ describe('proxy (scan auth gate)', () => {
         makeRequest('http://localhost/api/scan/status/recent', { method: 'GET' }),
       );
       expect(res).toEqual({ kind: 'next' });
+    });
+  });
+
+  describe('SBOM upload', () => {
+    const upload = () => makeRequest('http://localhost/api/sbom/upload', { method: 'POST' });
+
+    it('passes through when auth is disabled, even with the scan feature off', async () => {
+      const res = await proxy(upload());
+      expect(res).toEqual({ kind: 'next' });
+      expect(getSession).not.toHaveBeenCalled();
+    });
+
+    describe('with auth enabled', () => {
+      beforeEach(() => {
+        process.env.NEXT_PUBLIC_ENABLE_AUTH = 'true';
+      });
+
+      it('returns 401 when no credentials are provided', async () => {
+        getSession.mockResolvedValue(null);
+        const res = await proxy(upload());
+        expect(res).toEqual({ kind: 'json', body: { error: 'Unauthorized' }, status: 401 });
+      });
+
+      it('passes through a signed-in session', async () => {
+        getSession.mockResolvedValue({ session: { id: 's1' } });
+        const res = await proxy(upload());
+        expect(res).toEqual({ kind: 'next' });
+      });
+
+      it('passes through a valid x-api-key', async () => {
+        verifyApiKey.mockResolvedValue({ valid: true });
+        const res = await proxy(
+          makeRequest('http://localhost/api/sbom/upload', {
+            method: 'POST',
+            headers: { 'x-api-key': 'good-key' },
+          }),
+        );
+        expect(res).toEqual({ kind: 'next' });
+      });
     });
   });
 });

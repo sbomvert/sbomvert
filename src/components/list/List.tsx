@@ -2,6 +2,7 @@
 'use client';
 
 import { FileText, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 
 interface ListProps<T> {
@@ -9,6 +10,7 @@ interface ListProps<T> {
   getId: (item: T) => string;
   getLabel: (item: T) => string;
   onSelect: (item: T) => void;
+  labelClassName?: string;
 }
 
 export function List<T>({
@@ -16,6 +18,7 @@ export function List<T>({
   getId,
   getLabel,
   onSelect,
+  labelClassName = 'capitalize',
 }: ListProps<T>) {
   return (
     <div className="divide-y divide-border-subtle">
@@ -30,7 +33,7 @@ export function List<T>({
               size={14}
               className="text-foreground-subtle group-hover:text-info-fg transition-colors"
             />
-            <span className="text-body-sm text-foreground font-medium capitalize">
+            <span className={cn('text-body-sm text-foreground font-medium', labelClassName)}>
               {getLabel(item)}
             </span>
           </div>

@@ -4,12 +4,17 @@ import { FEATURE_FLAGS } from '@/lib/featureFlags'
 import { authorizeScanRequest } from '@/lib/auth/scan-auth'
 
 export async function proxy(request: NextRequest) {
-    if (!FEATURE_FLAGS.ENABLE_SCAN_API) {
+    const { pathname } = request.nextUrl
+    const scanApi = pathname === '/api/scan' || pathname.startsWith('/api/scan/')
+
+    if (!FEATURE_FLAGS.ENABLE_SCAN_API && (scanApi || pathname === '/scan')) {
+        if (scanApi) {
+            return NextResponse.json({ error: 'Scan feature disabled' }, { status: 403 })
+        }
         return NextResponse.redirect(new URL("/", request.url))
     }
 
-    // Gate the whole /api/scan subtree (submit + status/history) when auth is on.
-    if (FEATURE_FLAGS.ENABLE_AUTH && request.nextUrl.pathname.startsWith("/api/scan")) {
+    if (FEATURE_FLAGS.ENABLE_AUTH && (scanApi || pathname === '/api/sbom/upload')) {
         const auth = await authorizeScanRequest(request.headers)
         if (!auth.ok) {
             return NextResponse.json({ error: auth.error }, { status: auth.status })
@@ -24,5 +29,6 @@ export const config = {
         // the whole scan feature is off without ENABLE_SCAN_API
         "/scan",
         "/api/scan/:path*",
+        "/api/sbom/upload",
     ],
 }

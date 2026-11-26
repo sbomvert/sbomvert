@@ -1,5 +1,10 @@
 import { render, fireEvent, screen } from '@testing-library/react';
+import { useSession } from '@better-auth-ui/react';
 import UploadPage from './page';
+
+jest.mock('@better-auth-ui/react', () => ({ useSession: jest.fn() }), { virtual: true });
+jest.mock('@/components/auth/auth', () => ({ Auth: () => 'SIGN-IN FORM' }));
+jest.mock('@/lib/auth-client', () => ({ authClient: {} }));
 
 // The form is tested on its own: here it uploads and shows what the page's onUpload resolved or threw
 jest.mock('@/components/hoc/SbomUploadForm', () => {
@@ -11,7 +16,7 @@ jest.mock('@/components/hoc/SbomUploadForm', () => {
         <>
           <button
             onClick={() =>
-              onUpload('test-name', 'test-container', new File(['data'], 'file.txt'), { format: 'cdx', tool: 'Docker Scout' }).then(
+              onUpload('test-container', new File(['data'], 'file.txt'), { format: 'cdx', tool: 'Docker Scout' }).then(
                 () => setOutcome('ok'),
                 (err: Error) => setOutcome(err.message)
               )
@@ -24,6 +29,24 @@ jest.mock('@/components/hoc/SbomUploadForm', () => {
       );
     },
   };
+});
+
+describe('UploadPage when sign-in is configured and the user is signed out', () => {
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_ENABLE_AUTH = 'true';
+    (useSession as jest.Mock).mockReturnValue({ data: null, isPending: false });
+  });
+  afterEach(() => {
+    delete process.env.NEXT_PUBLIC_ENABLE_AUTH;
+  });
+
+  test('keeps the title and puts the sign-in form in place of the upload form', () => {
+    render(<UploadPage />);
+    expect(screen.getByRole('heading', { name: 'Upload SBOM' })).toBeInTheDocument();
+    expect(screen.getByText('This feature requires authentication. Sign in to continue.')).toBeInTheDocument();
+    expect(screen.getByText('SIGN-IN FORM')).toBeInTheDocument();
+    expect(screen.queryByText('Upload')).toBeNull();
+  });
 });
 
 describe('UploadPage', () => {

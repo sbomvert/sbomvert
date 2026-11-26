@@ -37,6 +37,22 @@ const getContainerDescription = (containerName: string): string => {
   return 'Container image';
 };
 
+export const searchStoredImages = async (search: string): Promise<string[]> => {
+  const query = `search=${encodeURIComponent(reverseFormatContainerName(search))}`;
+  const fetchPage = async (page: number): Promise<{ containers: { name: string }[]; pagination: { totalPages: number } }> => {
+    const response = await fetch(`/api/sbom-files?page=${page}&${query}`);
+    if (!response.ok) throw new Error(`Search failed (${response.status})`);
+    return response.json();
+  };
+  try {
+    const first = await fetchPage(1);
+    const later = await Promise.all(Array.from({ length: first.pagination.totalPages - 1 }, (_, i) => fetchPage(i + 2)));
+    return [first, ...later].flatMap(page => page.containers.map(container => formatContainerName(container.name)));
+  } catch {
+    return [];
+  }
+};
+
 // --- NEW: Load only image list (no SBOMs yet) ---
 export const loadSbomImagesFromPublic = async (
   page: number = 1,

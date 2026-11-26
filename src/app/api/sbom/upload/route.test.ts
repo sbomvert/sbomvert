@@ -2,6 +2,11 @@ import { POST } from '@/app/api/sbom/upload/route';
 import SBOMService from '@sbomvert/storage/sbom/sbomStorageService';
 import { parseSpdxSbom, parseCycloneDxSbom } from '@/lib/parseSbom';
 import { FEATURE_FLAGS } from '@/lib/featureFlags';
+import { authorizeScanRequest } from '@/lib/auth/scan-auth';
+import { MAX_SBOM_BYTES } from '@/lib/sbom/uploadLimits';
+
+// The route's allowance for the form fields on top of the file (a private constant there)
+const FORM_OVERHEAD_BYTES = 64 * 1024;
 
 // Polyfill for Node environment
 class TestFile {
@@ -28,11 +33,12 @@ class TestFile {
 // @ts-ignore
 global.File = TestFile;
 
- 
+
 // Mock feature flags
 jest.mock('@/lib/featureFlags', () => ({
   FEATURE_FLAGS: {
     ENABLE_SBOM_UPLOAD: true,
+    ENABLE_AUTH: false,
   },
 }));
 
@@ -41,12 +47,18 @@ jest.mock('@sbomvert/storage/sbom/sbomStorageService', () => ({
   __esModule: true,
   default: {
     saveSBOM: jest.fn(),
+    listFiles: jest.fn(),
   },
 }));
 
 jest.mock('@/lib/parseSbom', () => ({
   parseSpdxSbom: jest.fn(),
   parseCycloneDxSbom: jest.fn(),
+}));
+
+// Factory mock: keeps better-auth (ESM) out of the test run
+jest.mock('@/lib/auth/scan-auth', () => ({
+  authorizeScanRequest: jest.fn(),
 }));
 
 describe('POST /api/sbom/upload', () => {
@@ -56,11 +68,32 @@ describe('POST /api/sbom/upload', () => {
 
   const mockRequest = {
     formData: jest.fn(),
+    headers: new Headers(),
   } as unknown as Request;
+
+  // Sends one file to the route; `fields` are the other form values.
+  const send = (content: string, fileName: string, fields: Record<string, unknown> = {}) => {
+    const file = new File([content], fileName, { type: 'application/json' });
+    mockRequest.formData = jest.fn().mockResolvedValue(mockFormData);
+    mockFormData.get.mockImplementation((key: string) => {
+      if (key === 'file') return file;
+      if (key === 'containerName') return 'containerName' in fields ? fields.containerName : 'test-container';
+      return fields[key] ?? null;
+    });
+    return POST(mockRequest);
+  };
+
+  const spdx = JSON.stringify({ spdxVersion: 'SPDX-2.3', creationInfo: { created: '2023-01-01T00:00:00Z' } });
 
   beforeEach(() => {
     jest.clearAllMocks();
     (FEATURE_FLAGS as any).ENABLE_SBOM_UPLOAD = true;
+    (FEATURE_FLAGS as any).ENABLE_AUTH = false;
+    (authorizeScanRequest as jest.Mock).mockResolvedValue({ ok: true });
+    (parseSpdxSbom as jest.Mock).mockReturnValue({ name: 'test' });
+    (parseCycloneDxSbom as jest.Mock).mockReturnValue({ name: 'test' });
+    (SBOMService.saveSBOM as jest.Mock).mockResolvedValue(undefined);
+    (SBOMService.listFiles as jest.Mock).mockResolvedValue([]);
   });
 
   it('should return 403 when SBOM upload is disabled', async () => {
@@ -300,5 +333,100 @@ describe('POST /api/sbom/upload', () => {
       expect(response.status).toBe(200);
       expect(SBOMService.saveSBOM).toHaveBeenCalledWith('libraryslashnginxtwodots1.2', 'spdx', 'syft', expect.any(String));
     });
+  });
+
+  describe('sign-in (auth on)', () => {
+    beforeEach(() => {
+      (FEATURE_FLAGS as any).ENABLE_AUTH = true;
+    });
+
+    it('returns 401 and reads nothing when there is no session or key', async () => {
+      (authorizeScanRequest as jest.Mock).mockResolvedValue({ ok: false, status: 401, error: 'Unauthorized' });
+      const anonymous = { formData: jest.fn(), headers: new Headers() } as unknown as Request;
+
+      const response = await POST(anonymous);
+
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
+      expect(anonymous.formData).not.toHaveBeenCalled();
+      expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+    });
+
+    it('stores the SBOM when the caller is signed in', async () => {
+      const response = await send(spdx, 'syft.spdx.json');
+      expect(response.status).toBe(200);
+      expect(authorizeScanRequest).toHaveBeenCalled();
+    });
+  });
+
+  describe('size', () => {
+    it('returns 413 from the declared Content-Length, before reading the body', async () => {
+      const declared = { formData: jest.fn(), headers: new Headers({ 'content-length': String(MAX_SBOM_BYTES + FORM_OVERHEAD_BYTES + 1) }) } as unknown as Request;
+
+      const response = await POST(declared);
+
+      expect(response.status).toBe(413);
+      expect(declared.formData).not.toHaveBeenCalled();
+    });
+
+    it('returns 413 for a file over 10 MB and stores nothing', async () => {
+      const response = await send('x'.repeat(MAX_SBOM_BYTES + 1), 'big.spdx.json');
+
+      expect(response.status).toBe(413);
+      expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+    });
+  });
+
+  it('trims the container name before storing it', async () => {
+    const response = await send(spdx, 'syft.spdx.json', { containerName: '  alpine:3.24 ' });
+
+    expect(response.status).toBe(200);
+    expect(SBOMService.saveSBOM).toHaveBeenCalledWith('alpinetwodots3.24', 'spdx', 'syft', expect.any(String));
+  });
+
+  it('refuses a container name that is only spaces', async () => {
+    const response = await send(spdx, 'syft.spdx.json', { containerName: '   ' });
+
+    expect(response.status).toBe(400);
+    expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+  });
+
+  it('refuses a CycloneDX file that does not parse, instead of storing it', async () => {
+    (parseCycloneDxSbom as jest.Mock).mockReturnValue(null);
+
+    const response = await send(JSON.stringify({ bomFormat: 'CycloneDX' }), 'x.cdx.json');
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe('Failed to parse CycloneDX SBOM');
+    expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['names the other format', 'cdx', spdx],
+    ['names a format that is neither', 'json', spdx],
+  ])('refuses a form that %s than the file', async (_, format, content) => {
+    const response = await send(content, 'syft.spdx.json', { format });
+
+    expect(response.status).toBe(400);
+    expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+  });
+
+  it('refuses a tool sent as a file instead of a name', async () => {
+    const tool = new File(['x'], 'tool.bin', { type: 'application/octet-stream' });
+
+    const response = await send(spdx, 'syft.spdx.json', { tool });
+
+    expect(response.status).toBe(400);
+    expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
+  });
+
+  it('returns 409 and keeps the stored file when an SBOM with that name exists', async () => {
+    (SBOMService.listFiles as jest.Mock).mockResolvedValue([{ name: 'syft.spdx.json', path: '', }]);
+
+    const response = await send(spdx, 'syft.spdx.json');
+
+    expect(response.status).toBe(409);
+    expect(SBOMService.listFiles).toHaveBeenCalledWith('test-container');
+    expect(SBOMService.saveSBOM).not.toHaveBeenCalled();
   });
 });

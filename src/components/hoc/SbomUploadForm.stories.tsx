@@ -18,15 +18,15 @@ type Story = StoryObj<typeof SbomUploadForm>;
 
 export const Default: Story = {
   args: {
-    onUpload: (name, containerName, file) => console.log('Upload:', { name, containerName, file }),
+    onUpload: (containerName, file) => console.log('Upload:', { containerName, file }),
     onCancel: () => console.log('Cancel'),
   },
 };
 
 export const WithError: Story = {
   args: {
-    onUpload: (name, containerName, file) => {
-      console.log('Upload:', { name, containerName, file });
+    onUpload: (containerName, file) => {
+      console.log('Upload:', { containerName, file });
       throw new Error('Upload failed');
     },
     onCancel: () => console.log('Cancel'),

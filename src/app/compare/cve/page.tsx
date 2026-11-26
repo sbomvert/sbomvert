@@ -64,18 +64,16 @@ export default function CveComparePage() {
     <>
       {/* SBOM comparison page – comparison type fixed to SBOM */}
       <PageTitle title="Compare CVE reports" subtitle='Select an artifact to compare vulnerability reports.'></PageTitle>
+      <SearchBar value={searchInput} onChange={handleSearch} />
       {loading && <LoadingSpinner message="Loading SBOM files..." />}
       {!loading && (
-        <>
-          <SearchBar value={searchInput} onChange={handleSearch} />
-          <ImageSelector
-            images={filteredImages as any}
-            onImageSelect={handleImageSelect}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </>
+        <ImageSelector
+          images={filteredImages as any}
+          onImageSelect={handleImageSelect}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
     </>
   );
