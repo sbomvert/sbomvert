@@ -30,8 +30,18 @@ export function grypePackageFix(match: GrypeMatch): PackageFix {
 }
 
 // one match of grype's `matches`
+// the id a match is reported under: its CVE when it has one, so a GHSA or GO advisory for a CVE is the same
+// vulnerability as the CVE (the advisory id stays an alias). The first CVE is used when there are several.
+export function grypeCveId(match: GrypeMatch): string {
+  const v = match.vulnerability;
+  if (v.id.startsWith('CVE-')) return v.id;
+  const cve = (match.relatedVulnerabilities ?? []).map(r => r.id).find(id => id.startsWith('CVE-'));
+  return cve ?? v.id;
+}
+
 export function grypeVulnDetail(match: GrypeMatch): VulnDetail {
   const v = match.vulnerability;
+  const id = grypeCveId(match);
   const cvss: CvssScore[] = (v.cvss ?? []).map(c => ({
     source: c.source,
     type: c.type,
@@ -45,8 +55,8 @@ export function grypeVulnDetail(match: GrypeMatch): VulnDetail {
   const epss = v.epss?.[0];
   const cwes = [...new Set((v.cwes ?? []).map(c => c.cwe).filter(Boolean))];
   return {
-    id: v.id,
-    aliases: otherIds(v.id, (match.relatedVulnerabilities ?? []).map(r => r.id)),
+    id,
+    aliases: otherIds(id, [v.id, ...(match.relatedVulnerabilities ?? []).map(r => r.id)]),
     severity: normalizeSeverity(v.severity),
     score: primaryScore(cvss),
     status: GRYPE_FIX_STATUS[state] ?? 'unknown',
