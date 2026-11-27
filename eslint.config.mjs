@@ -39,6 +39,18 @@ const config = [
     plugins: { sbomvert: { rules: { "design-tokens": designTokens } } },
     rules: { "sbomvert/design-tokens": "error" },
   },
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "TSAsExpression > TSAsExpression[typeAnnotation.type='TSUnknownKeyword']",
+          message: "Do not use `as unknown as`: fix the type instead.",
+        },
+      ],
+    },
+  },
 ];
 
 export default config;
