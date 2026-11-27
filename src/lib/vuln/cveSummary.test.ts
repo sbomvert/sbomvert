@@ -1,5 +1,7 @@
 import {
   buildPackageRows,
+  countPackageCvePairs,
+  packageFixText,
   getPerToolCounts,
   getUniqueCveIds,
   getVulnerablePackageCount,
@@ -53,5 +55,25 @@ describe('cveSummary utilities', () => {
   test('getVulnerablePackages returns set of vulnerable packages', () => {
     const pkgs = getVulnerablePackages(mockCveReport, ['trivy', 'syft']);
     expect(pkgs).toEqual(new Set(['pkgA', 'pkgC']));
+  });
+
+  test('buildPackageRows lists a CVE once per package, even when the report repeats it', () => {
+    const repeated: CVEReport = {
+      trivy: { cves: ['CVE-1', 'CVE-1'], vulns_by_package: { pkgA: ['CVE-1', 'CVE-1'] } } as any,
+    };
+    const [row] = buildPackageRows(repeated, ['trivy']);
+    expect(row.byCve.trivy).toEqual(['CVE-1']);
+  });
+
+  test('countPackageCvePairs counts a CVE repeated under one package once', () => {
+    const report = { cves: [], vulns_by_package: { pkgA: ['CVE-1', 'CVE-1'], pkgB: ['CVE-1'] } } as any;
+    expect(countPackageCvePairs(report)).toBe(2);
+  });
+
+  test('packageFixText names the version only when the package lists exactly one', () => {
+    expect(packageFixText({ status: 'fixed', fixedVersions: ['2.5'] })).toBe('fixed in 2.5');
+    expect(packageFixText({ status: 'fixed', fixedVersions: ['1.25.13', '1.26.6'] })).toBe('fixed');
+    expect(packageFixText({ status: 'not_fixed', fixedVersions: [] })).toBe('no fix');
+    expect(packageFixText(undefined)).toBeUndefined();
   });
 });

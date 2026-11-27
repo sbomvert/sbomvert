@@ -1,5 +1,5 @@
 import { CVEReport } from '@/lib/vuln/vulnLoader';
-import type { VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
+import type { FixStatus, PackageFix, VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
 import { VulnReport } from '@sbomvert/core/vuln/vulnutils';
 
 export interface PackageRow {
@@ -19,7 +19,8 @@ export function buildPackageRows(cves: CVEReport, tools: string[]): PackageRow[]
       const byCve: Record<string, string[]> = {};
       const detectedBy = new Set<string>();
       for (const tool of tools) {
-        const list = cves[tool]?.vulns_by_package?.[pkg] ?? [];
+        // a CVE is listed once per package, even when the report repeats it (Trivy does, for some images)
+        const list = [...new Set(cves[tool]?.vulns_by_package?.[pkg] ?? [])];
         byCve[tool] = list;
         if (list.length > 0) detectedBy.add(tool);
       }
@@ -51,7 +52,40 @@ export function countRepeated(counts: Map<string, number>): number {
   return repeated;
 }
 
+// a fix status as a short phrase: "fixed in 2.5", "fixed", "no fix", "will not fix", "fix deferred", or "fix unknown"
+function fixPhrase(status: FixStatus, fixedVersion?: string): string {
+  switch (status) {
+    case 'fixed':
+      return fixedVersion ? `fixed in ${fixedVersion}` : 'fixed';
+    case 'not_fixed':
+      return 'no fix';
+    case 'wont_fix':
+      return 'will not fix';
+    case 'deferred':
+      return 'fix deferred';
+    default:
+      return 'fix unknown';
+  }
+}
 
+// a CVE's fix: the version is shown only when the packages agree on one (see settleFix in core)
+export function fixText(detail?: VulnDetail): string | undefined {
+  return detail ? fixPhrase(detail.status, detail.fixedVersion) : undefined;
+}
+
+// one package's fix: "fixed in X" only when the scanner lists exactly one fixed version for it, otherwise "fixed"
+export function packageFixText(fix?: PackageFix): string | undefined {
+  if (!fix) return undefined;
+  return fixPhrase(fix.status, fix.fixedVersions.length === 1 ? fix.fixedVersions[0] : undefined);
+}
+
+/**
+ * Package-CVE pairs of one tool's report: a CVE on three packages counts three times, and a CVE
+ * repeated under one package counts once.
+ */
+export function countPackageCvePairs(report: VulnReport | undefined): number {
+  return Object.values(report?.vulns_by_package ?? {}).reduce((sum, list) => sum + new Set(list).size, 0);
+}
 
 /**
  * Returns a map of tool name → number of CVEs reported by that tool.

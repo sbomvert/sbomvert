@@ -1,3 +1,8 @@
+import { PackageFix, VulnDetail, settleFix } from './vulnDetail';
+import { TrivyVulnerability, trivyPackageFix, trivyVulnDetail } from './tools/trivy';
+import { GrypeMatch, grypePackageFix, grypeVulnDetail } from './tools/grype';
+import { ScoutRule, scoutPackageFix, scoutVulnDetail } from './tools/scout';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -11,6 +16,8 @@ export interface VulnReport {
   vulns_by_package: Record<string, string[]>;
   vulnpackagelist: Record<string, string[]>;
   purl_mapping: Record<string, string>;
+  cveDetails?: Record<string, VulnDetail>;
+  packageFixes?: Record<string, Record<string, PackageFix>>;
 }
 
 export function emptyReport(): VulnReport {
@@ -24,6 +31,32 @@ export function emptyReport(): VulnReport {
     vulnpackagelist: {},
     purl_mapping: {},
   };
+}
+
+// the fix one package has for one CVE; the first record for a (package, CVE) pair is kept
+function recordPackageFix(report: VulnReport, pkg: string, cve: string, fix: PackageFix): void {
+  report.packageFixes ??= {};
+  const byCve = (report.packageFixes[pkg] ??= {});
+  byCve[cve] ??= fix;
+}
+
+// the CVE-level fix is what its package fixes agree on (see settleFix); CVEs without package fixes keep theirs
+function settleCveFixes(report: VulnReport): void {
+  const perCve = new Map<string, PackageFix[]>();
+  for (const byCve of Object.values(report.packageFixes ?? {})) {
+    for (const [cve, fix] of Object.entries(byCve)) {
+      const list = perCve.get(cve);
+      if (list) list.push(fix);
+      else perCve.set(cve, [fix]);
+    }
+  }
+  for (const [cve, fixes] of perCve) {
+    const detail = report.cveDetails?.[cve];
+    if (!detail) continue;
+    const settled = settleFix(fixes);
+    detail.status = settled.status;
+    detail.fixedVersion = settled.fixedVersion;
+  }
 }
 
 function deepClone<T>(obj: T): T {
@@ -188,6 +221,9 @@ export function extractTrivyVulnerabilities(obj: Record<string, unknown>, _: unk
       report.totalCVEs += 1;
       if (getPurlType(purl) === 0) report.library += 1;
       else report.language += 1;
+      report.cveDetails ??= {};
+      report.cveDetails[id] ??= trivyVulnDetail(vulnerability as TrivyVulnerability);
+      recordPackageFix(report, comparablePurl, id, trivyPackageFix(vulnerability as TrivyVulnerability));
     }
   }
 
@@ -195,6 +231,7 @@ export function extractTrivyVulnerabilities(obj: Record<string, unknown>, _: unk
   console.assert(
     Object.values(report.vulns_by_package).reduce((s, v) => s + v.length, 0) === report.totalCVEs
   );
+  settleCveFixes(report);
   report.vulnpackagelist = deepClone(report.vulns_by_package);
   return report;
 }
@@ -229,10 +266,16 @@ export function extractAnchoreVulnerabilities(
       vulns_by_package[comparablePurl].push(vuln_id);
     }
 
+    // every match carries its own fix for its package, so each package keeps its own
+    recordPackageFix(vuln_report, comparablePurl, vuln_id, grypePackageFix(match as GrypeMatch));
+
     // --- global dedup ---
     if (seenCVEs.has(vuln_id)) continue;
 
     seenCVEs.add(vuln_id);
+
+    vuln_report.cveDetails ??= {};
+    vuln_report.cveDetails[vuln_id] = grypeVulnDetail(match as GrypeMatch);
 
     vuln_report.cves.push(vuln_id);
     vuln_report.totalCVEs += 1;
@@ -245,6 +288,8 @@ export function extractAnchoreVulnerabilities(
       console.warn(`Unknown namespace: ${namespace}`);
     }
   }
+
+  settleCveFixes(vuln_report);
 
   // Consistency check
   console.assert(vuln_report.totalCVEs === vuln_report.cves.length);
@@ -260,236 +305,52 @@ export function extractAnchoreVulnerabilities(
 
   return vuln_report;
 }
-/*
-export function extractDockerVulnerabilities(
-  obj: Record<string, unknown>,
-  _: unknown
-): VulnReport {
+
+// Docker Scout's SARIF: each result points at a rule, one per CVE, whose purls are the packages it affects.
+export function extractScoutVulnerabilities(obj: Record<string, unknown>, _: unknown): VulnReport {
   const report = emptyReport();
-  const db = new Database(DB_CVES, { readonly: true });
+  const run = ((obj['runs'] as Record<string, unknown>[] | undefined) ?? [])[0] as
+    | {
+        tool: { driver: { rules?: ScoutRule[] } };
+        results?: { ruleId: string }[];
+      }
+    | undefined;
+  if (!run) return report;
 
-  if (!obj["runs"]) return report;
-
-  for (const run of obj["runs"] as Record<string, unknown>[]) {
-    for (const result of (run["tool"] as Record<string, unknown>)["driver"] as Record<
-      string,
-      unknown[]
-    >)["rules"] as Record<string, unknown>[]) {
-      report.totalCVEs += 1;
-      const vid = result["id"] as string;
-      const purl = (result["properties"] as Record<string, string[]>)["purls"][0];
-      if (!vid.startsWith("CVE")) continue;
-      if (vid.startsWith("CVE-2025")) continue;
-      if (isDebian(purl) && !debianCveExists(db, vid)) continue;
-
-      report.cves.push(vid);
+  const rules = new Map((run.tool.driver.rules ?? []).map(rule => [rule.id, rule]));
+  // Scout repeats a rule's result once per location: the rule's purls are counted once
+  const seen = new Set<string>();
+  for (const result of run.results ?? []) {
+    const rule = rules.get(result.ruleId);
+    if (!rule || seen.has(rule.id)) continue;
+    seen.add(rule.id);
+    const detail = scoutVulnDetail(rule);
+    report.cveDetails ??= {};
+    report.cveDetails[detail.id] ??= detail;
+    for (const purl of rule.properties.purls ?? []) {
       const comparablePurl = toComparablePurl(purl);
       report.purl_mapping[comparablePurl] = purl;
-      if (!report.vulns_by_package[comparablePurl]) {
-        report.vulns_by_package[comparablePurl] = [vid];
-      } else {
-        report.vulns_by_package[comparablePurl].push(vid);
-      }
+      recordPackageFix(report, comparablePurl, detail.id, scoutPackageFix(rule));
+      (report.vulns_by_package[comparablePurl] ??= []).push(detail.id);
+      report.cves.push(detail.id);
+      report.totalCVEs += 1;
       if (getPurlType(purl) === 0) report.library += 1;
       else report.language += 1;
     }
   }
 
+  settleCveFixes(report);
   report.vulnpackagelist = deepClone(report.vulns_by_package);
-  db.close();
-  return report;
-}
-*/
-/*
-export function extractAmazonVulnerabilities(obj: Record<string, unknown>): VulnReport {
-  const report = emptyReport();
-  const db = new Database(DB_CVES, { readonly: true });
-
-  for (const pkg of obj["packages"] as Record<string, unknown>[]) {
-    let the_purl = "";
-    let cves: string[] = [];
-    const refs = pkg["externalRefs"] as Record<string, string>[];
-
-    if (refs.length === 1) {
-      const ref = refs[0];
-      console.assert(ref["referenceType"] === "purl");
-      the_purl = toComparablePurl(ref["referenceLocator"]);
-      report.purl_mapping[the_purl] = ref["referenceLocator"];
-      if (getPurlType(the_purl) === 0) report.library += 1;
-      else report.language += 1;
-    } else {
-      const ref = refs[0];
-      console.assert(ref["referenceType"] === "purl");
-      the_purl = toComparablePurl(ref["referenceLocator"]);
-      report.purl_mapping[the_purl] = ref["referenceLocator"];
-      if (getPurlType(the_purl) === 0) report.library += 1;
-      else report.language += 1;
-      for (const otherref of refs.slice(1)) {
-        if (otherref["referenceType"] !== "vulnerability") continue;
-        if (report.cves.includes(otherref["referenceLocator"])) continue;
-        cves.push(otherref["referenceLocator"]);
-      }
-    }
-
-    if (cves.length) {
-      if (isDebian(the_purl)) {
-        cves = cves.filter((vid) => debianCveExists(db, vid));
-      }
-      report.cves.push(...cves);
-      report.totalCVEs += cves.length;
-      if (the_purl in report.vulns_by_package) {
-        report.vulns_by_package[the_purl].push(...cves);
-      } else {
-        report.vulns_by_package[the_purl] = [...cves];
-      }
-    }
-  }
-
-  report.vulnpackagelist = deepClone(report.vulns_by_package);
-  report.cves = [...new Set(report.cves)];
-
-  db.close();
   return report;
 }
 
-export function extractGcloudVulnerabilities(
-  obj: unknown[],
-  purlMapping: Record<string, string>,
-  enrichedPurlMapping: Record<string, string>
-): VulnReport {
-  const report = emptyReport();
-  const db = new Database(DB_CVES, { readonly: true });
-  const base_os = Object.keys(purlMapping)[0].split("/").slice(0, 2).join("/");
-
-  for (const pkg of obj) {
-    if (!pkg) continue;
-    const pkgRec = pkg as Record<string, unknown>;
-    const vuln = (pkgRec["occurrence"] as Record<string, unknown>)["vulnerability"] as Record<
-      string,
-      unknown
-    >;
-    const vid = vuln["shortDescription"] as string;
-    const issue = vuln["packageIssue"] as Record<string, unknown>;
-
-    const packageType = issue["packageType"] as string;
-
-    if (packageType === "OS") {
-      const affVersion = (issue["affectedVersion"] as Record<string, string>)["fullName"];
-      const ppurl = `${base_os}/${issue["affectedPackage"]}@${affVersion}`;
-      let exp_purl = [ppurl];
-      report.library += 1;
-      report.totalCVEs += 1;
-      if (!vid.startsWith("CVE")) continue;
-      if (vid.startsWith("CVE-2025")) continue;
-      if (isDebian(ppurl) && !debianCveExists(db, vid)) continue;
-
-      if (!report.vulnpackagelist[ppurl]) report.vulnpackagelist[ppurl] = [vid];
-      else report.vulnpackagelist[ppurl].push(vid);
-
-      if (!(exp_purl[0] in purlMapping)) {
-        exp_purl = [];
-        for (const [comp_purl, complete_purl] of Object.entries(enrichedPurlMapping)) {
-          if (complete_purl.includes(`upstream=${issue["affectedPackage"]}`)) {
-            exp_purl.push(comp_purl);
-          }
-        }
-      }
-
-      for (const purl of exp_purl) {
-        if (!(purl in purlMapping))
-          throw new Error(`${purl} not in gcloud - ${issue["affectedPackage"]}`);
-        report.cves.push(vid);
-        if (!report.vulns_by_package[purl]) report.vulns_by_package[purl] = [vid];
-        else report.vulns_by_package[purl].push(vid);
-      }
-    } else {
-      let purl: string;
-      if (packageType === "PYPI") purl = `pkg:pypi/${issue["affectedPackage"]}`;
-      else if (packageType === "GO") purl = `pkg:golang/${issue["affectedPackage"]}`;
-      else if (packageType === "GO_STDLIB") purl = "pkg:golang/stdlib";
-      else if (packageType === "NPM") purl = `pkg:npm/${issue["affectedPackage"]}`;
-      else if (packageType === "COMPOSER") purl = `pkg:composer/${issue["affectedPackage"]}`;
-      else if (packageType === "RUBYGEMS") purl = `pkg:ruby/${issue["affectedPackage"]}`;
-      else {
-        console.error(`[Gcloud] Unknown type: ${packageType}`);
-        report.language += 1;
-        report.totalCVEs += 1;
-        continue;
-      }
-      report.language += 1;
-      report.totalCVEs += 1;
-      if (!report.vulns_by_package[purl]) report.vulns_by_package[purl] = [vid];
-      else report.vulns_by_package[purl].push(vid);
-    }
-  }
-
-  report.purl_mapping = purlMapping;
-  db.close();
-  return report;
-}
-
-export function extractMicrosoftVulnerabilities(
-  obj: Record<string, unknown>[],
-  _container: string,
-  purlMapping: Record<string, string>,
-  enrichedPurlMapping: Record<string, string>
-): VulnReport {
-  const report = emptyReport();
-  const db = new Database(DB_CVES, { readonly: true });
-  const base_os = Object.keys(purlMapping)[0].split("/").slice(0, 2).join("/");
-
-  for (const pkg of obj) {
-    const cve = pkg["cveId"] as string;
-    const cat = pkg["subAssessmentCategory"] as string;
-    report.cves.push(cve);
-
-    if (cat === "Language") {
-      report.language += 1;
-      report.totalCVEs += 1;
-    } else if (cat === "OS") {
-      const purl = `${base_os}/${pkg["pname"]}`;
-      if (!cve.startsWith("CVE")) continue;
-      if (cve.startsWith("CVE-2025")) continue;
-      if (isDebian(purl) && !debianCveExists(db, cve)) continue;
-
-      if (!report.vulnpackagelist[purl]) report.vulnpackagelist[purl] = [cve];
-      else report.vulnpackagelist[purl].push(cve);
-
-      report.library += 1;
-      report.totalCVEs += 1;
-
-      let candidates: string[] = [];
-      for (const p of Object.keys(purlMapping)) {
-        if (p.startsWith(purl + "@")) candidates.push(p);
-      }
-      if (candidates.length === 0) {
-        for (const [comp_purl, complete_purl] of Object.entries(enrichedPurlMapping)) {
-          if (complete_purl.includes(`upstream=${pkg["pname"]}`)) {
-            candidates.push(comp_purl);
-          }
-        }
-      }
-      for (const p of candidates) {
-        if (!report.vulns_by_package[p]) report.vulns_by_package[p] = [cve];
-        else report.vulns_by_package[p].push(cve);
-      }
-    } else {
-      throw new Error("Should not be here");
-    }
-  }
-
-  report.purl_mapping = purlMapping;
-  db.close();
-  return report;
-}
-*/
 export const VULN_EXTRACTORS: Record<
   string,
   (obj: Record<string, unknown>, purlMapping: Record<string, string>) => VulnReport
 > = {
   trivy: extractTrivyVulnerabilities,
   grype: extractAnchoreVulnerabilities,
-  //scout: extractDockerVulnerabilities,
+  scout: extractScoutVulnerabilities,
 };
 
 // ---------------------------------------------------------------------------
