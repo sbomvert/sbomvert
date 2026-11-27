@@ -62,11 +62,18 @@ export interface VulnDetail {
   sourceName?: string;
 }
 
-// what the scanner says about one vulnerability on one package: scanners can give a different fix per package
+// what the scanner says about one vulnerability on one package: scanners can give a different fix per package, and the
+// match on each package can have its own severity, score and source (one CVE can match a PyPI and a Debian package)
 export interface PackageFix {
   status: FixStatus;
   // every fixed version the scanner lists for the package: one for most, several when the scanner lists a fix per branch
   fixedVersions: string[];
+  severity: Severity;
+  score?: number;
+  source?: string;
+  // the match's own CVSS scores and advisory link
+  cvss?: CvssScore[];
+  url?: string;
 }
 
 // the CVE-level fix, from its package fixes: the status all packages agree on, otherwise unknown;

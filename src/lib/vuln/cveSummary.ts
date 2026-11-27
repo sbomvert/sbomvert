@@ -1,9 +1,13 @@
 import { CVEReport } from '@/lib/vuln/vulnLoader';
 import type { FixStatus, PackageFix, VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
 import { VulnReport } from '@sbomvert/core/vuln/vulnutils';
+import { InferPkgTypeFromPurl } from '@sbomvert/core/purl/converter';
+import type { PkgType } from '@sbomvert/core/purl/types';
 
 export interface PackageRow {
   pkg: string;
+  // the SBOM package type of the package, as the SBOM comparison shows it
+  packageType: PkgType;
   byCve: Record<string, string[]>;
   detectedBy: Set<string>;
 }
@@ -24,9 +28,17 @@ export function buildPackageRows(cves: CVEReport, tools: string[]): PackageRow[]
         byCve[tool] = list;
         if (list.length > 0) detectedBy.add(tool);
       }
-      return { pkg, byCve, detectedBy };
+      const purl = tools.map(tool => cves[tool]?.purl_mapping?.[pkg]).find(p => p !== undefined);
+      const packageType = purl ? InferPkgTypeFromPurl(purl) : 'generic';
+      return { pkg, packageType, byCve, detectedBy };
     })
     .sort((a, b) => b.detectedBy.size - a.detectedBy.size || a.pkg.localeCompare(b.pkg));
+}
+
+// two or more tools report the package, and they do not list the same CVEs for it
+export function cvesDiffer(row: PackageRow): boolean {
+  const lists = Array.from(row.detectedBy, tool => row.byCve[tool].slice().sort().join('\n'));
+  return lists.length > 1 && new Set(lists).size > 1;
 }
 
 /**

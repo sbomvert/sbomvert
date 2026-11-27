@@ -1,7 +1,8 @@
 import { PackageFix, VulnDetail, settleFix } from './vulnDetail';
 import { TrivyVulnerability, trivyPackageFix, trivyVulnDetail } from './tools/trivy';
-import { GrypeMatch, grypePackageFix, grypeVulnDetail } from './tools/grype';
+import { GrypeMatch, grypeCveId, grypePackageFix, grypeVulnDetail } from './tools/grype';
 import { ScoutRule, scoutPackageFix, scoutVulnDetail } from './tools/scout';
+import { comparisonKeyOfPurl } from '../translate/comparisonKeys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -109,15 +110,10 @@ export function toComparableApk(purl: string): string {
   return purl.split('@')[0] + '@' + version;
 }
 
+// the key a package is grouped by in the CVE comparison: the same key the SBOM comparison matches on
 export function toComparablePurl(purl: string): string {
-  const unquotedPurl = decodeURIComponent(purl).toLowerCase();
-  if (purl.includes('pkg:dpkg/') || purl.includes('pkg:deb/')) {
-    return toComparableDebianPurl(unquotedPurl);
-  } else if (purl.includes('pkg:apk/')) {
-    return toComparableApk(unquotedPurl);
-  } else {
-    return unquotedPurl.split('@')[0];
-  }
+  const normalized = purl.replace(/^pkg:dpkg\//, 'pkg:deb/');
+  return comparisonKeyOfPurl(normalized) ?? decodeURIComponent(normalized).toLowerCase().split('@')[0];
 }
 
 export function isDebian(purl: string): boolean {
@@ -250,7 +246,7 @@ export function extractAnchoreVulnerabilities(
     if (!match['vulnerability']) continue;
 
     const vuln = match['vulnerability'] as Record<string, string>;
-    const vuln_id = vuln['id'];
+    const vuln_id = grypeCveId(match as GrypeMatch);
     const namespace = vuln['namespace'];
 
     const purl = (match['artifact'] as Record<string, string>)['purl'];

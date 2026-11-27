@@ -22,7 +22,7 @@ describe('vulnutils extraction functions', () => {
     expect(report.cves).toContain('CVE-1234');
     expect(report.cves).toContain('CVE-5678');
     expect(report.totalCVEs).toBe(2);
-    expect(report.purl_mapping['pkg:npm/lodash']).toBe('pkg:npm/lodash@4.17.21');
+    expect(report.purl_mapping['npm//lodash@4.17.21']).toBe('pkg:npm/lodash@4.17.21');
   });
 
   test('extractAnchoreVulnerabilities parses anchore output', () => {
@@ -50,6 +50,6 @@ describe('vulnutils extraction functions', () => {
     expect(report.language).toBe(1);
     // mapping
     // expect(report.purl_mapping['pkg:deb/debian/openssl']).toBe('pkg:deb/debian/openssl@1.0');
-    expect(report.purl_mapping['pkg:pypi/django']).toBe('pkg:pypi/django@3.2');
+    expect(report.purl_mapping['pypi//django@3.2']).toBe('pkg:pypi/django@3.2');
   });
 });

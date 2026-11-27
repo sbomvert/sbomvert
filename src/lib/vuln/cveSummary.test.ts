@@ -7,7 +7,29 @@ import {
   getVulnerablePackageCount,
   getUniqueCVEs,
   getVulnerablePackages,
+  cvesDiffer,
 } from './cveSummary';
+
+describe('cvesDiffer', () => {
+  const row = (byCve: Record<string, string[]>) => ({
+    pkg: 'openssl',
+    packageType: 'os' as const,
+    byCve,
+    detectedBy: new Set(Object.keys(byCve).filter(tool => byCve[tool].length > 0)),
+  });
+
+  test('is false when the tools that report the package list the same CVEs', () => {
+    expect(cvesDiffer(row({ trivy: ['CVE-1', 'CVE-2'], syft: ['CVE-2', 'CVE-1'] }))).toBe(false);
+  });
+
+  test('is true when the tools that report the package list different CVEs', () => {
+    expect(cvesDiffer(row({ trivy: ['CVE-1'], syft: ['CVE-2'] }))).toBe(true);
+  });
+
+  test('is false when only one tool reports the package', () => {
+    expect(cvesDiffer(row({ trivy: ['CVE-1'], syft: [] }))).toBe(false);
+  });
+});
 import { CVEReport } from '@/lib/vuln/vulnLoader';
 
 describe('cveSummary utilities', () => {
@@ -71,9 +93,9 @@ describe('cveSummary utilities', () => {
   });
 
   test('packageFixText names the version only when the package lists exactly one', () => {
-    expect(packageFixText({ status: 'fixed', fixedVersions: ['2.5'] })).toBe('fixed in 2.5');
-    expect(packageFixText({ status: 'fixed', fixedVersions: ['1.25.13', '1.26.6'] })).toBe('fixed');
-    expect(packageFixText({ status: 'not_fixed', fixedVersions: [] })).toBe('no fix');
+    expect(packageFixText({ status: 'fixed', fixedVersions: ['2.5'], severity: 'unknown' })).toBe('fixed in 2.5');
+    expect(packageFixText({ status: 'fixed', fixedVersions: ['1.25.13', '1.26.6'], severity: 'unknown' })).toBe('fixed');
+    expect(packageFixText({ status: 'not_fixed', fixedVersions: [], severity: 'unknown' })).toBe('no fix');
     expect(packageFixText(undefined)).toBeUndefined();
   });
 });

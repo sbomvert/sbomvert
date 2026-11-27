@@ -34,6 +34,9 @@ const purlKey = (purl: string): string | undefined => {
   return comparisonKey({ ...p, version: isOsType(p.type) && epoch ? version : p.version });
 };
 
+// the key of a package given its purl, as the CVE comparison groups packages by it
+export const comparisonKeyOfPurl = (purl: string): string | undefined => purlKey(purl);
+
 // The tools whose translators the compare view matches packages with
 const SPDX = { anchore: anchoreSpdxProvider, trivy: trivyProvider, docker: dockerSpdxProvider };
 const CYCLONEDX = { anchore: anchoreCycloneDxProvider, trivy: trivyCycloneDxProvider, docker: dockerCycloneDxProvider };

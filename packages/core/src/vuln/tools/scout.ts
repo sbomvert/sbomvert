@@ -41,7 +41,8 @@ function scoutFix(fixed: string | undefined): { status: FixStatus; fixedVersion?
 // the fix Scout gives for the packages of this rule: one fixed version per CVE, shared by its packages
 export function scoutPackageFix(rule: ScoutRule): PackageFix {
   const { status, fixedVersion } = scoutFix(rule.properties.fixed_version);
-  return { status, fixedVersions: fixedVersion ? [fixedVersion] : [] };
+  const { severity, score, source, cvss, url } = scoutVulnDetail(rule);
+  return { status, fixedVersions: fixedVersion ? [fixedVersion] : [], severity, score, source, cvss, url };
 }
 
 // one rule of Scout's SARIF

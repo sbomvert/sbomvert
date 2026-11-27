@@ -62,16 +62,17 @@ describe('toComparableApk', () => {
 // ---------------------------------------------------------------------------
 
 describe('toComparablePurl', () => {
+  // the key is the SBOM comparison key, so the CVE view groups packages as the SBOM view does
   test('handles debian', () => {
-    expect(toComparablePurl('pkg:dpkg/openssl@1.0')).toBe('pkg:deb/debian/openssl@1.0');
+    expect(toComparablePurl('pkg:dpkg/openssl@1.0')).toBe('deb//openssl@1.0');
   });
 
   test('handles apk', () => {
-    expect(toComparablePurl('pkg:apk/alpine/curl@7.0')).toBe('pkg:apk/alpine/curl@7.0');
+    expect(toComparablePurl('pkg:apk/alpine/curl@7.0')).toBe('apk/alpine/curl@7.0');
   });
 
-  test('strips version for language packages', () => {
-    expect(toComparablePurl('pkg:npm/lodash@4.17.21')).toBe('pkg:npm/lodash');
+  test('keeps the version of a language package', () => {
+    expect(toComparablePurl('pkg:npm/lodash@4.17.21')).toBe('npm//lodash@4.17.21');
   });
 
   test('decodes URI encoding and lowercases', () => {

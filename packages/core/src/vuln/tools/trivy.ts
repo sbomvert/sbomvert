@@ -49,9 +49,15 @@ function vendorSeverities(vs: Record<string, number> | undefined): Partial<Recor
 // the fix trivy gives for this entry's package: its status, and the fixed version it names
 export function trivyPackageFix(v: TrivyVulnerability): PackageFix {
   const fixed = firstText(v.FixedVersion);
+  const { severity, score, source, cvss, url } = trivyVulnDetail(v);
   return {
     status: TRIVY_STATUS[v.Status ?? ''] ?? 'unknown',
     fixedVersions: fixed ? [fixed] : [],
+    severity,
+    score,
+    source,
+    cvss,
+    url,
   };
 }
 

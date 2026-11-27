@@ -23,9 +23,15 @@ const GRYPE_FIX_STATUS: Record<string, FixStatus> = {
 export function grypePackageFix(match: GrypeMatch): PackageFix {
   const state = match.vulnerability.fix?.state ?? '';
   const versions = (match.vulnerability.fix?.versions ?? []).filter(v => v !== '');
+  const { severity, score, source, cvss, url } = grypeVulnDetail(match);
   return {
     status: GRYPE_FIX_STATUS[state] ?? 'unknown',
     fixedVersions: state === 'fixed' ? versions : [],
+    severity,
+    score,
+    source,
+    cvss,
+    url,
   };
 }
 

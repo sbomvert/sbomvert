@@ -148,9 +148,10 @@ describe('grype: what each vulnerability carries', () => {
       {}
     );
 
-    expect(report.cves).toEqual(['GO-2023-1571']);
-    expect(report.cveDetails!['GO-2023-1571'].id).toBe('GO-2023-1571');
-    expect(report.cveDetails!['GO-2023-1571'].aliases).toEqual(['CVE-2022-41723', 'GHSA-vvpx-j8f3-3w6h']);
+    // the CVE it names is the id; the GO and GHSA advisories are aliases
+    expect(report.cves).toEqual(['CVE-2022-41723']);
+    expect(report.cveDetails!['CVE-2022-41723'].id).toBe('CVE-2022-41723');
+    expect(report.cveDetails!['CVE-2022-41723'].aliases).toEqual(['GO-2023-1571', 'GHSA-vvpx-j8f3-3w6h']);
   });
 
   test.each([
@@ -283,8 +284,8 @@ describe('docker scout: what each vulnerability carries', () => {
     );
 
     expect(report.totalCVEs).toBe(2);
-    expect(report.vulns_by_package['pkg:apk/alpine/sqlite-libs@3.53.4-r0']).toEqual(['CVE-2026-5']);
-    expect(report.vulns_by_package['pkg:apk/alpine/sqlite@3.53.4-r0']).toEqual(['CVE-2026-5']);
+    expect(report.vulns_by_package['apk/alpine/sqlite-libs@3.53.4-r0']).toEqual(['CVE-2026-5']);
+    expect(report.vulns_by_package['apk/alpine/sqlite@3.53.4-r0']).toEqual(['CVE-2026-5']);
   });
 });
 
@@ -396,11 +397,11 @@ describe('per-package fixes', () => {
       {}
     );
 
-    expect(report.packageFixes!['pkg:golang/golang.org/x/net']['GO-2026-5026']).toEqual({
+    expect(report.packageFixes!['golang/golang.org/x/net@0.22.0']['GO-2026-5026']).toMatchObject({
       status: 'fixed',
       fixedVersions: ['0.57.0'],
     });
-    expect(report.packageFixes!['pkg:golang/stdlib']['GO-2026-5026']).toEqual({
+    expect(report.packageFixes!['golang//stdlib@1.26.3']['GO-2026-5026']).toMatchObject({
       status: 'fixed',
       fixedVersions: ['1.25.13', '1.26.6', '1.27.0-rc.3'],
     });
@@ -478,10 +479,82 @@ describe('per-package fixes', () => {
       {}
     );
 
-    expect(report.packageFixes!['pkg:maven/ch.qos.logback/logback-core']['CVE-2026-6']).toEqual({
+    expect(report.packageFixes!['maven//logback-core@1.3.15']['CVE-2026-6']).toMatchObject({
       status: 'fixed',
       fixedVersions: ['1.5.33'],
     });
-    expect(report.packageFixes!['pkg:maven/ch.qos.logback/logback-classic']['CVE-2026-6'].fixedVersions).toEqual(['1.5.33']);
+    expect(report.packageFixes!['maven//logback-classic@1.3.15']['CVE-2026-6'].fixedVersions).toEqual(['1.5.33']);
+  });
+});
+
+describe('grype: a GHSA or GO advisory is reported under the CVE it names', () => {
+  test('uses the CVE as the id, and keeps the advisory id as an alias', () => {
+    const report = extractAnchoreVulnerabilities(
+      {
+        matches: [
+          {
+            vulnerability: {
+              id: 'GHSA-2m5v-pch6-74hx',
+              severity: 'High',
+              namespace: 'github:language:javascript',
+              cvss: [],
+              fix: { state: 'fixed', versions: ['6.29.1'] },
+            },
+            relatedVulnerabilities: [{ id: 'CVE-2026-109383' }],
+            artifact: { purl: 'pkg:npm/undici@5.26.3' },
+          },
+        ],
+      },
+      {}
+    );
+
+    expect(report.cves).toEqual(['CVE-2026-109383']);
+    expect(report.vulns_by_package['npm//undici@5.26.3']).toEqual(['CVE-2026-109383']);
+    expect(report.cveDetails!['CVE-2026-109383']).toMatchObject({
+      id: 'CVE-2026-109383',
+      aliases: ['GHSA-2m5v-pch6-74hx'],
+      status: 'fixed',
+      fixedVersion: '6.29.1',
+    });
+  });
+});
+
+describe('per package: a CVE matched on two packages keeps the severity and source of each match', () => {
+  test('a PyPI match and a Debian match of one CVE keep their own severity, fix and source', () => {
+    const report = extractAnchoreVulnerabilities(
+      {
+        matches: [
+          {
+            vulnerability: {
+              id: 'GHSA-g9cg-prrw-2r8q',
+              severity: 'High',
+              namespace: 'github:language:python',
+              cvss: [],
+              fix: { state: 'fixed', versions: ['6.18.1'] },
+            },
+            relatedVulnerabilities: [{ id: 'CVE-2026-102996' }],
+            artifact: { purl: 'pkg:pypi/pypdf@4.0.2' },
+          },
+          {
+            vulnerability: {
+              id: 'CVE-2026-102996',
+              severity: 'Medium',
+              namespace: 'ubuntu:distro:ubuntu:24.04',
+              cvss: [],
+              fix: { state: 'not-fixed', versions: [] },
+            },
+            artifact: { purl: 'pkg:deb/ubuntu/python3-pypdf@4.0.2-1?arch=all&distro=ubuntu-24.04' },
+          },
+        ],
+      },
+      {}
+    );
+
+    expect(report.packageFixes!['pypi//pypdf@4.0.2']['CVE-2026-102996']).toMatchObject({
+      status: 'fixed', fixedVersions: ['6.18.1'], severity: 'high', source: 'github:language:python',
+    });
+    expect(report.packageFixes!['deb/ubuntu/python3-pypdf@4.0.2-1']['CVE-2026-102996']).toMatchObject({
+      status: 'not_fixed', severity: 'medium', source: 'ubuntu:distro:ubuntu:24.04',
+    });
   });
 });
