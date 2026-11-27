@@ -93,8 +93,7 @@ export type SupportedToolsType = {
 export const SupportedTools: SupportedToolsType = {
   // not Microsoft's sbom-tool (needs a Docker daemon) nor Google Artifact Analysis (needs GCP)
   producers: [TrivyConfig, SyftConfig, DockerScoutConfig, AmazonConfig, OsvConfig, CdxgenConfig],
-  // not scout: its reports have no parser yet (vuln/vulnutils.ts VULN_EXTRACTORS)
-  consumers: [TrivyConfig, GrypeConfig],
+  consumers: [TrivyConfig, GrypeConfig, DockerScoutConfig],
 };
 
 // The scanner reads the SBOM of this producer (grype reads syft's).
