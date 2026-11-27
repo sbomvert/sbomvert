@@ -1,6 +1,6 @@
 ---
 title: Vulnerabilities and CVE reports
-description: How SBOMVert gets CVE reports by scanning SBOMs, normalizes Trivy and Grype output into one shape, and compares findings package by package.
+description: How SBOMVert gets CVE reports by scanning SBOMs, normalizes Trivy, Grype and Docker Scout output into one shape, and compares findings package by package.
 ---
 
 # Vulnerabilities and CVE reports
@@ -22,13 +22,14 @@ SBOMVert uses **SBOM scanning**. Its [live scans](/guides/live-scans) first gene
 | --- | --- | --- |
 | Trivy | Trivy | `trivy sbom <file> --skip-db-update --format json` |
 | Grype | Syft | `grype sbom:<file> -o=json` |
+| Docker Scout | Docker Scout | `docker scout cves sbom://<file> --format sarif` |
 
 Each scanner runs once per SBOM format requested (SPDX, CycloneDX). The resulting report is stored as `cve/<image>/<tool>.<format>.json`, where `<format>` is the format of the SBOM that was scanned (see Data layout).
 
 Because the scanner only sees the SBOM, **SBOM quality limits CVE results**. A package the generator missed, or wrote with a purl the scanner does not understand, cannot be matched. Comparing the SPDX and CycloneDX reports of the same scanner is one way to see this effect.
 
 ::: tip Docker Scout
-SBOMVert has a command for `docker scout cves`, but no parser for its output yet. Scout is therefore not offered as a scanner (`SupportedTools.consumers` in `packages/scan/src/tools.ts`). It is still available as an SBOM generator.
+Docker Scout looks up vulnerabilities through a Docker Hub account. Set `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD` in the worker's environment (see [Live scans](/guides/live-scans)). Without them its scans fail, and the other scanners still finish.
 :::
 
 ## The normalized report
@@ -44,22 +45,30 @@ Every scanner writes a different JSON structure. `VULN_EXTRACTORS` (`packages/co
 | `vulns_by_package` | Normalized package identifier → list of vulnerability IDs. |
 | `vulnpackagelist` | A copy of `vulns_by_package`. |
 | `purl_mapping` | Normalized package identifier → the purl as the scanner wrote it. |
+| `cveDetails` | Per vulnerability ID: severity, score, fix, source, CVSS, primary link, description and other IDs. Reports stored before this field existed have none. See [Severity, fix and details](#severity-fix-and-details). |
 | `packagelist` | Not filled by the current extractors. |
 
-The live-scan worker runs the extractor right after the scan, and only the normalized `VulnReport` is stored. The raw scanner output is not kept. The CVE comparison view reads these normalized files.
+The live-scan worker runs the extractor right after the scan and stores the normalized `VulnReport`. It also keeps each scanner's raw output under `CVE_RAW_DIR` (default `public/cve-raw`), or under `CVE_RAW_PREFIX` (default `cve-raw/`) in S3, so the original findings can be checked later. The CVE comparison view reads only the normalized files.
 
-### Per-scanner behavior
+### Severity, fix and details
 
-The two extractors do not count findings the same way:
+Each stored vulnerability ID can carry a `cveDetails` entry, in one shape for every scanner:
 
-- **Trivy** (`extractTrivyVulnerabilities`) walks `Results[].Vulnerabilities[]` and takes `VulnerabilityID` and `PkgIdentifier.PURL`. It records **every finding**. A CVE that affects three packages appears three times in `cves`. A finding counts as OS (`library`) or language based on the purl's ecosystem.
-- **Grype** (`extractAnchoreVulnerabilities`) walks `matches[]` and takes `vulnerability.id` and `artifact.purl`. It de-duplicates IDs per package and across the report, so each ID appears once in `cves`. It classifies a finding as OS or language from Grype's `vulnerability.namespace` (containing `distro` or `language`).
+| Field | Content |
+| --- | --- |
+| `id`, `aliases` | The ID the scanner reports, and the other IDs of the same vulnerability (see [Why scanners disagree](#why-scanners-disagree)). |
+| `severity` | `critical`, `high`, `medium`, `low`, `negligible`, or `unknown` when the scanner gives none. |
+| `score` | The primary CVSS base score: version 3 first, otherwise the first score given. |
+| `status` | `fixed`, `not_fixed`, `wont_fix`, `deferred`, or `unknown`. |
+| `fixedVersion` | The version that fixes it, when `status` is `fixed`. |
+| `source` | Who published it: Trivy's data source (for example `debian`), or Grype's namespace. Docker Scout does not name one, so the field is left out. |
+| `cvss` | Every CVSS score the scanner gives, with its source, version and vector. |
+| `url` | The primary advisory link. |
+| `description` | The scanner's description, when it gives one. |
 
-Per-tool totals are therefore not directly comparable between Trivy and Grype: Trivy counts findings, Grype counts distinct IDs. The count of **unique IDs across selected tools** is computed from the union and is comparable.
+A report also records each package's own fix, in `packageFixes` (by package, then CVE id): the status and every fixed version the scanner lists for that package. Scanners can give a different fix per package, for example one fix per maintained branch. The package rows show the package's own fix. The CVE-level `status` and `fixedVersion` are what all its packages agree on: the status is `unknown` when the packages disagree, and the version is shown only when they name the same single version. A package lists one version as `fixed in <version>`, and several versions as "fixed".
 
-### Severity and fix information
-
-The normalized report stores **only identifiers and packages**. It does not store severity, CVSS scores, fix versions or fix state, so the CVE comparison does not compare them. Use the scanner's own output if you need those fields.
+The comparison counts do not use these fields. They are shown in the details panel of the [CVE comparison](/guides/compare-cves#details-of-one-cve).
 
 ## Matching packages across scanners
 
@@ -96,11 +105,9 @@ For the selected scanner reports of one image (`src/lib/vuln/cveSummary.ts`), th
 
 Even on the same SBOM, scanners report different vulnerabilities. Some of the reasons are visible in SBOMVert:
 
-- **Different input.** Grype reads Syft's SBOM and Trivy reads Trivy's, so they start from different package lists (see [Why tools disagree](/concepts/tool-disagreement)).
-- **Different databases.** Each scanner has its own vulnerability database and its own rules for which advisories apply to which distro release.
 - **Database age.** A report reflects the database at scan time. The live-scan worker downloads the Grype and Trivy databases at startup and refreshes them every `DB_REFRESH_HOURS` (24 by default). Reports scanned on different days can differ for that reason alone.
-- **Different identifiers.** Scanners can report a GitHub advisory ID (`GHSA-...`) instead of, or in addition to, a CVE ID. SBOMVert does not map aliases, so `CVE-X` and a `GHSA-Y` describing the same issue count as two IDs.
-- **Fix availability and severity.** Scanners also disagree on these, but SBOMVert does not store them (see above).
+- **Different identifiers.** Scanners can report a GitHub advisory (`GHSA-...`) or Go (`GO-...`) ID instead of a CVE ID, and name the CVE as an alias. SBOMVert stores the aliases in `cveDetails`, but the counts still use the ID the scanner reports, so `CVE-X` and `GHSA-Y` describing the same issue count as two IDs.
+- **Fix availability and severity.** Scanners also disagree on these. SBOMVert stores them per vulnerability (see [Severity, fix and details](#severity-fix-and-details)), but the comparison counts do not use them.
 
 ## Related
 

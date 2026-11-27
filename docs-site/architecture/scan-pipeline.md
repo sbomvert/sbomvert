@@ -34,7 +34,7 @@ The code lives in `src/app/api/scan/route.ts`, `packages/scan/src/queue.ts`, `wo
 The route handler:
 
 1. Returns `403 {"error":"Scan feature disabled"}` unless `NEXT_PUBLIC_ENABLE_SCAN_API=true`. In practice the proxy (`src/proxy.tsx`) already redirects `/api/scan/*` to `/` when the flag is off.
-2. Validates the body with zod. `image` must pass `isValidImageRef` (no leading `-`, no `..`, no source scheme such as `dir:` or `file:`, at most 255 characters). `producers` and `consumers` must each contain at least one string. `formats` defaults to `["spdx","cdx"]`. Failures return `400` with the first validation message.
+2. Validates the body with zod. `image` must pass `isValidImageRef` (no leading `-`, no `..`, no source scheme such as `dir:` or `file:`, at most 255 characters). `producers` must contain at least one string. `consumers` may be empty, which makes an SBOM-only scan. `formats` defaults to `["spdx","cdx"]`. Failures return `400` with the first validation message.
 3. When `NEXT_PUBLIC_ENABLE_AUTH=true`, checks the `x-api-key` header or a session cookie and returns `401` otherwise.
 4. Adds the flow to Redis and returns `202 {"jobId":"..."}`. If Redis is unreachable it returns `503 {"error":"Scan queue unavailable"}`.
 
@@ -98,7 +98,7 @@ A `cve` job reads the return value of its child `sbom` job, writes each requeste
 
 The raw output is normalized by the tool's entry in `VULN_EXTRACTORS` (`packages/core/src/vuln/vulnutils.ts`) and returned as `{ image, sboms: [], cves: [{tool, format, content}] }`. The `format` of a CVE report is the format of the SBOM that was scanned.
 
-- Only `trivy` and `grype` are offered as scanners. A scanner without a report parser logs `<tool> cannot scan for CVEs`.
+- `trivy`, `grype` and `scout` are offered as scanners. A scanner without a report parser logs `<tool> cannot scan for CVEs`.
 - If the producer failed, the job logs `<scanner> <FORMAT>: no <producer> <FORMAT> SBOM to scan` and runs nothing.
 - Every `cve` job waits for the vulnerability databases to be ready before its first scan.
 
@@ -151,7 +151,7 @@ Vulnerability databases:
 - At startup the worker runs `grype db update`, `trivy image --download-db-only` and `trivy image --download-java-db-only`, each with a 1 hour timeout. A failed update logs an error and the cached copy is used.
 - Scans never update a database: grype runs with `GRYPE_DB_AUTO_UPDATE=false`, trivy with `--skip-db-update`.
 - Every `DB_REFRESH_HOURS` the worker pauses (waiting for the running job to finish), refreshes the databases, then resumes.
-- In the worker image the databases live under `/cache/dbs` (`TRIVY_CACHE_DIR=/cache/dbs/trivy`, `GRYPE_DB_CACHE_DIR=/cache/dbs/grype`), which Compose and Helm mount on a persistent volume.
+- In the worker image the databases live under `/cache/dbs` (`TRIVY_CACHE_DIR=/cache/dbs/trivy`, `GRYPE_DB_CACHE_DIR=/cache/dbs/grype`), which Helm mounts on a persistent volume.
 
 On `SIGTERM` or `SIGINT` the worker finishes its current jobs before exiting. BullMQ requeues anything left as stalled.
 

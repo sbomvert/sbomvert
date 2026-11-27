@@ -72,7 +72,7 @@ The optional live scan feature runs this whole chain for you: a scan worker gene
 ## Supported tools in short
 
 - **SBOM generators** (live scans and the comparison pages): Syft, Trivy, Docker Scout, Amazon Inspector SBOM Generator, OSV-Scanner and cdxgen, in SPDX and/or CycloneDX depending on the tool.
-- **Vulnerability scanners**: Trivy and Grype (Grype scans Syft's SBOM).
+- **Vulnerability scanners**: Trivy, Grype (Grype scans Syft's SBOM) and Docker Scout (scans its own SBOM).
 - **Translation**: SBOMs in the style of Syft, Trivy, Docker Scout, Google Artifact Analysis, Amazon Inspector and Microsoft's sbom-tool.
 
 The comparison pages read any SPDX or CycloneDX JSON SBOM; the tool list matters for live scans and translation. The full matrix is in [Supported tools](/getting-started/#supported-tools-in-short).

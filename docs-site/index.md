@@ -26,7 +26,7 @@ features:
     details: See which packages each generator found for an image, in SPDX and CycloneDX, and where they disagree.
     link: /guides/compare-sboms
   - title: Compare CVE reports
-    details: Compare the vulnerabilities Trivy and Grype report for the same image, package by package.
+    details: Compare the vulnerabilities Trivy, Grype and Docker Scout report for the same image, package by package.
     link: /guides/compare-cves
   - title: Translate SBOMs
     details: Rewrite an SBOM the way another tool would have written it, or convert it between SPDX and CycloneDX.
@@ -38,7 +38,7 @@ features:
     details: Generate SBOMs and CVE reports for any container image on demand, from the UI or the HTTP API.
     link: /guides/live-scans
   - title: Self-hosted
-    details: Run it locally, with Docker Compose or on Kubernetes with the Helm chart. Store reports on disk or in S3.
+    details: Run it locally or on Kubernetes with the Helm chart. Store reports on disk or in S3.
     link: /getting-started/installation
 ---
 

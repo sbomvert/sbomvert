@@ -5,13 +5,14 @@ description: Store SBOMs and CVE reports in SeaweedFS, AWS S3 or another S3-comp
 
 # Use S3 storage
 
-By default SBOMVert reads and writes reports in local folders. With the S3 backend it uses an S3-compatible bucket instead, which suits containers and clusters where the app's filesystem is not persistent. This guide covers the bundled SeaweedFS in Docker Compose, AWS S3, and other S3 providers.
+By default SBOMVert reads and writes reports in local folders. With the S3 backend it uses an S3-compatible bucket instead, which suits containers and clusters where the app's filesystem is not persistent. This guide covers SeaweedFS, AWS S3, and other S3 providers.
 
 ## How the S3 backend works
 
 - Set `ARTIFACT_BACKEND_TYPE=s3`. Any other value, or no value, uses local folders.
 - The bucket name is fixed in code: **`sbomvert`**. It must exist before the app starts writing.
 - SBOMs are stored under `sbom/<image>/<tool>.<format>.json`, CVE reports under `cves/<image>/<tool>.<format>.json`.
+- The scanners' own output from live scans goes under `cve-raw/`, or under the prefix set by `CVE_RAW_PREFIX`. `/compare` does not read that prefix.
 - `<image>` is the sanitized image name: `/` becomes `slash`, `:` becomes `twodots` (for example `alpinetwodots3.20`).
 
 ::: warning `S3_BUCKET` and `S3_PREFIX` do not move your reports
@@ -28,56 +29,9 @@ These two variables only configure `src/services/artifactStorageService`, which 
 | `S3_ACCESS_KEY_ID` | unset | Access key. **Only used when `S3_ENDPOINT` is set.** |
 | `S3_SECRET_ACCESS_KEY` | unset | Secret key. **Only used when `S3_ENDPOINT` is set.** |
 | `AWS_REGION` | `us-east-1` | Region used to sign requests. |
+| `CVE_RAW_PREFIX` | `cve-raw/` | Prefix for the scanners' raw output from live scans. A trailing `/` is added if you leave it out. The local equivalent is `CVE_RAW_DIR`. |
 
 When `S3_ENDPOINT` is not set, the app passes no credentials to the AWS SDK, so the SDK's default credential chain applies: `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, a shared config profile, or an attached IAM role.
-
-## SeaweedFS with Docker Compose
-
-`docker-compose.yml` includes SeaweedFS as the S3 server. It reads its access key and secret from `.env.dev` (`S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`), the same pair the app uses, and a one-shot `seaweedfs-init` service creates the `sbomvert` bucket. The app and worker start only after `seaweedfs-init` has completed.
-
-`.env.dev` already contains the S3 settings, but sets `ARTIFACT_BACKEND_TYPE=local`. To switch:
-
-1. **Edit `.env.dev`** and set:
-
-   ```bash
-   ARTIFACT_BACKEND_TYPE=s3
-   ```
-
-   The other values are already there:
-
-   ```bash
-   S3_ENDPOINT=http://seaweedfs:8333
-   S3_FORCE_PATH_STYLE=true
-   S3_ACCESS_KEY_ID=sbomvert
-   S3_SECRET_ACCESS_KEY=sbomvert-dev-secret
-   AWS_REGION=us-east-1
-   ```
-
-2. **Restart the stack** so the app picks up the new backend:
-
-   ```bash
-   docker compose up
-   ```
-
-   Expected: the `seaweedfs-init-dev` container logs the bucket creation (or that it already exists) and exits with code 0.
-
-3. **Add data.** The bucket starts empty; the bundled dataset in `public/` is not copied into it. Upload SBOMs (with `NEXT_PUBLIC_ENABLE_SBOM_UPLOAD=true`), run live scans, or copy files in with any S3 client. SeaweedFS's S3 API is published on `localhost:8333`:
-
-   ```bash
-   export AWS_ACCESS_KEY_ID=sbomvert AWS_SECRET_ACCESS_KEY=sbomvert-dev-secret
-   aws --endpoint-url http://localhost:8333 s3 cp public/sbom/ s3://sbomvert/sbom/ --recursive
-   aws --endpoint-url http://localhost:8333 s3 cp public/cve/  s3://sbomvert/cves/ --recursive
-   ```
-
-   Note the different prefix for CVE reports: `cves/`.
-
-4. **Open `/compare`.** The images in the bucket are listed.
-
-The data lives in the `seaweedfs_data` volume. `docker compose down -v` deletes it.
-
-::: tip Running the app outside Compose
-`seaweedfs` is a hostname inside the Compose network. If you run `npm run dev` on your machine against the Compose SeaweedFS, use `S3_ENDPOINT=http://localhost:8333`.
-:::
 
 ## AWS S3
 

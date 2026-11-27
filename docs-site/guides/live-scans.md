@@ -13,52 +13,19 @@ Live scans generate SBOMs and CVE reports for a container image on demand, inste
 |---|---|
 | `NEXT_PUBLIC_ENABLE_SCAN_API=true` | Turns on the `/scan` page and the `/api/scan/*` routes. |
 | Redis | Holds the BullMQ `scan` queue shared by the app and the worker. |
-| The scan worker | Runs the SBOM tools (Syft, Trivy, Docker Scout, Amazon Inspector SBOM Generator, OSV-Scanner, cdxgen) and the CVE scanners (Trivy, Grype). |
+| The scan worker | Runs the SBOM tools (Syft, Trivy, Docker Scout, Amazon Inspector SBOM Generator, OSV-Scanner, cdxgen) and the CVE scanners (Trivy, Grype, Docker Scout). |
 | Disk for vulnerability databases | Grype's and Trivy's databases take several GiB. |
 | Network access to registries | The tools pull images directly from their registries. There is no Docker daemon. |
 
 The worker does not need access to storage. The web app saves the results.
 
-## Option A: Docker Compose (recommended)
+## Run the worker and Redis
 
-Compose runs the app, the worker, Redis and SeaweedFS with every feature on (`.env.dev`). The worker image (`worker/Dockerfile`) already contains all the tools.
-
-1. **Create the volume for the vulnerability databases.** It is declared `external` so `docker compose down -v` keeps it.
-
-   ```bash
-   docker volume create sbomvert-scan-dbs
-   ```
-
-2. **Optional: add Docker Hub credentials for Docker Scout** to `.env.dev`. Without them, Scout runs fail and the other tools still run.
-
-   ```bash
-   DOCKER_SCOUT_HUB_USER=your-docker-hub-user
-   DOCKER_SCOUT_HUB_PASSWORD=your-docker-hub-token
-   ```
-
-3. **Start everything.**
-
-   ```bash
-   docker compose up
-   ```
-
-   Expected: the `scan-worker-dev` log shows `grype db update…`, `trivy image --download-db-only…` and `scan worker listening on queue "scan"`. The `nextjs-dev` log shows `scan results: storing completed scans`.
-
-4. Open `http://localhost:3000/scan`.
-
-The first start downloads the databases, which can take several minutes. SBOM jobs (except Trivy's) start right away; CVE jobs wait until the download finishes.
-
-## Option B: run the worker on your machine
-
-Use this when you develop the worker itself.
+The worker runs the SBOM and CVE tools, so they must be installed on the machine where it runs.
 
 1. **Install the tools on your `PATH`:** `syft`, `grype`, `trivy`, `docker` with the Scout CLI plugin (for `scout`), `inspector-sbomgen` (for `amazon`), `osv-scanner` and `skopeo` (for `osv`), `cdxgen` and `skopeo` (for `cdxgen`). Only the tools you select in a scan need to be present.
 
-2. **Start Redis.**
-
-   ```bash
-   docker run -d --name redis -p 6379:6379 redis:7-alpine
-   ```
+2. **Start Redis** on port 6379, with any Redis 7 server.
 
 3. **Configure the app** in `.env.local` (or your shell):
 
@@ -92,9 +59,9 @@ On Kubernetes, set `scan.enabled: true` in the Helm values. See [Deploy on Kuber
 
 1. **Open the Scan page.** The sidebar shows **Scan** when the flag is on, or go to `/scan`. With the flag off, `/scan` redirects to the home page.
 2. **Enter the image** in the **Image** field, for example `alpine:3.20` or `ghcr.io/org/app:1.0`. Use a reference a registry can resolve: the tools pull it themselves.
-3. **Choose SBOM generators.** All are selected by default: `TRIVY`, `SYFT`, `SCOUT`, `AMAZON`, `OSV`, `CDXGEN`. Click a button to toggle it.
+3. **Choose SBOM generators.** All are selected by default except `SCOUT` (Docker Scout), which you select yourself: `TRIVY`, `SYFT`, `AMAZON`, `OSV`, `CDXGEN`. Click a button to toggle it. At least one is required.
 4. **Choose SBOM formats:** `SPDX`, `CycloneDX`, or both. At least one is required.
-5. **Choose CVE scanners:** `TRIVY` and `GRYPE`. Trivy scans Trivy's SBOM. Grype scans Syft's SBOM, so Grype needs `SYFT` selected. The API requires at least one scanner.
+5. **Choose CVE scanners:** `TRIVY` and `GRYPE` are selected by default. Trivy scans Trivy's SBOM. Grype scans Syft's SBOM, so Grype needs `SYFT` selected. Docker Scout scans Scout's SBOM, so it needs `SCOUT` selected. Deselect them all for an SBOM-only scan: the SBOMs are generated, and no CVE report is.
 6. **Read the warning box, if any.** It lists combinations that will produce nothing, such as `AMAZON cannot generate SPDX SBOMs: none will be made.`
 7. **Click Start Scan.** The request is sent to `POST /api/scan`. On error, the browser shows an alert with the message from the API (for example `Invalid image reference`).
 
@@ -121,13 +88,14 @@ As each tool finishes, the web app saves its output:
 
 - SBOMs: `<SBOM_DIR>/<image>/<tool>.<format>.json`, or `sbom/<image>/...` in the `sbomvert` S3 bucket.
 - CVE reports: `<CVE_DIR>/<image>/<tool>.<format>.json`, or `cves/<image>/...` in S3.
+- The scanner's raw output, before SBOMVert normalizes it: `<CVE_RAW_DIR>/<image>/<tool>.<format>.json`, or `cve-raw/<image>/...` in S3 (`CVE_RAW_PREFIX` changes the S3 prefix).
 
 `<image>` is the sanitized name (`alpine:3.20` becomes `alpinetwodots3.20`). The image then shows up on `/compare`, where you can compare its SBOMs and CVE reports like any other. If the app was down when a job finished, it stores the result on its next start.
 
 ## Limits
 
 - **Formats per tool.** `amazon` and `cdxgen` write CycloneDX only. `osv` writes SPDX only. Requesting the other format yields `no <tool> <FORMAT> SBOM` in the log.
-- **Scanners.** Only Trivy and Grype scan for CVEs. Docker Scout is offered as an SBOM generator only.
+- **Scanners.** Trivy, Grype and Docker Scout scan for CVEs. Without Docker Hub credentials the Scout steps log a warning, and the other scanners still finish.
 - **Scanner inputs.** A scanner without its producer gets no job; the log says `grype needs a syft SBOM, which was not requested`.
 - **Docker Scout** needs `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD` in the worker's environment.
 - **Timeouts.** Each tool command is killed after `RUN_EXPERIMENT_TIMEOUT` ms (default 180000). Large images may need more.

@@ -47,7 +47,7 @@ The strip at the top:
 
 | Number | Meaning |
 | --- | --- |
-| **Unique CVEs** | Distinct CVE IDs across the selected reports. |
+| **Unique CVEs** | Distinct vulnerability IDs across the selected reports, counted as each scanner reports them. A GitHub advisory and the CVE it names count as two IDs. |
 | **Tools compared** | Number of selected reports. |
 | **Vulnerable packages** | Distinct packages with at least one CVE in any selected report. |
 
@@ -55,7 +55,7 @@ The strip at the top:
 
 | Field | Meaning |
 | --- | --- |
-| **Total** | The report's `totalCVEs`. For Trivy this counts a CVE once per affected package; for Grype each CVE ID once. |
+| **Total** | The report's `totalCVEs`. For Trivy and Docker Scout this counts a CVE once per affected package; for Grype each CVE ID once. |
 | **Unique CVEs** | Distinct CVE IDs in the report. |
 | **Vuln Pkgs** | Packages with at least one CVE. |
 | **Coverage vs unique total** | The report's unique CVEs as a percentage of **Unique CVEs** across all selected reports. |
@@ -73,7 +73,23 @@ Each row is a vulnerable package, identified by a normalized pURL:
 
 Rows are sorted with packages flagged by the most reports first, then by name. Use **Search packages…** to filter by pURL, and the **All** / **only &lt;scanner&gt;** pills to show only the packages a single report flagged. The counter shows matching packages out of the total.
 
-Click a row to expand it: one column per report lists its CVE IDs for the package, each linking to `https://nvd.nist.gov/vuln/detail/<CVE-ID>`, or "Not detected".
+Click a row to expand it: one column per report lists its vulnerability IDs for the package, or "Not detected". Each ID is a button that opens its details (below).
+
+### Details of one CVE
+
+Click an ID to open its details in a side panel. The panel has one table for all the reports that list that ID:
+
+- **By tool**: the severity, score, fix and source each report gives. The fix reads `fixed in <version>`, `no fix`, `will not fix`, `fix deferred` or `fix unknown`. A field the report does not have reads "not reported", and a scanner may give no score for a vulnerability another scanner scores.
+- **Description**, with the report it came from.
+- **Other IDs**: the aliases the scanners give, such as the CVE behind a GitHub advisory. A CVE ID links to NVD.
+- **CVSS**: every score a report gives, with its source, version and vector.
+- **Advisory**: each report's primary link.
+
+Close the panel with the **×** button, a click outside it, or Escape.
+
+::: tip Reports stored before the panel
+Reports stored before SBOMVert kept severity and fix details have no `cveDetails`, so the panel shows "not reported" for them. Scanning the image again, or rebuilding its report from the raw output, fills them in.
+:::
 
 ## How packages are matched
 
@@ -90,7 +106,8 @@ The original pURLs are kept in each report's `purl_mapping`.
 
 - **Packages flagged by only one scanner** are the most useful rows: open them and compare the CVE IDs.
 - **A large gap in Total with a small gap in Unique CVEs** usually comes from how each scanner counts, not from different findings.
-- **The same scanner on SPDX and CycloneDX** reading SBOMs from the same tool should agree; when it does not, the two SBOM formats carried different identifiers. Compare the SBOMs in [Compare SBOMs](/guides/compare-sboms).
+- **Findings can describe another operating system.** Language-package advisories are matched by name and version, so a Windows-only advisory can appear for a Linux image. Read its description in the details panel first.
+- **The same scanner on SPDX and CycloneDX** can disagree on one SBOM, because each format carries different metadata. Compare both reports before concluding that one scanner found more. See [Same SBOM, two formats](/concepts/tool-disagreement#same-sbom-two-formats).
 
 See [Vulnerabilities and CVE reports](/concepts/vulnerabilities) for the background.
 

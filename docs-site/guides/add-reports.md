@@ -206,6 +206,8 @@ A stored report looks like this:
 }
 ```
 
+Reports from the live-scan worker also have a `cveDetails` object, keyed by vulnerability ID, with severity, score, fix and advisory details. It is optional: the comparison works without it. See [Severity, fix and details](/concepts/vulnerabilities#severity-fix-and-details).
+
 The comparison view uses `totalCVEs`, `cves` and `vulns_by_package`. Name the file after the scanner and the format of the SBOM it scanned, for example `grype.spdx.json` for Grype's scan of `syft.spdx.json`.
 
 ## Related

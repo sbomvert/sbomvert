@@ -46,19 +46,9 @@ syft, trivy, grype and Docker Scout:
 npm run worker:dev
 ```
 
-Or run everything (app, worker, Redis, SeaweedFS as S3) with Docker Compose; settings are in
-[`.env.dev`](.env.dev). The scan worker keeps its vulnerability databases (several GiB) on an
-external volume, so they survive `docker compose down -v`; create it once:
-
-```bash
-docker volume create sbomvert-scan-dbs
-docker compose up
-```
-
 ### S3 storage with SeaweedFS
 
-Compose runs [SeaweedFS](https://github.com/seaweedfs/seaweedfs) as the S3 server. It reads its access key and secret from `.env.dev`
-(`S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`), the same pair the app uses, and a `seaweedfs-init` service creates the `sbomvert` bucket.
+[SeaweedFS](https://github.com/seaweedfs/seaweedfs) is an S3-compatible server. The app uses it when `ARTIFACT_BACKEND_TYPE=s3`, with the key pair in `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`. The bucket it needs is `sbomvert`.
 
 **The app only uses SeaweedFS when `ARTIFACT_BACKEND_TYPE=s3`.**
 
@@ -111,7 +101,7 @@ NEXT_PUBLIC_CVE_MAPPING_ENABLED='true'
 
 ##### Authentication (optional) #####
 # Off by default. On: sign-in (GitHub, magic link), account settings, and POST /api/scan needs a
-# session or an x-api-key. Needs Postgres: `docker compose --profile auth up`, then create the
+# session or an x-api-key. Needs Postgres, then create the
 # tables once with `npx drizzle-kit push`.
 #NEXT_PUBLIC_ENABLE_AUTH='true'
 #BETTER_AUTH_SECRET=            # openssl rand -base64 32

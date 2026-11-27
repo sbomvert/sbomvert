@@ -17,8 +17,8 @@ SBOMVert is a Next.js (App Router) application in an npm workspaces repository. 
 | `@sbomvert/storage` | `packages/storage` | SBOM and CVE report storage, either a local folder or S3, selected by `ARTIFACT_BACKEND_TYPE`. Used only by the web app. |
 | Scan worker | `worker` (`@sbomvert/scan-worker`) | Takes jobs from the `scan` queue, runs the SBOM and CVE tools, and returns the results as the job's return value. Stores nothing. Built from `worker/Dockerfile`. |
 | Redis | `redis:7-alpine` | Backend for the BullMQ queue. Needed only for live scans. |
-| Object storage | SeaweedFS in Compose and Helm, or any S3 endpoint | Holds SBOMs and CVE reports when `ARTIFACT_BACKEND_TYPE=s3`. |
-| Postgres | `postgres` Compose service (`auth` profile) | Stores users, sessions and API keys for the optional sign-in feature (better-auth). Not used for SBOM or CVE data. |
+| Object storage | SeaweedFS in Helm, or any S3 endpoint | Holds SBOMs and CVE reports when `ARTIFACT_BACKEND_TYPE=s3`. |
+| Postgres | Any PostgreSQL server named by `DATABASE_URL`, only when sign-in is on | Stores users, sessions and API keys for the optional sign-in feature (better-auth). Not used for SBOM or CVE data. |
 
 The workspace packages are consumed as TypeScript source (`@sbomvert/core/<module>`) and transpiled by Next (`transpilePackages` in `next.config.js`) or run by `tsx` in the worker.
 
@@ -124,16 +124,17 @@ The worker has no storage credentials and no Docker daemon. It only needs Redis 
 
 ## Deployment options
 
-| | Docker Compose (`docker-compose.yml`) | Helm (`charts/sbomvert`) |
-|---|---|---|
-| Purpose | Local development: mounts the source and runs `npm run dev` / `npm run worker:dev` | Cluster deployment from published images |
-| App | `nextjs` service, `Dockerfile.dev`, port 3000 | `<release>-app` Deployment, image `ghcr.io/sbomvert/sbomvert` (`Dockerfile`, standalone server) |
-| Worker | `scan-worker` service, `worker/Dockerfile` | `<release>-worker`, only when `scan.enabled` |
-| Redis | `redis` service | `<release>-redis` Deployment, Service `redis` |
-| S3 | `seaweedfs` + one-shot `seaweedfs-init` that creates the bucket | `<release>-seaweedfs`, creates the bucket on start; can be disabled |
-| Postgres | `postgres` service, `auth` profile only | Not included |
-| Settings | `.env.dev` (all features on, local storage) | `values.yaml` (S3 storage by default) |
-| Vulnerability DB cache | external volume `sbomvert-scan-dbs` | PVC `<release>-worker-dbs` |
+Helm is the cluster deployment. It runs from published images:
+
+| | Helm (`charts/sbomvert`) |
+|---|---|
+| App | `<release>-app` Deployment, image `ghcr.io/sbomvert/sbomvert` (`Dockerfile`, standalone server) |
+| Worker | `<release>-worker`, only when `scan.enabled` |
+| Redis | `<release>-redis` Deployment, Service `redis` |
+| S3 | `<release>-seaweedfs`, creates the bucket on start; can be disabled |
+| Postgres | Not included |
+| Settings | `values.yaml` (S3 storage by default) |
+| Vulnerability DB cache | PVC `<release>-worker-dbs` |
 
 See [Installation](/getting-started/installation) and [Deploy on Kubernetes](/guides/kubernetes).
 

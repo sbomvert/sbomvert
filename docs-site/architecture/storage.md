@@ -44,9 +44,10 @@ The selector reads `ARTIFACT_BACKEND_TYPE` once, at import. Any value other than
 |---|---|---|
 | `SBOM_DIR` | `./public/sbom` | SBOM folder |
 | `CVE_DIR` | `./public/cves` | CVE report folder |
+| `CVE_RAW_DIR` | `./public/cve-raw` | The scanners' own output from live scans, kept apart from the reports. |
 
 ::: warning Default CVE folder name
-The code defaults to `./public/cves` (plural), while `.env.dev` and the README set `CVE_DIR=public/cve`. Set `CVE_DIR` explicitly so the app reads the folder you expect.
+The code defaults to `./public/cves`. Set `CVE_DIR` explicitly so the app reads the folder you expect.
 :::
 
 Paths are relative to the app's working directory. The SBOM service creates `SBOM_DIR` if it does not exist, so a wrong path gives an empty `/compare` page rather than an error.
@@ -72,6 +73,7 @@ With `ARTIFACT_BACKEND_TYPE=s3`, both services use the bucket **`sbomvert`**, wh
 |---|---|
 | SBOM | `sbom/<image>/<tool>.<format>.json` |
 | CVE report | `cves/<image>/<tool>.<format>.json` |
+| CVE raw output | `cve-raw/<image>/<tool>.<format>.json`, or `<CVE_RAW_PREFIX>` if set |
 
 The S3 client is configured from:
 

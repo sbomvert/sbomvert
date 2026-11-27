@@ -5,7 +5,7 @@ description: Causes and fixes for common SBOMVert errors and symptoms, from empt
 
 # Troubleshooting
 
-Each section heading is a symptom or an error message as you would see it. Find yours, check the cause, and apply the fix. Server-side messages appear in the app's console (`npm run dev` output, `docker compose logs nextjs`, or `kubectl logs`); worker messages appear in the scan worker's log and in the scan's history on the Scan page.
+Each section heading is a symptom or an error message as you would see it. Find yours, check the cause, and apply the fix. Server-side messages appear in the app's console (`npm run dev` output or `kubectl logs`); worker messages appear in the scan worker's log and in the scan's history on the Scan page.
 
 ## Data and comparison
 
@@ -29,7 +29,7 @@ Restart the app after changing environment variables.
 
 ### Images are listed but show 0 CVE reports
 
-CVE reports are read from `CVE_DIR/<same image folder>/`. The code default is `./public/cves` (plural), while `.env.dev` and the bundled dataset use `public/cve`. Set `CVE_DIR=public/cve` (or wherever your reports are). In S3 the prefix is `cves/`, not `cve/`.
+CVE reports are read from `CVE_DIR/<same image folder>/`. The code default is `./public/cves` (plural), while the bundled dataset uses `public/cve`. Set `CVE_DIR=public/cve` (or wherever your reports are). In S3 the prefix is `cves/`, not `cve/`.
 
 ### The "CVE Comparison" option is missing on `/compare`
 
@@ -96,19 +96,19 @@ The upload form could not detect the tool from the SBOM's metadata. Type the too
 
 ### `Scan queue unavailable`
 
-The app could not reach Redis (`503` on `POST /api/scan` or the status routes). Check that Redis runs and that `REDIS_HOST` and `REDIS_PORT` point to it from the app's point of view (`redis` inside Compose, `127.0.0.1` for a local `npm run dev`).
+The app could not reach Redis (`503` on `POST /api/scan` or the status routes). Check that Redis runs and that `REDIS_HOST` and `REDIS_PORT` point to it from the app's point of view (`127.0.0.1` for a local `npm run dev`).
 
 ### Scans stay `pending`
 
 The scan is queued but no worker is taking jobs.
 
-1. **Is the worker running?** Start it with `npm run worker:dev`, or check the `scan-worker` container (`docker compose logs scan-worker`) or the `<release>-worker` Deployment.
+1. **Is the worker running?** Start it with `npm run worker:dev`, or check the `<release>-worker` Deployment.
 2. **Same Redis?** The worker and the app must use the same `REDIS_HOST` / `REDIS_PORT`. The worker logs `scan worker listening on queue "scan"` when connected.
 3. **Busy worker?** With `SCAN_CONCURRENCY=1` a worker runs one job at a time; other scans wait their turn.
 
 ### Scans are `running` for a long time after the worker starts
 
-On first start the worker downloads the Grype and Trivy databases (several GiB, up to 1 hour timeout each). CVE jobs and Trivy SBOM jobs wait for it; the scan log shows `grype is waiting for the vulnerability databases` or `trivy is waiting for its databases`. Keep the database volume (`sbomvert-scan-dbs` in Compose, `<release>-worker-dbs` in Helm) so later starts reuse the cached copy.
+On first start the worker downloads the Grype and Trivy databases (several GiB, up to 1 hour timeout each). CVE jobs and Trivy SBOM jobs wait for it; the scan log shows `grype is waiting for the vulnerability databases` or `trivy is waiting for its databases`. Keep the database volume (`<release>-worker-dbs` in Helm) so later starts reuse the cached copy.
 
 ### `<tool> timed out after 180s: ...`
 
@@ -116,7 +116,7 @@ A tool was killed after `RUN_EXPERIMENT_TIMEOUT` milliseconds (default `180000`)
 
 ### Docker Scout fails: `scout failed: ...`
 
-Docker Scout needs a Docker Hub account. Set `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD` (a Docker Hub access token works as the password) in the worker's environment, for example in `.env.dev`, and restart the worker. Without them Scout runs fail and the other tools still run. The Helm chart has no values for these variables.
+Docker Scout needs a Docker Hub account. Set `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD` (a Docker Hub access token works as the password) in the worker's environment, for example in `.env`, and restart the worker. Without them Scout runs fail and the other tools still run. The Helm chart has no values for these variables.
 
 ### Trivy or Grype fail with lock or cache errors
 
@@ -128,7 +128,7 @@ The tool does not write that format: `amazon` and `cdxgen` write CycloneDX only,
 
 ### `<tool> cannot produce SBOMs` / `<tool> cannot scan for CVEs`
 
-The tool name is not a known SBOM producer or CVE scanner. Producers are `trivy`, `syft`, `scout`, `amazon`, `osv`, `cdxgen`; scanners are `trivy` and `grype`. `GET /api/scan/tools` returns the current list.
+The tool name is not a known SBOM producer or CVE scanner. Producers are `trivy`, `syft`, `scout`, `amazon`, `osv`, `cdxgen`; scanners are `trivy`, `grype` and `scout`. `GET /api/scan/tools` returns the current list.
 
 ### `grype needs a syft SBOM, which was not requested`
 
@@ -142,9 +142,9 @@ The scanner had nothing to scan because its producer failed or did not write tha
 
 `POST /api/scan` rejects references that start with `-`, contain `..`, use a source scheme (`dir:`, `file:`, `docker-archive:`...), contain characters other than letters, digits and `._/:@-`, or exceed 255 characters. Use a plain registry reference such as `alpine:3.20` or `ghcr.io/org/app@sha256:...`.
 
-### `Too small: expected array to have >=1 items`
+### `Select at least one SBOM generator`
 
-`tools.producers` or `tools.consumers` was empty. The API needs at least one of each, even if you only want SBOMs.
+`tools.producers` is empty. Choose at least one SBOM generator. CVE scanners are optional: leave them out (`tools.consumers` empty) to generate SBOMs only.
 
 ### A scan is `completed` but nothing new appears on `/compare`
 
@@ -167,22 +167,19 @@ These pages exist only when `NEXT_PUBLIC_ENABLE_AUTH=true`. Set it, along with t
 
 ### `Authentication is enabled (NEXT_PUBLIC_ENABLE_AUTH) but DATABASE_URL, BETTER_AUTH_SECRET is not set`
 
-Auth needs Postgres and a secret. With Compose:
+Auth needs Postgres and a secret. Locally:
 
 1. Generate a secret with `openssl rand -base64 32`.
-2. Add to `.env.dev` (or your environment):
+2. Add to `.env` (or your environment):
 
    ```bash
    NEXT_PUBLIC_ENABLE_AUTH=true
    BETTER_AUTH_SECRET=<the generated value>
    BETTER_AUTH_URL=http://localhost:3000
+   DATABASE_URL=postgresql://sbomvert:sbomvert@localhost:5432/sbomvert
    ```
 
-3. Start Postgres with the app. Compose sets `DATABASE_URL` for the app container:
-
-   ```bash
-   docker compose --profile auth up
-   ```
+3. Start PostgreSQL on `localhost:5432`, with the user, password and database named in `DATABASE_URL`, then restart the app.
 
 4. Create the tables once, from the host:
 
@@ -202,11 +199,11 @@ Listing errors are logged as `Error listing SBOMs from S3:` (or `Error listing C
 
 | Error in the log | Cause | Fix |
 |---|---|---|
-| `NoSuchBucket` | The bucket `sbomvert` does not exist. The name is fixed in code; `S3_BUCKET` does not change it. | Create a bucket named `sbomvert`. In Compose, check that `seaweedfs-init` exited with code 0. |
-| `AccessDenied` / `InvalidAccessKeyId` / `SignatureDoesNotMatch` | Wrong credentials, or missing `s3:ListBucket`, `s3:GetObject`, `s3:PutObject`. | Fix the key pair or policy. In Compose the app and SeaweedFS share `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` from `.env.dev`. |
+| `NoSuchBucket` | The bucket `sbomvert` does not exist. The name is fixed in code; `S3_BUCKET` does not change it. | Create a bucket named `sbomvert`. |
+| `AccessDenied` / `InvalidAccessKeyId` / `SignatureDoesNotMatch` | Wrong credentials, or missing `s3:ListBucket`, `s3:GetObject`, `s3:PutObject`. | Fix the key pair or policy. |
 | Credentials ignored | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` are only used when `S3_ENDPOINT` is set. Without it, the AWS default credential chain is used. | Set `S3_ENDPOINT`, or provide `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` or an IAM role. |
 | `getaddrinfo ENOTFOUND sbomvert.<host>` | Virtual-hosted URLs: the SDK put the bucket in the hostname, which a self-hosted server does not resolve. | Set `S3_FORCE_PATH_STYLE=true`. |
-| `ENOTFOUND seaweedfs` | The app runs outside Compose but uses the in-network hostname. | Use `S3_ENDPOINT=http://localhost:8333`. |
+| `ENOTFOUND <host>` | The endpoint is a name this machine cannot resolve, for example one that exists only inside a cluster. | Use an address this machine can reach, such as `S3_ENDPOINT=http://localhost:8333`. |
 | `PermanentRedirect` / `AuthorizationHeaderMalformed` | `AWS_REGION` does not match the bucket's region. | Set `AWS_REGION` to the bucket's region. |
 
 Also check that objects use the expected keys: `sbom/<image>/<tool>.<format>.json` and `cves/<image>/<tool>.<format>.json`. See [Use S3 storage](/guides/s3-storage).

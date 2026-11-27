@@ -29,51 +29,39 @@ With `NEXT_PUBLIC_ENABLE_AUTH` unset or not `true`, `/auth/*`, `/settings/*` and
 | `BETTER_AUTH_SECRET` | Yes | Secret Better Auth uses to sign sessions and tokens. Generate it with `openssl rand -base64 32`. |
 | `BETTER_AUTH_URL` | Recommended | The public base URL of the app, e.g. `https://sbomvert.example.com`. Read by Better Auth to build callback and magic-link URLs. |
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | For GitHub sign-in | Credentials of your GitHub OAuth app. |
-| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Compose only | Credentials for the Compose `postgres` service. They default to `sbomvert`. |
 
 If authentication is on and `DATABASE_URL` or `BETTER_AUTH_SECRET` is missing, the first request that needs auth fails with an error naming the missing variable.
 
 ::: warning Set the flag at build time
-The app reads `NEXT_PUBLIC_ENABLE_AUTH` as `process.env.NEXT_PUBLIC_ENABLE_AUTH`. Next.js inlines `NEXT_PUBLIC_*` values written that way into the build. Set the flag when you build the app (`npm run build` or the Docker build), not only when you start it. The Helm chart does not set any authentication variables.
+The app reads `NEXT_PUBLIC_ENABLE_AUTH` as `process.env.NEXT_PUBLIC_ENABLE_AUTH`. Next.js inlines `NEXT_PUBLIC_*` values written that way into the build. Set the flag when you build the app (`npm run build`), not only when you start it. The Helm chart does not set any authentication variables.
 :::
 
 ## Enable authentication locally
 
-These steps use Docker Compose and the settings file `.env.dev`.
+These steps use a PostgreSQL server on your machine.
 
-1. **Add the variables** to `.env.dev`:
+1. **Add the variables** to `.env`:
 
    ```bash
    NEXT_PUBLIC_ENABLE_AUTH='true'
    BETTER_AUTH_SECRET=<output of: openssl rand -base64 32>
    BETTER_AUTH_URL=http://localhost:3000
-   GITHUB_CLIENT_ID=<from step 3>
-   GITHUB_CLIENT_SECRET=<from step 3>
-   # optional: Compose defaults to sbomvert / sbomvert / sbomvert
-   POSTGRES_USER=sbomvert
-   POSTGRES_PASSWORD=<a password>
-   POSTGRES_DB=sbomvert
+   DATABASE_URL=postgresql://<user>:<password>@localhost:5432/<database>
+   GITHUB_CLIENT_ID=<from GitHub sign-in setup below>
+   GITHUB_CLIENT_SECRET=<from GitHub sign-in setup below>
    ```
 
-   Inside Compose, the app's `DATABASE_URL` is set for you and points to the `postgres-dev` container.
+2. **Start PostgreSQL** on `localhost:5432`, with the user, password and database that `DATABASE_URL` names.
 
-2. **Start the stack with Postgres.** The `postgres` service only runs with the `auth` profile:
-
-   ```bash
-   docker compose --profile auth up
-   ```
-
-3. **Create the tables.** Run this once from the host, with `DATABASE_URL` pointing to the Postgres port Compose publishes:
+3. **Create the tables.** Run this once, from the host:
 
    ```bash
-   DATABASE_URL=postgresql://sbomvert:<password>@localhost:5432/sbomvert npx drizzle-kit push
+   DATABASE_URL=postgresql://<user>:<password>@localhost:5432/<database> npx drizzle-kit push
    ```
 
    `drizzle.config.ts` reads the schema from `src/db/schema.ts`. It creates the `user`, `session`, `account`, `verification` and `apikey` tables. Run the command again after upgrading SBOMVert if the schema changed.
 
 4. **Restart the app** so it picks up the new variables, then open `http://localhost:3000/auth/sign-in`.
-
-To run without Compose, start any Postgres server, set `DATABASE_URL` in your environment, run `npx drizzle-kit push`, and start the app with `npm run dev`.
 
 ## Set up GitHub sign-in
 
@@ -92,9 +80,6 @@ SBOMVert does not restrict which GitHub users can sign in. There is no allowlist
 ## Magic link sign-in
 
 A magic link is a one-time sign-in URL. **SBOMVert does not send email.** No SMTP or email provider is configured in the code (`src/lib/auth.ts`). What happens when a user requests a link depends on `NODE_ENV`:
-
-- **Development** (`npm run dev`): the link is written to the server log as `Magic link for <email>: <url>`. Copy it from the log to sign in. This is useful for local testing only, because anyone who can read the log can sign in as that user.
-- **Production** (`NODE_ENV=production`, which includes the Docker image and the Helm chart): the request fails with "Magic link sign-in needs email sending, which is not configured". The link is never logged.
 
 In production, GitHub is the only working sign-in method.
 

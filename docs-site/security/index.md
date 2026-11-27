@@ -140,7 +140,6 @@ Present in the code:
 
 Not present:
 
-- The worker image runs as **root** (`worker/Dockerfile` has no `USER`).
 - The chart sets no `securityContext`, resource limits or `NetworkPolicy` for the worker.
 - The only secrets the worker can hold are `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD`, if you set them. A compromised worker can read them.
 
@@ -163,7 +162,6 @@ All secrets are environment variables:
 | `DOCKER_SCOUT_HUB_USER`, `DOCKER_SCOUT_HUB_PASSWORD` | Worker: Docker Scout |
 
 - **Helm.** The chart puts the S3 key pair in a Kubernetes `Secret` (`<release>-s3`) and passes it to the app and SeaweedFS with `secretKeyRef`. The values come from `values.yaml`, whose default secret key is `change-me`. The chart has no settings for the authentication or Docker Scout secrets.
-- **Compose.** `.env.dev` is committed and holds **development** credentials, including the SeaweedFS key pair. Do not reuse it outside local development.
 - `.env`, `.env.local` and `.env.*.local` are git-ignored.
 
 ## Supply chain
@@ -171,13 +169,14 @@ All secrets are environment variables:
 The repository's own practices, as configured in `.github/` and the Dockerfiles:
 
 - **GitHub Actions pinned by commit SHA**, with the version in a comment. Dependabot updates both.
-- **Dependabot** checks npm (root and `docs-site`), GitHub Actions, the Dockerfiles' base images, Compose images and the Helm chart every week. Scanner versions in `worker/Dockerfile` are deliberately left out and bumped by hand, because they change scan results.
+- **Dependabot** checks npm (root and `docs-site`), GitHub Actions, the Dockerfiles' base images and the Helm chart every week. Scanner versions in `worker/Dockerfile` are deliberately left out and bumped by hand, because they change scan results.
 - **CodeQL** runs in CI. `npm audit` runs too, but only prints its results and never fails the build.
 - **Lockfile installs.** Both images install npm dependencies with `npm ci`.
 - **App image** runs as the non-root `node` user.
 - **Worker tool downloads**, pinned by version build arguments:
   - Syft, Grype and Trivy are installed with each project's install script, fetched from the same release tag as the binary.
   - cdxgen is checked against its published SHA-256.
+  - The Docker Scout CLI plugin is pinned to a release and checked against that release's SHA-256 list.
   - OSV-Scanner (despite a comment in the Dockerfile saying otherwise) and Amazon Inspector SBOM Generator are downloaded with no checksum check.
   - The Docker Scout plugin is installed with the install script from the `main` branch, so it is not pinned.
 - **Release images** are pushed with both the version tag and `latest`, and the chart's `values.yaml` defaults to `latest`.
@@ -190,7 +189,7 @@ The repository's own practices, as configured in `.github/` and the Dockerfiles:
 | Command or flag injection through the image reference | Strict validation in the route and the worker. `execFile` without a shell. Fixed tool commands. | Low. |
 | Tool reads the worker's own files (`dir:/`, `file:`) | Source schemes rejected by `isValidImageRef`. | Low. |
 | Pulls from internal registries or probing internal hosts via image references | None in the code. | Depends on the worker's network. Error messages come back in job logs. |
-| Malicious image exploits a scanner parser | Worker isolated from storage credentials and the Docker daemon. No Kubernetes token. Timeouts. | Worker runs as root, with no securityContext or NetworkPolicy in the chart. Results it returns are trusted by the app. |
+| Malicious image exploits a scanner parser | Worker isolated from storage credentials and the Docker daemon. No Kubernetes token. Timeouts. | The chart sets no securityContext or NetworkPolicy. Results it returns are trusted by the app. |
 | Path traversal through API path segments or uploads | `isSafeName` and `pathIn` on the local backend. | S3 reads are not name-checked. |
 | Anyone writes or overwrites stored SBOMs | Upload is off by default. | When upload is on, it needs no authentication, and an upload replaces an existing file with the same image, tool and format. |
 | Large uploads or scan outputs exhaust memory or disk | Tool output capped at 50 MB. Redis keeps the last 500 jobs. SBOM contents are removed from Redis once stored. | No upload size limit in the route. No storage quotas. |
@@ -199,7 +198,7 @@ The repository's own practices, as configured in `.github/` and the Dockerfiles:
 | Session or API key theft | Keys stored hashed and can expire (7 to 90 days, or never). Rate limit per key. | The app sets no security headers. TLS is up to your reverse proxy. |
 | Magic links leak through logs | Links are logged only in development and refused in production. | Development logs contain working sign-in links. |
 | Compromised third-party tool download | Version pins. Checksum for cdxgen. Install scripts from release tags. | OSV-Scanner, Inspector and Scout are not verified. Scout is not pinned. |
-| Leaked default credentials | Helm keeps S3 credentials in a Secret. | Defaults (`change-me`, the `.env.dev` pair) work if you do not change them. |
+| Leaked default credentials | Helm keeps S3 credentials in a Secret. | Defaults (`change-me` in the chart) work if you do not change them. |
 | Private SBOM content sent to a server | Static build has no server. Analysis and translation run in the browser. | None for the static build. |
 
 The older review in `docs/security/2026-10-14-scan-pipeline-security-review.md` covers an earlier scan design that was not merged. Its file references do not match the current code. Its checklist (limits, network isolation, Redis credentials) still applies to the current worker.

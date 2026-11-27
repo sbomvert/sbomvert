@@ -1,16 +1,16 @@
 ---
 title: Quickstart
-description: Run SBOMVert in a container with the sample dataset and see your first SBOM comparison in a few minutes, or translate an SBOM by pasting it.
+description: Run SBOMVert with the sample dataset and see your first SBOM comparison in a few minutes, or translate an SBOM by pasting it.
 ---
 
 # Quickstart
 
 This page gets you to a first result as fast as possible. There are two paths:
 
-- **Path A: compare tools** with the sample dataset. Needs Docker.
+- **Path A: compare tools** with the sample dataset. Needs a copy of the repository and Node.js.
 - **Path B: analyze or translate one SBOM** by pasting it. Needs a running SBOMVert but no dataset.
 
-For other ways to install SBOMVert (from source, Docker Compose, Helm), see [Installation](/getting-started/installation).
+For other ways to install SBOMVert (from source or Helm), see [Installation](/getting-started/installation).
 
 ## Path A: compare tools with the sample dataset
 
@@ -42,32 +42,33 @@ sbomvert-data/
 Image names are encoded in folder names: `:` is written `twodots` and `/` is written `slash`, so `alpinetwodots3.20` is `alpine:3.20`.
 
 ::: tip
-If the archive extracts into an extra top-level folder, use that folder in the next step so that `sbom/` and `cve/` are directly inside the path you mount.
+If the archive extracts into an extra top-level folder, use the `sbom/` and `cve/` folders inside it in the next step.
 :::
 
-### 2. Run the container
+### 2. Start the app with your data
 
-Start the published image and mount the two folders where the app expects them:
+Point SBOMVert at the two folders. Put these settings in `.env.local` at the root of the repository, using absolute paths:
 
 ```bash
-docker run --rm -p 3000:3000 \
-  -e ARTIFACT_BACKEND_TYPE=local \
-  -e SBOM_DIR=/app/public/sbom \
-  -e CVE_DIR=/app/public/cve \
-  -e NEXT_PUBLIC_BASE_URL=http://localhost:3000 \
-  -v "$PWD/sbomvert-data/sbom:/app/public/sbom:ro" \
-  -v "$PWD/sbomvert-data/cve:/app/public/cve:ro" \
-  ghcr.io/sbomvert/sbomvert:latest
+ARTIFACT_BACKEND_TYPE=local
+SBOM_DIR=/absolute/path/to/sbomvert-data/sbom
+CVE_DIR=/absolute/path/to/sbomvert-data/cve
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+Then start the development server from the repository root:
+
+```bash
+npm run dev
 ```
 
 What the settings do:
 
-- `ARTIFACT_BACKEND_TYPE=local` reads reports from the container's file system instead of S3.
-- `SBOM_DIR` and `CVE_DIR` point at the mounted folders. Set `CVE_DIR` explicitly: its default is `./public/cves`, not `./public/cve`.
+- `ARTIFACT_BACKEND_TYPE=local` reads reports from local folders instead of S3.
+- `SBOM_DIR` and `CVE_DIR` point at the folders you extracted. Set `CVE_DIR` explicitly: its default is `./public/cves`, not `./public/cve`.
 - `NEXT_PUBLIC_BASE_URL` is the address the server uses to fetch a stored SBOM when you open it on the SBOM Analysis page.
-- `:ro` mounts the data read-only. That is fine for viewing; uploads would need a writable mount.
 
-**Expected result:** the container logs show the Next.js server listening on port 3000.
+**Expected result:** the server logs show the app listening on port 3000.
 
 ### 3. Open the comparison page
 
@@ -90,13 +91,13 @@ Click **CVE Comparison** in the sidebar, then click the same image.
 
 The [first comparison tutorial](/getting-started/first-comparison) explains what each part of these pages means.
 
-::: warning Data in the container
-Nothing is stored inside the container: the data lives in the folders you mounted. If you mount without `:ro` and enable uploads, uploaded SBOMs are written to those folders on your machine.
+::: warning Where data is written
+Reports stay in the folders you point to. If you enable uploads, uploaded SBOMs are written to `SBOM_DIR` on your machine.
 :::
 
 ## Path B: analyze or translate one SBOM by pasting it
 
-You do not need a dataset, or an installation, to look at a single SBOM: use the hosted static build at [sbomvert.jackops.dev](https://sbomvert.jackops.dev). The steps below link to it. To run it yourself instead, start SBOMVert with any of the methods in [Installation](/getting-started/installation) (the container command above without the `-v` lines works) and replace `https://sbomvert.jackops.dev` with `http://localhost:3000`.
+You do not need a dataset, or an installation, to look at a single SBOM: use the hosted static build at [sbomvert.jackops.dev](https://sbomvert.jackops.dev). The steps below link to it. To run it yourself instead, start SBOMVert as described in [Installation](/getting-started/installation) and replace `https://sbomvert.jackops.dev` with `http://localhost:3000`.
 
 ### Translate an SBOM
 

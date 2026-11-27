@@ -1,6 +1,6 @@
 ---
 title: Hardening checklist
-description: A production checklist for SBOMVert that uses only the settings the app, the worker, Docker Compose and the Helm chart actually provide.
+description: A production checklist for SBOMVert that uses only the settings the app, the worker and the Helm chart actually provide.
 ---
 
 # Hardening checklist
@@ -41,15 +41,14 @@ Required before you expose the scan API. See [Authentication and API keys](/guid
 
 ## 4. Network
 
-- **Do not publish Redis, Postgres or SeaweedFS.** `docker-compose.yml` is a development setup that publishes `6379` (Redis), `5432` (Postgres) and `8333` (SeaweedFS S3) on all interfaces. For anything beyond your own machine, remove those `ports:` entries or bind them to `127.0.0.1`.
+- **Do not publish Redis, Postgres or SeaweedFS.** Keep them on a private network. For anything beyond your own machine, do not publish their ports. In Kubernetes, keep their Services cluster-internal.
 - **Isolate Redis.** SBOMVert cannot use a Redis password or TLS (only `REDIS_HOST` and `REDIS_PORT` exist). Anyone who can reach Redis can change jobs and results. In Kubernetes, add a `NetworkPolicy` that only lets the app and worker pods reach Redis. The chart does not include one.
 - **Restrict the worker's outbound traffic.** The worker pulls whatever image a user names, including from private IP addresses. Allow DNS and the registries and database hosts you need, and deny private ranges and cluster-internal addresses. Use a `NetworkPolicy` or an egress firewall; the chart does not include one.
-- **Put the worker in its own namespace or node pool** if your cluster runs other workloads. It runs third-party parsers on untrusted images, as root.
-
+- **Put the worker in its own namespace or node pool** if your cluster runs other workloads. It runs third-party parsers on untrusted images.
 ## 5. Credentials
 
 - **Change the S3 key pair.** The chart's `values.yaml` defaults to `S3_ACCESS_KEY_ID: sbomvert` and `S3_SECRET_ACCESS_KEY: change-me`. Set your own in a private values file or with `--set`. The chart stores them in the `<release>-s3` Secret.
-- **Never reuse `.env.dev`.** It is committed to the repository and holds development credentials.
+- **Never reuse development credentials.** The example settings in the repository hold development credentials, including an S3 key pair. Keep production settings out of the repository.
 - **Rotate S3 keys** by updating the Secret (with `helm upgrade` and new values) and restarting the pods that read it. Both the app and SeaweedFS read the keys only at startup:
 
   ```bash
@@ -59,7 +58,7 @@ Required before you expose the scan API. See [Authentication and API keys](/guid
 
   With an external S3 service, create the new key there first, roll out the app, then revoke the old key.
 - **Use a dedicated Docker Hub account** for `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD`, with nothing else in it, or leave them unset and do not offer Scout. The worker runs untrusted input next to these credentials.
-- **Use a strong Postgres password** in `DATABASE_URL`. The Compose default is `sbomvert`.
+- **Use a strong Postgres password** in `DATABASE_URL`, not the example value `sbomvert`.
 
 ## 6. Scan limits
 
@@ -93,7 +92,7 @@ Also consider adding resource requests and limits, and a restrictive `securityCo
 
 ## 8. Vulnerability databases
 
-- **Keep the database volume.** The worker stores the Grype and Trivy databases in `/cache/dbs`: a persistent volume in the chart (`worker.cache.dbs.size`, 10 Gi by default) and the external `sbomvert-scan-dbs` volume in Compose.
+- **Keep the database volume.** The worker stores the Grype and Trivy databases in `/cache/dbs`: a persistent volume in the chart (`worker.cache.dbs.size`, 10 Gi by default).
 - **Keep them fresh.** The worker downloads the databases at startup and refreshes them every `DB_REFRESH_HOURS` (24 by default). A failed update is logged and the cached copy is used, so watch the worker logs for `database update failed`. The chart does not expose `DB_REFRESH_HOURS`; the default applies.
 - **Record the scan date** when you compare reports. Results depend on the database at scan time.
 
@@ -108,7 +107,7 @@ Also consider adding resource requests and limits, and a restrictive `securityCo
 [ ] TLS, rate limits and security headers at the reverse proxy / ingress
 [ ] Redis, Postgres, SeaweedFS not published; NetworkPolicy for Redis
 [ ] worker egress restricted; worker isolated
-[ ] S3 keys changed from defaults and rotated; .env.dev not reused
+[ ] S3 keys changed from defaults and rotated
 [ ] image tags pinned (not latest)
 [ ] database volume persisted; refresh failures monitored
 ```
