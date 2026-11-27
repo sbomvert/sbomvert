@@ -30,8 +30,8 @@ export default function CVEPage() {
   const [search, setSearch]                 = useState('');
   const [expandedRows, setExpandedRows]     = useState<Set<string>>(new Set());
   const [filterExclusive, setFilterExclusive] = useState<string | null>(null);
-  // the CVE whose details are open in the side panel
-  const [selectedCve, setSelectedCve] = useState<string | null>(null);
+  // the CVE, and the package it was opened from, whose details are open in the side panel
+  const [selectedCve, setSelectedCve] = useState<{ cveId: string; pkg: string } | null>(null);
 
   useEffect(() => {
     if (!selectedImage) { router.replace('/compare'); return; }
@@ -115,7 +115,8 @@ export default function CVEPage() {
     'Vulnerable packages':  globalVulnPackages.size.toString(),
   };
 
-  const thClass = 'text-left py-3 px-4 text-label font-medium text-foreground-muted';
+  // the same header as the SBOM comparison table
+  const thClass = 'text-left py-3 px-4 font-semibold text-foreground';
 
   return (
     <>
@@ -205,11 +206,12 @@ export default function CVEPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-body-sm">
                     <thead>
-                      <tr className="bg-surface-alt border-b border-border">
+                      <tr className="border-b border-border">
                         <th className={thClass}>Package</th>
-                        <th className={thClass}>Status</th>
+                        <th className={thClass}>Type</th>
+                        <th className={`${thClass} w-px whitespace-nowrap`}>Status</th>
                         {activeTools.map(tool => (
-                          <th key={tool} className="text-center py-3 px-4 text-label font-medium text-foreground-muted capitalize">
+                          <th key={tool} className="text-center py-3 px-4 font-semibold text-foreground capitalize">
                             {/* the tool's colour is the dot: as text it is too dark on the dark theme */}
                             <span aria-hidden className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: toolColors[tool] }} />
                             {tool}
@@ -221,14 +223,14 @@ export default function CVEPage() {
                     <tbody>
                       {filteredRows.length === 0 ? (
                         <tr>
-                          <td colSpan={2 + activeTools.length + (activeTools.length === 2 ? 1 : 0)} className="py-12 text-center text-foreground-muted text-body-sm">
+                          <td colSpan={3 + activeTools.length + (activeTools.length === 2 ? 1 : 0)} className="py-12 text-center text-foreground-muted text-body-sm">
                             No packages match your filter.
                           </td>
                         </tr>
                       ) : (
                         filteredRows.map(row => (
                           <PackageTableRow
-                            key={row.pkg} row={row} tools={activeTools} toolColors={toolColors} cveDetails={detailsByTool} packageFixes={packageFixesByTool} onSelectCve={setSelectedCve}
+                            key={row.pkg} row={row} tools={activeTools} toolColors={toolColors} cveDetails={detailsByTool} packageFixes={packageFixesByTool} onSelectCve={(cveId, pkg) => setSelectedCve({ cveId, pkg })}
                             isExpanded={expandedRows.has(row.pkg)}
                             onToggle={() => setExpandedRows(prev => {
                               const next = new Set(prev);
@@ -248,10 +250,12 @@ export default function CVEPage() {
       )}
       {selectedCve && (
         <CVEDetailDrawer
-          cveId={selectedCve}
+          cveId={selectedCve.cveId}
+          pkg={selectedCve.pkg}
           tools={activeTools}
           toolColors={toolColors}
           detailsByTool={detailsByTool}
+          packageFixesByTool={packageFixesByTool}
           onClose={() => setSelectedCve(null)}
         />
       )}

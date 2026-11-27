@@ -1,13 +1,17 @@
 import type { PackageFix, VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
-import { PackageRow, fixText, packageFixText } from '@/lib/vuln/cveSummary';
+import { PackageRow, cvesDiffer, fixText, packageFixText } from '@/lib/vuln/cveSummary';
+import { PackageTypeBadge } from '@/components/hoc/PackageTypeBadge';
 
 // the CVE id, as a button that opens its details, with the severity, score and fix the report has for it.
 // The fix is this package's own when the report has it, otherwise the CVE's.
 function CVEChip({
   cveId, detail, fix, onSelect,
 }: { cveId: string; detail?: VulnDetail; fix?: PackageFix; onSelect: () => void }) {
-  const severity = detail?.severity?.toUpperCase();
-  const score = detail?.score;
+  // the package's own match gives its severity and score; the CVE's detail is the first match's, which another package can
+  // share, so it only stands in for a report with no match for this package
+  const source = fix ?? detail;
+  const severity = source?.severity?.toUpperCase();
+  const score = source?.score;
   const details = [
     severity,
     score === undefined ? undefined : score.toFixed(1),
@@ -38,12 +42,13 @@ export function PackageTableRow({
   // per tool, per package, per CVE id: the fix on this package
   packageFixes?: Record<string, Record<string, Record<string, PackageFix>>>;
   // called with the CVE id when its button is clicked
-  onSelectCve: (cveId: string) => void;
+  onSelectCve: (cveId: string, pkg: string) => void;
   isExpanded: boolean;
   onToggle: () => void;
 }) {
   const onlyIn = row.detectedBy.size === 1 ? Array.from(row.detectedBy)[0] : null;
-  const colSpanTotal = 2 + tools.length + (tools.length === 2 ? 1 : 0);
+  const differs = !onlyIn && cvesDiffer(row);
+  const colSpanTotal = 3 + tools.length + (tools.length === 2 ? 1 : 0);
 
   return (
     <>
@@ -65,12 +70,22 @@ export function PackageTableRow({
           </div>
         </td>
         <td className="py-3 px-4">
+          <PackageTypeBadge type={row.packageType} />
+        </td>
+        <td className="py-3 px-4 w-px whitespace-nowrap">
           {onlyIn ? (
             <span
               className="text-label font-semibold px-2 py-0.5 rounded-pill border capitalize"
               style={{ color: toolColors[onlyIn], borderColor: toolColors[onlyIn], background: `${toolColors[onlyIn]}18` }}
             >
               only {onlyIn}
+            </span>
+          ) : differs ? (
+            <span
+              title="The tools that report this package list different CVEs for it"
+              className="text-label font-semibold px-2 py-0.5 rounded-pill bg-warning-subtle text-warning-fg"
+            >
+              differs
             </span>
           ) : (
             <span className="text-label text-foreground-subtle">shared</span>
@@ -126,7 +141,7 @@ export function PackageTableRow({
                             cveId={cve}
                             detail={cveDetails[tool]?.[cve]}
                             fix={packageFixes[tool]?.[row.pkg]?.[cve]}
-                            onSelect={() => onSelectCve(cve)}
+                            onSelect={() => onSelectCve(cve, row.pkg)}
                           />
                         ))}
                       </div>

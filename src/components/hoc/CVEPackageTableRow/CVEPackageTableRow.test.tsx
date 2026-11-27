@@ -15,6 +15,7 @@ const detail = (over: Partial<VulnDetail>): VulnDetail => ({
 describe('PackageTableRow', () => {
   const row: PackageRow = {
     pkg: 'libssl3',
+    packageType: 'os',
     byCve: { trivy: ['CVE-2024-0002', 'CVE-2024-0001', 'CVE-2024-0003'] },
     detectedBy: new Set(['trivy']),
   };
@@ -75,7 +76,7 @@ describe('PackageTableRow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'CVE-2024-0002' }));
 
-    expect(onSelectCve).toHaveBeenCalledWith('CVE-2024-0002');
+    expect(onSelectCve).toHaveBeenCalledWith('CVE-2024-0002', 'libssl3');
   });
 
   test('shows the CVE alone when the report has no details for it', () => {
@@ -95,7 +96,7 @@ describe('PackageTableRow', () => {
             toolColors={{ trivy: '#6366f1' }}
             cveDetails={{ trivy: { 'CVE-2024-0001': detail({ severity: 'high', status: 'fixed' }) } }}
             packageFixes={{
-              trivy: { [row.pkg]: { 'CVE-2024-0001': { status: 'fixed', fixedVersions: ['2.5'] }, 'CVE-2024-0002': { status: 'fixed', fixedVersions: ['2.5', '3.0'] } } },
+              trivy: { [row.pkg]: { 'CVE-2024-0001': { status: 'fixed', fixedVersions: ['2.5'], severity: 'high' }, 'CVE-2024-0002': { status: 'fixed', fixedVersions: ['2.5', '3.0'], severity: 'high' } } },
             }}
             onSelectCve={() => {}}
             isExpanded
@@ -106,6 +107,36 @@ describe('PackageTableRow', () => {
     );
 
     expect(screen.getByText('HIGH · fixed in 2.5')).toBeInTheDocument();
-    expect(screen.getByText('fixed')).toBeInTheDocument();
+    expect(screen.getByText('HIGH · fixed')).toBeInTheDocument();
+  });
+});
+
+describe('PackageTableRow status', () => {
+  const renderShared = (byCve: Record<string, string[]>) =>
+    render(
+      <table>
+        <tbody>
+          <PackageTableRow
+            row={{ pkg: 'openssl', packageType: 'os', byCve, detectedBy: new Set(Object.keys(byCve)) }}
+            tools={['trivy', 'syft']}
+            toolColors={{ trivy: '#6366f1', syft: '#0ea5e9' }}
+            cveDetails={{}}
+            onSelectCve={() => {}}
+            isExpanded={false}
+            onToggle={() => {}}
+          />
+        </tbody>
+      </table>,
+    );
+
+  test('marks a package that two tools report with different CVEs', () => {
+    renderShared({ trivy: ['CVE-2024-0001'], syft: ['CVE-2024-0002'] });
+    expect(screen.getByText('differs')).toHaveAttribute('title', 'The tools that report this package list different CVEs for it');
+  });
+
+  test('says shared when the tools list the same CVEs', () => {
+    renderShared({ trivy: ['CVE-2024-0001'], syft: ['CVE-2024-0001'] });
+    expect(screen.getByText('shared')).toBeInTheDocument();
+    expect(screen.queryByText('differs')).not.toBeInTheDocument();
   });
 });

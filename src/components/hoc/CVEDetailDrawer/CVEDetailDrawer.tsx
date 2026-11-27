@@ -3,23 +3,28 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import type { VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
-import { fixText } from '@/lib/vuln/cveSummary';
+import type { PackageFix, VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
+import { packageFixText } from '@/lib/vuln/cveSummary';
 
 const NOT_REPORTED = 'not reported';
 // a missing value in a table cell; the table says once what it means
 const MISSING = '—';
 const nvdLink = (id: string) => `https://nvd.nist.gov/vuln/detail/${id}`;
 
-// One vulnerability across the tools that report it: its description, other ids, severity, score and fix, CVSS, advisories.
+// One vulnerability on the package it was opened from, across the tools: each tool's severity, score, fix, source, CVSS
+// and advisory for that package. The description and other ids describe the vulnerability itself.
 export function CVEDetailDrawer({
-  cveId, tools, toolColors, detailsByTool, onClose,
+  cveId, pkg, tools, toolColors, detailsByTool, packageFixesByTool, onClose,
 }: {
   cveId: string;
+  // the package the CVE was opened from
+  pkg: string;
   tools: string[];
   toolColors: Record<string, string>;
   // per tool, per vulnerability id
   detailsByTool: Record<string, Record<string, VulnDetail>>;
+  // per tool, per package, per vulnerability id: the match on that package
+  packageFixesByTool: Record<string, Record<string, Record<string, PackageFix>>>;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -30,10 +35,12 @@ export function CVEDetailDrawer({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const byTool = tools.map(tool => ({ tool, detail: detailsByTool[tool]?.[cveId] }));
-  const description = byTool.find(({ detail }) => detail?.description);
+  // each tool's match on this package; undefined when the tool did not report the CVE on it
+  const byTool = tools.map(tool => ({ tool, fix: packageFixesByTool[tool]?.[pkg]?.[cveId] }));
+  const details = tools.map(tool => ({ tool, detail: detailsByTool[tool]?.[cveId] }));
+  const description = details.find(({ detail }) => detail?.description);
   // the other ids of this vulnerability, from every tool, without repeats
-  const otherIds = [...new Set(byTool.flatMap(({ detail }) => detail?.aliases ?? []))];
+  const otherIds = [...new Set(details.flatMap(({ detail }) => detail?.aliases ?? []))];
 
   return (
     <>
@@ -54,6 +61,7 @@ export function CVEDetailDrawer({
         <header className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 border-b border-border shrink-0">
           <div className="min-w-0">
             <h2 id="cve-detail-title" className="font-mono text-heading-sm text-foreground">{cveId}</h2>
+            <p className="font-mono text-caption text-foreground-muted break-all">{pkg}</p>
             {cveId.startsWith('CVE-') && (
               <a
                 href={nvdLink(cveId)}
@@ -122,7 +130,7 @@ export function CVEDetailDrawer({
                 </tr>
               </thead>
               <tbody>
-                {byTool.map(({ tool, detail }) => (
+                {byTool.map(({ tool, fix }) => (
                   <tr key={tool} className="border-t border-border-subtle">
                     <th scope="row" className="py-2 pr-3 text-left font-medium text-foreground capitalize">
                       <span className="flex items-center gap-2">
@@ -130,27 +138,27 @@ export function CVEDetailDrawer({
                         {tool}
                       </span>
                     </th>
-                    <td className="py-2 pr-3">{detail ? detail.severity.toUpperCase() : MISSING}</td>
-                    <td className="py-2 pr-3 tabular-nums">{detail?.score === undefined ? MISSING : detail.score.toFixed(1)}</td>
-                    <td className="py-2 pr-3">{fixText(detail) ?? MISSING}</td>
-                    <td className="py-2">{detail?.source ?? MISSING}</td>
+                    <td className="py-2 pr-3">{fix?.severity ? fix.severity.toUpperCase() : MISSING}</td>
+                    <td className="py-2 pr-3 tabular-nums">{fix?.score === undefined ? MISSING : fix.score.toFixed(1)}</td>
+                    <td className="py-2 pr-3">{packageFixText(fix) ?? MISSING}</td>
+                    <td className="py-2">{fix?.source ?? MISSING}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="text-caption text-foreground-subtle mt-2">{MISSING} means the tool did not report it.</p>
+            <p className="text-caption text-foreground-subtle mt-2">{MISSING} means the tool did not report this CVE on this package.</p>
           </section>
 
           <section>
             <h3 className="text-body-sm font-semibold text-foreground mb-3">CVSS</h3>
-            {byTool.map(({ tool, detail }) => (
+            {byTool.map(({ tool, fix }) => (
               <div key={tool} className="mb-3">
                 <p className="text-body-sm font-medium text-foreground capitalize">{tool}</p>
-                {!detail?.cvss.length ? (
+                {!fix?.cvss?.length ? (
                   <p className="text-caption text-foreground-subtle">{MISSING}</p>
                 ) : (
                   <ul className="mt-1 flex flex-col gap-2">
-                    {detail.cvss.map((c, i) => (
+                    {fix.cvss.map((c, i) => (
                       <li key={i} className="text-caption text-foreground-muted">
                         <span className="font-medium text-foreground">{c.source ?? 'source not given'}</span>
                         {c.version && ` · v${c.version}`}
@@ -166,19 +174,19 @@ export function CVEDetailDrawer({
 
           <section>
             <h3 className="text-body-sm font-semibold text-foreground mb-3">Advisory</h3>
-            {byTool.map(({ tool, detail }) => (
+            {byTool.map(({ tool, fix }) => (
               <div key={tool} className="mb-3">
                 <p className="text-body-sm font-medium text-foreground capitalize">{tool}</p>
-                {!detail?.url ? (
+                {!fix?.url ? (
                   <p className="text-caption text-foreground-subtle">{MISSING}</p>
                 ) : (
                   <a
-                    href={detail.url}
+                    href={fix.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-caption text-primary-fg hover:underline break-all"
                   >
-                    {detail.url}
+                    {fix.url}
                   </a>
                 )}
               </div>

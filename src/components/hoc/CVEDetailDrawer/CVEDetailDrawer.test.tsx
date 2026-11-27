@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import type { VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
+import type { PackageFix, VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
 import { CVEDetailDrawer } from './CVEDetailDrawer';
+
+const PKG = 'pypi//pypdf@4.0.2';
 
 const grype: VulnDetail = {
   id: 'CVE-2025-9',
@@ -9,27 +11,54 @@ const grype: VulnDetail = {
   score: 7.5,
   status: 'not_fixed',
   source: 'nvd:cpe',
-  cvss: [{ source: 'nvd@nist.gov', version: '3.1', score: 7.5, vector: 'CVSS:3.1/AV:N/AC:L/PR:N' }],
-  url: 'https://example.org/advisory',
+  cvss: [],
   description: 'A flaw in the parser.',
 };
 
-const renderDrawer = (onClose = jest.fn()) =>
+// the CVE on the PyPI package, as the CycloneDX scan matches it
+const pypi: PackageFix = {
+  status: 'fixed',
+  fixedVersions: ['6.18.1'],
+  severity: 'high',
+  score: 8.7,
+  source: 'github:language:python',
+  cvss: [{ source: 'GitHub', version: '4.0', score: 8.7, vector: 'CVSS:4.0/AV:N/AC:L' }],
+  url: 'https://github.com/advisories/GHSA-g9cg-prrw-2r8q',
+};
+// the same CVE on the Debian package, which no other package shares
+const deb: PackageFix = {
+  status: 'not_fixed',
+  fixedVersions: [],
+  severity: 'medium',
+  source: 'ubuntu:distro:ubuntu:24.04',
+  url: 'https://ubuntu.com/security/CVE-2025-9',
+};
+
+const renderDrawer = (
+  onClose = jest.fn(),
+  packageFixesByTool: Record<string, Record<string, Record<string, PackageFix>>> = {},
+  tools = ['grype (CDX)', 'trivy (CDX)'],
+) =>
   render(
     <CVEDetailDrawer
       cveId="CVE-2025-9"
-      tools={['grype (CDX)', 'trivy (CDX)']}
-      toolColors={{ 'grype (CDX)': '#2563eb', 'trivy (CDX)': '#ea580c' }}
-      detailsByTool={{ 'grype (CDX)': { 'CVE-2025-9': grype }, 'trivy (CDX)': {} }}
+      pkg={PKG}
+      tools={tools}
+      toolColors={{ 'grype (CDX)': '#2563eb', 'trivy (CDX)': '#ea580c', 'grype (SPDX)': '#16a34a' }}
+      detailsByTool={{ 'grype (CDX)': { 'CVE-2025-9': grype }, 'trivy (CDX)': {}, 'grype (SPDX)': {} }}
+      packageFixesByTool={packageFixesByTool}
       onClose={onClose}
     />,
   );
 
+const cellsOf = (row: HTMLElement) => within(row).getAllByRole('cell').map(cell => cell.textContent);
+
 describe('CVEDetailDrawer', () => {
-  test('names the vulnerability and links a CVE id to NVD', () => {
+  test('names the vulnerability and the package it was opened from, and links a CVE id to NVD', () => {
     renderDrawer();
 
     expect(screen.getByRole('heading', { name: 'CVE-2025-9' })).toBeInTheDocument();
+    expect(screen.getByText(PKG)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open in NVD' })).toHaveAttribute('href', 'https://nvd.nist.gov/vuln/detail/CVE-2025-9');
   });
 
@@ -47,29 +76,44 @@ describe('CVEDetailDrawer', () => {
     expect(screen.getByRole('link', { name: 'CVE-2022-41723' })).toHaveAttribute('href', 'https://nvd.nist.gov/vuln/detail/CVE-2022-41723');
   });
 
-  test('shows severity, score and fix per tool, and says what a tool did not report', () => {
-    renderDrawer();
+  test('shows only the opened package: each tool\'s match on it, and nothing from the CVE\'s other packages', () => {
+    renderDrawer(undefined, {
+      'grype (CDX)': { [PKG]: { 'CVE-2025-9': pypi }, 'deb/ubuntu/python3-pypdf@4.0.2-1': { 'CVE-2025-9': deb } },
+      'grype (SPDX)': { 'deb/ubuntu/python3-pypdf@4.0.2-1': { 'CVE-2025-9': deb } },
+    }, ['grype (CDX)', 'grype (SPDX)']);
 
-    const grypeRow = screen.getByRole('rowheader', { name: 'grype (CDX)' }).closest('tr') as HTMLElement;
-    expect(within(grypeRow).getAllByRole('cell').map(cell => cell.textContent)).toEqual(['HIGH', '7.5', 'no fix', 'nvd:cpe']);
+    const cdxRow = screen.getByRole('rowheader', { name: 'grype (CDX)' }).closest('tr') as HTMLElement;
+    expect(cellsOf(cdxRow)).toEqual(['HIGH', '8.7', 'fixed in 6.18.1', 'github:language:python']);
+
+    // SPDX found the CVE on the Debian package, not on this one
+    const spdxRow = screen.getByRole('rowheader', { name: 'grype (SPDX)' }).closest('tr') as HTMLElement;
+    expect(cellsOf(spdxRow)).toEqual(['—', '—', '—', '—']);
+    expect(screen.queryByText('ubuntu:distro:ubuntu:24.04')).not.toBeInTheDocument();
+    expect(screen.queryByText('MEDIUM')).not.toBeInTheDocument();
+  });
+
+  test('shows the CVSS and advisory of the package\'s own match', () => {
+    renderDrawer(undefined, { 'grype (CDX)': { [PKG]: { 'CVE-2025-9': pypi } } });
+
+    expect(screen.getByText('GitHub')).toBeInTheDocument();
+    expect(screen.getByText('CVSS:4.0/AV:N/AC:L')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'https://github.com/advisories/GHSA-g9cg-prrw-2r8q' })).toBeInTheDocument();
+  });
+
+  test('says what a tool did not report on the package', () => {
+    renderDrawer();
 
     const trivyRow = screen.getByRole('rowheader', { name: 'trivy (CDX)' }).closest('tr') as HTMLElement;
-    expect(within(trivyRow).getAllByRole('cell').map(cell => cell.textContent)).toEqual([
-      '—', '—', '—', '—',
-    ]);
+    expect(cellsOf(trivyRow)).toEqual(['—', '—', '—', '—']);
   });
 
-  test('shows each CVSS score with its source, version and vector', () => {
-    renderDrawer();
+  test('a fix stored without its own severity shows the fix, not another package\'s severity', () => {
+    renderDrawer(undefined, {
+      'grype (CDX)': { [PKG]: { 'CVE-2025-9': { status: 'fixed', fixedVersions: ['6.18.1'] } as PackageFix } },
+    });
 
-    expect(screen.getByText('nvd@nist.gov')).toBeInTheDocument();
-    expect(screen.getByText('CVSS:3.1/AV:N/AC:L/PR:N')).toBeInTheDocument();
-  });
-
-  test('links the one advisory each tool gives', () => {
-    renderDrawer();
-
-    expect(screen.getByRole('link', { name: 'https://example.org/advisory' })).toHaveAttribute('href', 'https://example.org/advisory');
+    const row = screen.getByRole('rowheader', { name: 'grype (CDX)' }).closest('tr') as HTMLElement;
+    expect(cellsOf(row)).toEqual(['—', '—', 'fixed in 6.18.1', '—']);
   });
 
   test('closes on the close button, the overlay and Escape', () => {
