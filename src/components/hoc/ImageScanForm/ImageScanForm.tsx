@@ -25,6 +25,12 @@ const TOOL_LABELS: Record<string, string> = {
 };
 const toolLabel = (name: string) => TOOL_LABELS[name] ?? name;
 
+// what the form starts with: every tool, except those marked unselected_by_default
+const defaultTools = (): SupportedToolsType => ({
+  producers: SupportedTools.producers.filter(t => !t.unselected_by_default),
+  consumers: SupportedTools.consumers.filter(t => !t.unselected_by_default),
+});
+
 type ImageScanFormProps = {
   onSubmit: (
     image: string,
@@ -53,7 +59,7 @@ const Toggle: React.FC<{ on: boolean; onClick: () => void; children: React.React
 
 export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel }) => {
   const [image, setImage]               = useState('');
-  const [selectedTools, setSelectedTools] = useState<SupportedToolsType>(SupportedTools);
+  const [selectedTools, setSelectedTools] = useState<SupportedToolsType>(defaultTools);
   const [formats, setFormats]           = useState<SbomFormat[]>([...SBOM_FORMATS]);
   const [submitting, setSubmitting]     = useState(false);
   const [error, setError]               = useState('');
@@ -150,7 +156,7 @@ export const ImageScanForm: React.FC<ImageScanFormProps> = ({ onSubmit, onCancel
           </fieldset>
 
           <fieldset>
-            <legend className={groupLabel}>CVE scanners</legend>
+            <legend className={groupLabel}>CVE scanners (optional)</legend>
             <div className="flex flex-wrap gap-2">
               {SupportedTools.consumers.map(tool => (
                 <Toggle key={tool.name} on={selectedTools.consumers.includes(tool)} onClick={() => toggleTool('consumers', tool)}>

@@ -15,6 +15,7 @@ export type ToolConfig = {
   find_cves: boolean;
   // the producer whose SBOM this scanner reads, when not its own
   sbom_from?: string;
+  unselected_by_default?: boolean;
 };
 
 export const TrivyConfig: ToolConfig = {
@@ -33,6 +34,7 @@ export const DockerScoutConfig: ToolConfig = {
   supports_cyclonedx: true,
   scan_sbom: true,
   find_cves: true,
+  unselected_by_default: true,
 };
 
 export const SyftConfig: ToolConfig = {

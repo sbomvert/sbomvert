@@ -55,6 +55,22 @@ test('queues only the requested formats; an unknown or empty format list is a 40
   expect((await post({ ...valid, formats: [] })).status).toBe(400);
 });
 
+test('an SBOM-only scan (no CVE scanner) is queued, and the scanner list may be left out', async () => {
+  const sbomOnly = { image: 'alpine:3.20', tools: { producers: ['syft'], consumers: [] }, formats: ['spdx', 'cdx'] };
+  expect(await post({ ...valid, tools: { producers: ['syft'], consumers: [] } })).toEqual({ status: 202, body: { jobId: '42' } });
+  expect(buildScanFlow).toHaveBeenLastCalledWith({ ...valid, tools: { producers: ['syft'], consumers: [] }, formats: ['spdx', 'cdx'] });
+  expect(await post({ image: 'alpine:3.20', tools: { producers: ['syft'] } })).toMatchObject({ status: 202 });
+  expect(buildScanFlow).toHaveBeenLastCalledWith(sbomOnly);
+});
+
+test('no SBOM generator is a 400 that says so, with or without CVE scanners', async () => {
+  expect(await post({ ...valid, tools: { producers: [], consumers: [] } })).toEqual({
+    status: 400,
+    body: { error: 'Select at least one SBOM generator' },
+  });
+  expect(add).not.toHaveBeenCalled();
+});
+
 test.each([
   ['an image that looks like a flag', { ...valid, image: '--output=/etc/passwd' }],
   ['a source scheme instead of an image', { ...valid, image: 'dir:/root' }],

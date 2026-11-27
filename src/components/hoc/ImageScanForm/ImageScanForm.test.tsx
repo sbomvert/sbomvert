@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { ImageScanForm } from './ImageScanForm';
 
 // Mock Button component used inside ImageScanForm
@@ -12,10 +12,12 @@ jest.mock('@/components/button/Button', () => {
 jest.mock('@sbomvert/scan/tools', () => {
   const mockTool = { name: 'trivy', description: '', supports_spdx: true, supports_cyclonedx: true };
   const cdxOnly = { name: 'amazon', description: '', supports_spdx: false, supports_cyclonedx: true };
+  // Docker Scout is in both lists, but not selected when the form opens
+  const scout = { name: 'scout', description: '', supports_spdx: true, supports_cyclonedx: true, unselected_by_default: true };
   return {
     ...jest.requireActual('@sbomvert/scan/tools'),
     SBOM_FORMATS: ['spdx', 'cdx'],
-    SupportedTools: { producers: [mockTool, cdxOnly], consumers: [mockTool] },
+    SupportedTools: { producers: [mockTool, cdxOnly, scout], consumers: [mockTool, scout] },
   };
 });
 
@@ -61,6 +63,26 @@ describe('ImageScanForm component', () => {
       { producers: ['trivy', 'amazon'], consumers: ['trivy'] },
       ['cdx']
     );
+  });
+
+  test('Docker Scout is off when the form opens, as a generator and as a scanner, and can be turned on', () => {
+    render(<ImageScanForm onSubmit={onSubmit} onCancel={onCancel} />);
+    const scout = screen.getAllByRole('button', { name: 'Docker Scout' });
+    expect(scout).toHaveLength(2);
+    scout.forEach(button => expect(button).toHaveAttribute('aria-pressed', 'false'));
+    // the other tools start selected
+    screen.getAllByRole('button', { name: 'Trivy' }).forEach(button => expect(button).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(scout[0]);
+    expect(scout[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(scout[1]).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('submits an SBOM-only scan when no CVE scanner is selected', () => {
+    render(<ImageScanForm onSubmit={onSubmit} onCancel={onCancel} />);
+    fireEvent.change(screen.getByPlaceholderText('repo/app:tag'), { target: { value: 'alpine' } });
+    fireEvent.click(within(screen.getByRole('group', { name: /CVE scanners/ })).getByText('Trivy'));
+    fireEvent.click(screen.getByText('Start scan'));
+    expect(onSubmit).toHaveBeenCalledWith('alpine', { producers: ['trivy', 'amazon'], consumers: [] }, ['spdx', 'cdx']);
   });
 
   test('warns when a selected generator cannot write a selected format, until either is deselected', () => {

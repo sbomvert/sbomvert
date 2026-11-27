@@ -54,6 +54,15 @@ describe('buildScanFlow', () => {
     expect(flow.children![2].data).toEqual({ image: 'alpine', tool: 'scout', formats: ['spdx', 'cdx'] });
   });
 
+  test('with no CVE scanner, the scan is only SBOM jobs, one per generator', () => {
+    const flow = buildScanFlow({
+      image: 'alpine',
+      tools: { producers: ['syft', 'trivy'], consumers: [] },
+      formats: ['spdx'],
+    });
+    expect(shape(flow)).toEqual(['scan', ['sbom syft'], ['sbom trivy']]);
+  });
+
   test('children never block their parent, and finished jobs are not kept forever', () => {
     const flow = buildScanFlow({
       image: 'alpine',

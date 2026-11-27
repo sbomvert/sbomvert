@@ -9,8 +9,9 @@ import { SBOM_FORMATS } from '@sbomvert/scan/tools';
 const ScanRequestSchema = z.object({
   image: z.string().refine(isValidImageRef, 'Invalid image reference'),
   tools: z.object({
-    producers: z.array(z.string()).nonempty(),
-    consumers: z.array(z.string()).nonempty(),
+    // at least one SBOM generator; CVE scanners are optional, and with none the scan only makes SBOMs
+    producers: z.array(z.string()).min(1, 'Select at least one SBOM generator'),
+    consumers: z.array(z.string()).default([]),
   }),
   formats: z.array(z.enum(SBOM_FORMATS)).nonempty().default([...SBOM_FORMATS]),
 });
