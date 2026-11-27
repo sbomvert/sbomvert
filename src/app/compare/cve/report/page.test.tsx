@@ -36,7 +36,7 @@ test('the table filters by search and by the tool that alone found a package', a
   fireEvent.click(await screen.findByText('table'));
   expect(within(table()).getAllByRole('row')).toHaveLength(4); // header + 3 packages
 
-  fireEvent.change(screen.getByPlaceholderText('Search packages…'), { target: { value: 'ssl' } });
+  fireEvent.change(screen.getByPlaceholderText('Search packages'), { target: { value: 'ssl' } });
   expect(within(table()).getAllByRole('row')).toHaveLength(2);
   fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
 
@@ -54,5 +54,5 @@ test('expanding a row lists its CVEs', async () => {
   render(<CVEPage />);
   fireEvent.click(await screen.findByText('table'));
   fireEvent.click(within(table()).getByText('openssl'));
-  expect(screen.getAllByRole('link', { name: 'CVE-2024-2' }).length).toBeGreaterThan(0);
+  expect(screen.getAllByRole('button', { name: 'CVE-2024-2' }).length).toBeGreaterThan(0);
 });

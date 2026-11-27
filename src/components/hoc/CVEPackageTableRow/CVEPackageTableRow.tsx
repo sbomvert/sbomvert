@@ -1,28 +1,44 @@
-import { PackageRow } from '@/lib/vuln/cveSummary';
+import type { PackageFix, VulnDetail } from '@sbomvert/core/vuln/vulnDetail';
+import { PackageRow, fixText, packageFixText } from '@/lib/vuln/cveSummary';
 
-function cveLink(cveId: string) {
-  return `https://nvd.nist.gov/vuln/detail/${cveId}`;
-}
-
-function CVEChip({ cveId }: { cveId: string }) {
+// the CVE id, as a button that opens its details, with the severity, score and fix the report has for it.
+// The fix is this package's own when the report has it, otherwise the CVE's.
+function CVEChip({
+  cveId, detail, fix, onSelect,
+}: { cveId: string; detail?: VulnDetail; fix?: PackageFix; onSelect: () => void }) {
+  const severity = detail?.severity?.toUpperCase();
+  const score = detail?.score;
+  const details = [
+    severity,
+    score === undefined ? undefined : score.toFixed(1),
+    packageFixText(fix) ?? fixText(detail),
+  ].filter(Boolean).join(' · ');
   return (
-    <a
-      href={cveLink(cveId)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-caption font-mono text-primary-fg hover:underline"
-    >
-      {cveId}
-    </a>
+    <div className="flex items-baseline gap-2">
+      <button
+        type="button"
+        onClick={onSelect}
+        className="text-caption font-mono text-primary-fg hover:underline text-left"
+      >
+        {cveId}
+      </button>
+      {details && <span className="text-caption text-foreground-muted tabular-nums">{details}</span>}
+    </div>
   );
 }
 
 export function PackageTableRow({
-  row, tools, toolColors, isExpanded, onToggle,
+  row, tools, toolColors, cveDetails, packageFixes = {}, onSelectCve, isExpanded, onToggle,
 }: {
   row: PackageRow;
   tools: string[];
   toolColors: Record<string, string>;
+  // per tool, per CVE id: what the scanner said about it
+  cveDetails: Record<string, Record<string, VulnDetail>>;
+  // per tool, per package, per CVE id: the fix on this package
+  packageFixes?: Record<string, Record<string, Record<string, PackageFix>>>;
+  // called with the CVE id when its button is clicked
+  onSelectCve: (cveId: string) => void;
   isExpanded: boolean;
   onToggle: () => void;
 }) {
@@ -65,12 +81,7 @@ export function PackageTableRow({
           return (
             <td key={tool} className="py-3 px-4 text-center tabular-nums">
               {count > 0 ? (
-                <span
-                  className="inline-block text-body-sm font-semibold rounded-pill min-w-7 py-0.5 px-2"
-                  style={{ background: `${toolColors[tool]}22`, boxShadow: `inset 0 0 0 1px ${toolColors[tool]}`, color: 'var(--foreground)' }}
-                >
-                  {count}
-                </span>
+                <span className="font-mono tabular-nums text-body-sm font-semibold text-foreground">{count}</span>
               ) : (
                 <span className="text-foreground-subtle text-body-sm">0</span>
               )}
@@ -96,10 +107,12 @@ export function PackageTableRow({
           <td colSpan={colSpanTotal} className="py-4 px-8">
             <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${tools.length}, 1fr)` }}>
               {tools.map(tool => {
-                const list = row.byCve[tool] ?? [];
+                // CVE ids as plain strings, so the order is lexical (CVE-2024-10 comes before CVE-2024-9)
+                // unique ids: React needs a unique key per chip
+                const list = [...new Set(row.byCve[tool] ?? [])].sort();
                 return (
                   <div key={tool}>
-                    <p className="text-body-sm font-semibold mb-2 text-foreground">
+                    <p className="text-body-sm font-semibold mb-2 text-foreground capitalize">
                       <span aria-hidden className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: toolColors[tool] }} />
                       {tool} ({list.length})
                     </p>
@@ -107,7 +120,15 @@ export function PackageTableRow({
                       <p className="text-caption text-foreground-subtle">Not detected</p>
                     ) : (
                       <div className="flex flex-col gap-1">
-                        {list.map(cve => <CVEChip key={cve} cveId={cve} />)}
+                        {list.map(cve => (
+                          <CVEChip
+                            key={cve}
+                            cveId={cve}
+                            detail={cveDetails[tool]?.[cve]}
+                            fix={packageFixes[tool]?.[row.pkg]?.[cve]}
+                            onSelect={() => onSelectCve(cve)}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>

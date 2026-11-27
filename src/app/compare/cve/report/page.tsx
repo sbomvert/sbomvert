@@ -4,14 +4,15 @@ import { useArtifactStore } from '@/store/useArtifactStore';
 import { useRouter } from 'next/navigation';
 import { CVEReport, loadCVEsForImage } from '@/lib/vuln/vulnLoader';
 import { toolColor } from '@/lib/utils';
-import { getUniqueCVEs, getVulnerablePackages, buildPackageRows } from '@/lib/vuln/cveSummary';
+import { getUniqueCVEs, getVulnerablePackages, buildPackageRows, countPackagesPerCve, countPackageCvePairs, countRepeated } from '@/lib/vuln/cveSummary';
 import { LoadingSpinner } from '@/components/spinner/LoadingSpinner';
 import { CVEToolSelector } from '@/components/hoc/CVEToolSelector/CVEToolSelector';
-import { CVEStatCard } from '@/components/hoc/CVEStatCard/cveStatCard';
+import { CVEToolSummaryTable } from '@/components/hoc/CVEToolSummaryTable/CVEToolSummaryTable';
 import { HorizontalStrip } from '@/components/horizontalStrip/HorizontalStrip';
 import { ViewSwitch } from '@/components/viewSwitch/ViewSwitch';
 import { BackButton } from '@/components/button/BackButton';
 import { PackageTableRow } from '@/components/hoc/CVEPackageTableRow/CVEPackageTableRow';
+import { CVEDetailDrawer } from '@/components/hoc/CVEDetailDrawer/CVEDetailDrawer';
 import { PageTitle } from '@/components/Title/Title';
 import { Card } from '@/components/card/Card';
 import { SearchBar } from '@/components/searchbar/SearchBar';
@@ -29,6 +30,8 @@ export default function CVEPage() {
   const [search, setSearch]                 = useState('');
   const [expandedRows, setExpandedRows]     = useState<Set<string>>(new Set());
   const [filterExclusive, setFilterExclusive] = useState<string | null>(null);
+  // the CVE whose details are open in the side panel
+  const [selectedCve, setSelectedCve] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedImage) { router.replace('/compare'); return; }
@@ -46,17 +49,31 @@ export default function CVEPage() {
   const globalUniqueCVEs  = useMemo(() => getUniqueCVEs(cves, activeTools), [cves, activeTools]);
   const globalVulnPackages = useMemo(() => getVulnerablePackages(cves, activeTools), [cves, activeTools]);
 
+  // per tool: how many packages each CVE is reported on
+  const cveSharing = useMemo(() => countPackagesPerCve(cves, activeTools), [cves, activeTools]);
+
   const perToolStats = useMemo(() =>
     activeTools.map(tool => ({
       tool,
-      totalVulns:          cves[tool]?.totalCVEs ?? 0,
+      totalVulns:          countPackageCvePairs(cves[tool]),
       uniqueVulns:         new Set(cves[tool]?.cves ?? []).size,
       vulnerablePackages:  Object.values(cves[tool]?.vulns_by_package ?? {}).filter(a => a.length > 0).length,
+      repeatedCves:        countRepeated(cveSharing[tool] ?? new Map()),
     })),
-    [cves, activeTools]
+    [cves, activeTools, cveSharing]
   );
 
   const packageRows = useMemo(() => buildPackageRows(cves, activeTools), [cves, activeTools]);
+  // per tool: what the scanner said about each CVE (empty for reports stored before that was kept)
+  const detailsByTool = useMemo(
+    () => Object.fromEntries(activeTools.map(tool => [tool, cves[tool]?.cveDetails ?? {}])),
+    [cves, activeTools]
+  );
+  // per tool: the fix on each package, for each CVE (empty for reports stored before that was kept)
+  const packageFixesByTool = useMemo(
+    () => Object.fromEntries(activeTools.map(tool => [tool, cves[tool]?.packageFixes ?? {}])),
+    [cves, activeTools]
+  );
 
   const exclusiveCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -98,7 +115,7 @@ export default function CVEPage() {
     'Vulnerable packages':  globalVulnPackages.size.toString(),
   };
 
-  const thClass = 'text-left py-3 px-4 text-label font-semibold text-foreground-muted uppercase tracking-wider';
+  const thClass = 'text-left py-3 px-4 text-label font-medium text-foreground-muted';
 
   return (
     <>
@@ -128,15 +145,13 @@ export default function CVEPage() {
           {viewMode === 'summary' && (
             <section className="space-y-4">
               <h2 className="text-heading-sm text-foreground">Per-tool breakdown</h2>
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(activeTools.length, 3)}, 1fr)` }}>
-                {perToolStats.map(({ tool, totalVulns, uniqueVulns, vulnerablePackages }) => (
-                  <CVEStatCard
-                    key={tool} tool={tool} color={toolColors[tool]}
-                    totalVulns={totalVulns} uniqueVulns={uniqueVulns}
-                    vulnerablePackages={vulnerablePackages} globalUnique={globalUniqueCVEs.size}
-                  />
-                ))}
-              </div>
+              <CVEToolSummaryTable
+                totalCVEs={globalUniqueCVEs.size}
+                rows={perToolStats.map(({ tool, totalVulns, uniqueVulns, vulnerablePackages, repeatedCves }) => ({
+                  tool, color: toolColors[tool], total: totalVulns, unique: uniqueVulns,
+                  packages: vulnerablePackages, repeated: repeatedCves,
+                }))}
+              />
 
               <Card className="shadow-panel border border-border-subtle p-card-p">
                 <h3 className="text-body-sm font-semibold text-foreground-muted mb-4">
@@ -163,7 +178,7 @@ export default function CVEPage() {
                 <SearchBar
                   value={search}
                   onChange={setSearch}
-                  placeholder="Search packages…"
+                  placeholder="Search packages"
                   className="mb-0 flex-1 max-w-sm w-full"
                   iconClassName="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-subtle"
                   size={16}
@@ -194,7 +209,7 @@ export default function CVEPage() {
                         <th className={thClass}>Package</th>
                         <th className={thClass}>Status</th>
                         {activeTools.map(tool => (
-                          <th key={tool} className="text-center py-3 px-4 text-label font-semibold uppercase tracking-wider text-foreground-muted">
+                          <th key={tool} className="text-center py-3 px-4 text-label font-medium text-foreground-muted capitalize">
                             {/* the tool's colour is the dot: as text it is too dark on the dark theme */}
                             <span aria-hidden className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: toolColors[tool] }} />
                             {tool}
@@ -213,7 +228,7 @@ export default function CVEPage() {
                       ) : (
                         filteredRows.map(row => (
                           <PackageTableRow
-                            key={row.pkg} row={row} tools={activeTools} toolColors={toolColors}
+                            key={row.pkg} row={row} tools={activeTools} toolColors={toolColors} cveDetails={detailsByTool} packageFixes={packageFixesByTool} onSelectCve={setSelectedCve}
                             isExpanded={expandedRows.has(row.pkg)}
                             onToggle={() => setExpandedRows(prev => {
                               const next = new Set(prev);
@@ -230,6 +245,15 @@ export default function CVEPage() {
             </section>
           )}
         </>
+      )}
+      {selectedCve && (
+        <CVEDetailDrawer
+          cveId={selectedCve}
+          tools={activeTools}
+          toolColors={toolColors}
+          detailsByTool={detailsByTool}
+          onClose={() => setSelectedCve(null)}
+        />
       )}
     </>
   );
