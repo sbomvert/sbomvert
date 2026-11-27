@@ -8,6 +8,7 @@ ARG TRIVY_VERSION=v0.76.0
 ARG SBOMGEN_VERSION=1.17.7
 ARG OSV_SCANNER_VERSION=v2.7.1
 ARG CDXGEN_VERSION=v13.8.0
+ARG SCOUT_VERSION=1.30.0
 
 # docker-cli is only the client that runs the `docker scout` plugin; nothing talks to a daemon.
 # skopeo downloads images to a file for osv-scanner and cdxgen.
@@ -35,10 +36,16 @@ RUN ARCH=$(uname -m | sed "s/x86_64/amd64/;s/aarch64/arm64/") \
  && echo "$(curl -sSfL "https://github.com/cdxgen/cdxgen/releases/download/${CDXGEN_VERSION}/cdxgen-linux-${ARCH}-musl.sha256" | cut -d' ' -f1)  /usr/local/bin/cdxgen" | sha256sum -c - \
  && chmod +x /usr/local/bin/osv-scanner /usr/local/bin/cdxgen
 
-# Docker Scout CLI plugin (needs DOCKER_SCOUT_HUB_USER / DOCKER_SCOUT_HUB_PASSWORD at runtime).
-RUN mkdir -p /root/.docker \
- && curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o /tmp/install-scout.sh \
- && sh /tmp/install-scout.sh && rm /tmp/install-scout.sh
+# Docker Scout CLI plugin, from its release archive and checked against the release's sha256 list.
+# Needs DOCKER_SCOUT_HUB_USER / DOCKER_SCOUT_HUB_PASSWORD at runtime.
+RUN ARCH=$(uname -m | sed "s/x86_64/amd64/;s/aarch64/arm64/") \
+ && mkdir -p /root/.docker/cli-plugins \
+ && cd /tmp \
+ && curl -sSfL "https://github.com/docker/scout-cli/releases/download/v${SCOUT_VERSION}/docker-scout_${SCOUT_VERSION}_checksums.txt" -o checksums.txt \
+ && curl -sSfL "https://github.com/docker/scout-cli/releases/download/v${SCOUT_VERSION}/docker-scout_${SCOUT_VERSION}_linux_${ARCH}.tar.gz" -o scout.tar.gz \
+ && grep "linux_${ARCH}.tar.gz" checksums.txt | sed "s#docker-scout_${SCOUT_VERSION}_linux_${ARCH}.tar.gz#scout.tar.gz#" | sha256sum -c - \
+ && tar -xzf scout.tar.gz -C /root/.docker/cli-plugins docker-scout \
+ && chmod +x /root/.docker/cli-plugins/docker-scout && rm /tmp/checksums.txt /tmp/scout.tar.gz
 
 # The only thing the worker caches: the vulnerability databases, at a fixed path for a volume.
 ENV TRIVY_CACHE_DIR=/cache/dbs/trivy \

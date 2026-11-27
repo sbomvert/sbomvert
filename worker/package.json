@@ -5,7 +5,7 @@
   "description": "Runs SBOM and CVE scans for the scan queue.",
   "scripts": {
     "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch --env-file-if-exists=../.env src/index.ts"
   },
   "dependencies": {
     "@sbomvert/core": "*",

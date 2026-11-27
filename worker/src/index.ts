@@ -30,6 +30,10 @@ async function main() {
     connection: redisConnection(),
     // 1 by default: concurrent trivy (or grype) runs fight over the lock on their shared cache
     concurrency: Number(process.env.SCAN_CONCURRENCY ?? 1),
+    // BullMQ's defaults (30 s lock, 1 stall allowed) fail scans that are slow to renew their lock.
+    lockDuration: 10 * 60 * 1000,
+    stalledInterval: 60 * 1000,
+    maxStalledCount: 3,
   });
   worker.on('failed', (job, err) => console.error(`scan job ${job?.id} failed:`, err.message));
   worker.on('error', err => console.error('worker error:', err.message));
